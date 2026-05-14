@@ -1,0 +1,91 @@
+---
+title: 窗口交互控制
+sidebar_position: 12
+---
+
+# 窗口交互控制
+
+## 窗口拖动区域（`app-region`）
+
+**用途**：自己做**自定义标题栏**时，要告诉系统「这一块区域可以用鼠标拖动窗口」，而按钮区域不要拖动。用 CSS 的 **`app-region`** 或 **`-webkit-app-region`**（二者等价，选一种即可）。
+
+**常用写法**：标题条设为 `drag`，上面的按钮设为 `no-drag`。
+
+```css
+.title-bar {
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+.title-bar button {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+```
+
+```html
+<div class="title-bar" style="-webkit-app-region: drag; app-region: drag;">
+  <h1>我的应用</h1>
+  <div class="title-bar-buttons">
+    <button type="button" style="-webkit-app-region: no-drag; app-region: no-drag;">关闭</button>
+  </div>
+</div>
+```
+
+---
+
+## 和 2.0 创建窗口 API 的配合
+
+- 要不要系统标题栏、要不要边框，由 **`WebViewWindowOptions.frame_style`** 决定（`normal` / `no-titlebar` / `borderless` / `title-overlay`），不要再填已删除的旧字段。
+- 需要**整块无边框 WebView 壳子**时，用 **`create_borderless_webview_window`**，见 [窗口 API](/api-2-preview/window-api)。
+
+---
+
+## 内置标题栏按钮覆盖层（`title-overlay`）
+
+**用途**：Windows 专属样式，提供**有边框+无标题栏+右上角内置标题栏按钮**的效果，无需自行实现窗口控制按钮功能。
+
+### 特点
+
+- 窗口有边框但无系统标题栏
+- 右上角自动绘制最小化、最大化、关闭按钮
+- 使用 Windows 10/11 风格的 Segoe MDL2 Assets 图标
+- 按钮背景透明，悬浮时显示背景色
+- 关闭按钮悬浮时显示红色背景 + 白色图标
+- 完全无需前端实现按钮交互逻辑
+
+### 使用方式
+
+创建窗口时设置 `frame_style` 为 `title-overlay`：
+
+```c
+WebViewWindowOptions options = {0};
+options.title = "My App";
+options.width = 800;
+options.height = 600;
+options.frame_style = "title-overlay";
+// ... 其他选项
+```
+
+或运行时动态切换：
+
+```c
+set_window_frame_style(window_id, "title-overlay");
+```
+
+### 自定义样式
+
+通过 `set_titlebar_overlay_style` 可自定义按钮外观：
+
+```c
+// 自定义按钮高度和颜色
+set_titlebar_overlay_style(
+    window_id,
+    32,          // 按钮高度（像素）
+    "#FFFFFF",   // 图标颜色（白色）
+    "#333333"    // 悬浮背景色（深灰色）
+);
+```
+
+:::info
+`title-overlay` 样式仅 Windows 平台支持。在其他平台上会回退到 `no-titlebar` 样式。
+:::

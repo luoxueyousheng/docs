@@ -1,0 +1,181 @@
+---
+title: JAPK
+sidebar_position: 10
+---
+
+# JAPK 资源包格式
+
+JAPK 是 JadeView 专属的应用打包格式，它可以把您的 HTML、CSS、JavaScript、图片等所有前端资源打包成一个单独的 .japk 文件，就像一个压缩包一样。使用 JAPK 的好处：
+
+- **分发简单**：只需发送一个文件，不用传一堆零散文件
+- **加载快速**：JadeView 可以直接从包内读取资源，无需解压到临时目录
+- **保护源码**：配合 JadePack 可以对内容进行混淆和签名保护
+
+---
+
+## JadePack 构建工具
+
+JadePack 是 JadeView 官方发行的图形化构建工具，专门用于 JAPK 资源包的构建和保护：
+
+- **一键构建**：图形界面操作，轻松将前端项目打包为 JAPK
+- **内容混淆**：即使不签名，也会使用 XOR 混淆保护文件内容，不是明文包
+- **签名保护**：支持对 JAPK 进行签名，验证来源和完整性，防止篡改
+- **解包支持**：支持将部分文件设置为「解包」存储，方便原生模块加载
+
+:::tip
+生产环境推荐使用 JadePack 构建签名 JAPK 包，提供完整的安全保护。
+:::
+
+---
+
+**JadeView 完全兼容 Electron ASAR 格式**，这意味着：
+- 使用 Electron ASAR 创建的包可以直接被 JadeView 加载和运行
+- 无需额外的转换或处理步骤
+- 与 Electron 生态完全互通
+
+:::info
+**注意：**
+- **Electron ASAR 创建的是明文包**：文件内容未经过任何加密或混淆处理
+- **JadePack 创建的非签名包也是混淆包**：即使不签名，JadePack 也会使用 XOR 混淆保护文件内容，不是明文包
+
+如需构建签名加密的 JAPK 包，请使用 JadePack 的图形界面构建中心。
+:::
+
+## 本地协议服务 API（`set_protocol_service_path`）
+
+**用途**：将本地 JAPK/ASAR 归档文件或目录注册为 JadeView 内置访问的根目录。
+
+```c
+int32_t set_protocol_service_path(
+  const char* root_path,
+  char* url_buffer,
+  size_t buffer_size
+);
+```
+
+**参数：**
+
+- `root_path` `string` - 本地静态资源根。**两种形式**：
+  - **目录**：现有行为，指向包含 `index.html` 等前端产物的文件夹路径；
+  - **`.japk`/`.asar` 文件**：指向磁盘上已存在的归档文件（ASAR 格式，与 Electron、JadePack 打包产物一致）。JadeView 会映射该文件并在 `JADE://` 下按**包内相对路径**提供资源（不解压到临时目录）；请求未命中时同样回退到包内的 `index.html`（SPA）。扩展名匹配**不区分大小写**（如 `.JAPK`）。若归档中某些条目为「解包」存储（旁路 `.asar.unpacked` / 等价目录），实现会尝试从磁盘旁路读取对应字节。
+- `url_buffer` `char*` - 输出参数，用于存储生成的协议 URL（NUL 结尾）
+- `buffer_size` `size_t` - `url_buffer` 的字节容量（含结尾 NUL）
+
+成功返回 `1`，失败返回 `0`（路径无效、缓冲太小、尚未初始化等）。
+
+须在 **`app-ready` 成功之后**再调。
+
+## 使用示例
+
+```c
+#include "jadeview.h"
+
+// 使用 JAPK 文件
+void load_japk_example() {
+  char url_buffer[256];
+  const char* japk_path = "C:\\path\\to\\your\\app.japk";
+  
+  int32_t result = set_protocol_service_path(
+    japk_path,
+    url_buffer,
+    sizeof(url_buffer)
+  );
+  
+  if (result == 1) {
+    printf("协议 URL: %s\n", url_buffer);
+    // 使用 url_buffer 导航
+  }
+}
+```
+
+---
+
+## 命令构建教程
+
+### 前置要求
+- Node.js 14.0 或更高版本
+- npm 或 yarn 包管理器
+- 要打包的应用文件目录
+
+### 安装 Electron ASAR
+
+全局安装 @electron/asar 工具：
+
+```bash
+npm install -g @electron/asar
+```
+
+或者使用 yarn：
+
+```bash
+yarn global add @electron/asar
+```
+
+### 构建步骤
+
+#### 步骤 1：准备应用文件
+
+确保您的应用文件结构如下：
+
+```
+my-app/
+├── index.html
+├── src/
+│   ├── renderer.js
+│   └── styles.css
+└── assets/
+    └── icon.png
+```
+
+#### 步骤 2：创建 JAPK 包
+
+使用以下命令直接创建 JAPK 包：
+
+```bash
+asar pack my-app app.japk
+```
+
+这将创建一个名为 `app.japk` 的文件。
+
+### 高级选项
+
+#### 排除特定文件
+
+使用 `--unpack` 选项排除特定文件：
+
+```bash
+asar pack my-app app.japk --unpack "*.node"
+```
+
+这将排除所有 .node 文件，保持它们为未打包状态。
+
+#### 指定输出路径
+
+指定 JAPK 文件的输出路径：
+
+```bash
+asar pack my-app ./output/app.japk
+```
+
+### 重要说明
+
+**Electron ASAR 创建的是明文包，JadePack 创建的非签名包也是混淆包。**
+
+**Electron ASAR 构建的 JAPK：**
+- 文件内容完全明文，未经过任何加密或混淆
+- 任何人都可以直接查看包内容
+- 无法验证文件来源和完整性
+- 不适合生产环境或需要安全保护的场景
+
+**JadePack 构建的非签名 JAPK：**
+- 使用 XOR 混淆保护文件内容（非明文）
+- 提供基础的内容保护
+- 但不包含签名信息，无法验证来源
+- 适合需要基础保护但不需要签名的场景
+
+**推荐做法：** 使用 JadePack 的图形界面构建中心创建签名 JAPK 包，可以提供完整的安全保护、身份验证和完整性校验。
+
+### 相关资源
+
+- [https://github.com/electron/asar](https://github.com/electron/asar)
+- [https://www.electronjs.org/docs/latest/tutorial/asar-archives](https://www.electronjs.org/docs/latest/tutorial/asar-archives)
