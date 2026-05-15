@@ -75,7 +75,7 @@ int main() {
 #include "jadeview.h"
 
 // app-ready 事件回调函数
-int app_ready_callback(uint32_t window_id, const char* event_type, const char* event_data) {
+const char* app_ready_callback(uint32_t window_id, const char* event_data) {
     // 判断是否成功
     if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
         printf("JadeView 准备就绪，现在可以创建窗口了\n");
@@ -134,7 +134,7 @@ int app_ready_callback(uint32_t window_id, const char* event_type, const char* e
         printf("JadeView 初始化失败：%s\n", event_data ? event_data : "未知错误");
     }
     
-    return 0;
+    return NULL;
 }
 
 int main() {
@@ -175,7 +175,7 @@ JadeView 2.0 支持 JAPK 资源包格式。下面是使用 JAPK 的示例：
 #include "jadeview.h"
 
 // app-ready 事件回调函数
-int app_ready_callback(uint32_t window_id, const char* event_type, const char* event_data) {
+const char* app_ready_callback(uint32_t window_id, const char* event_data) {
     if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
         printf("JadeView 准备就绪\n");
         
@@ -216,7 +216,7 @@ int app_ready_callback(uint32_t window_id, const char* event_type, const char* e
             }
         }
     }
-    return 0;
+    return NULL;
 }
 
 int main() {
@@ -252,19 +252,19 @@ int main() {
 #include "jadeview.h"
 
 // 窗口关闭事件回调
-int window_close_callback(uint32_t window_id, const char* event_type, const char* event_data) {
+const char* window_close_callback(uint32_t window_id, const char* event_data) {
     printf("窗口 %u 即将关闭\n", window_id);
-    return 0;  // 返回 0 允许关闭，返回 1 阻止关闭
+    return NULL;  // 返回 NULL 允许关闭，返回错误信息阻止关闭
 }
 
 // 页面加载完成事件回调
-int page_loaded_callback(uint32_t window_id, const char* event_type, const char* event_data) {
+const char* page_loaded_callback(uint32_t window_id, const char* event_data) {
     printf("页面已加载：%s\n", event_data);
-    return 0;
+    return NULL;
 }
 
 // app-ready 事件回调
-int app_ready_callback(uint32_t window_id, const char* event_type, const char* event_data) {
+const char* app_ready_callback(uint32_t window_id, const char* event_data) {
     if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
         printf("JadeView 准备就绪\n");
         
@@ -288,7 +288,7 @@ int app_ready_callback(uint32_t window_id, const char* event_type, const char* e
             jade_on("page-loaded", page_loaded_callback);
         }
     }
-    return 0;
+    return NULL;
 }
 
 int main() {
@@ -324,13 +324,13 @@ int main() {
 #include "jadeview.h"
 
 // 窗口全部关闭事件回调
-int window_all_closed_callback(uint32_t window_id, const char* event_type, const char* event_data) {
+const char* window_all_closed_callback(uint32_t window_id, const char* event_data) {
     printf("所有窗口已关闭，准备清理资源\n");
     cleanup_all_windows();
-    return 0;
+    return NULL;
 }
 
-int app_ready_callback(uint32_t window_id, const char* event_type, const char* event_data) {
+const char* app_ready_callback(uint32_t window_id, const char* event_data) {
     if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
         printf("JadeView 准备就绪\n");
         
@@ -347,7 +347,7 @@ int app_ready_callback(uint32_t window_id, const char* event_type, const char* e
             NULL
         );
     }
-    return 0;
+    return NULL;
 }
 
 int main() {
@@ -384,14 +384,14 @@ int main() {
 #include "jadeview.h"
 
 // 窗口全部关闭事件回调
-int window_all_closed_callback(uint32_t window_id, const char* event_type, const char* event_data) {
+const char* window_all_closed_callback(uint32_t window_id, const char* event_data) {
     printf("所有窗口已关闭，准备清理资源\n");
     cleanup_all_windows();
-    return 0;
+    return NULL;
 }
 
 // app-ready 事件回调函数
-int app_ready_callback(uint32_t window_id, const char* event_type, const char* event_data) {
+const char* app_ready_callback(uint32_t window_id, const char* event_data) {
     if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
         printf("JadeView 准备就绪，现在可以创建窗口了\n");
         
@@ -418,7 +418,7 @@ int app_ready_callback(uint32_t window_id, const char* event_type, const char* e
         
         if (new_window_id == 0) {
             printf("窗口创建失败\n");
-            return 0;
+            return NULL;
         }
         
         printf("窗口创建成功，窗口 ID：%u\n", new_window_id);
@@ -426,7 +426,7 @@ int app_ready_callback(uint32_t window_id, const char* event_type, const char* e
         printf("JadeView 初始化失败：%s\n", event_data ? event_data : "未知错误");
     }
     
-    return 0;
+    return NULL;
 }
 
 int main() {
@@ -467,7 +467,7 @@ int main() {
 #include <string.h>
 #include "jadeview.h"
 
-int app_ready_callback(uint32_t window_id, const char* event_type, const char* event_data) {
+const char* app_ready_callback(uint32_t window_id, const char* event_data) {
     if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
         printf("创建无边框窗口\n");
         
@@ -485,7 +485,7 @@ int app_ready_callback(uint32_t window_id, const char* event_type, const char* e
             printf("窗口句柄：%p\n", (void*)hwnd);
         }
     }
-    return 0;
+    return NULL;
 }
 
 int main() {
@@ -504,7 +504,7 @@ int main() {
 #include <string.h>
 #include "jadeview.h"
 
-int app_ready_callback(uint32_t window_id, const char* event_type, const char* event_data) {
+const char* app_ready_callback(uint32_t window_id, const char* event_data) {
     if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
         printf("创建带主题的窗口\n");
         
@@ -530,7 +530,7 @@ int app_ready_callback(uint32_t window_id, const char* event_type, const char* e
             set_window_background_color(new_window_id, "#ffffff");
         }
     }
-    return 0;
+    return NULL;
 }
 
 int main() {
