@@ -39,6 +39,12 @@ export default function SDKs() {
       bgColor: '#3776AB',
     },
     {
+      name: 'Python SDK2',
+      to: '/python-sdk2',
+      icon: 'Py2',
+      bgColor: '#306998',
+    },
+    {
       name: '易语言 SDK',
       to: '/easy-language-sdk',
       icon: '易',

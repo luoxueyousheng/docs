@@ -9,10 +9,10 @@ import clsx from 'clsx';
 
 const PRODUCTS = [
   {
-    title: '窗口管理',
-    link: '/guides/window-api',
+    title: '快速开始',
+    link: '/spec/quickstart',
     icon: WindowRegular,
-    text: '轻松创建、管理和控制 WebView 窗口，支持自定义标题栏、窗口样式和多种窗口操作',
+    text: '了解如何快速集成 JadeView 到你的项目中，快速上手窗口开发',
   },
   {
     title: '事件系统',
