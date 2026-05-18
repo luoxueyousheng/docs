@@ -7,6 +7,44 @@ sidebar_position: 1
 
 ## 版本历史
 
+### v2.1.0
+
+<div class="changelog-meta">
+  <span class="changelog-date-tag">2026-05-17</span>
+</div>
+
+<div className="changelog-version-container">
+
+**CORS 来源白名单**
+
+替换原有全局限 `Access-Control-Allow-Origin: *` 为创建窗口时可配置的白名单机制，提升安全性。
+
+#### WebViewSettings 新增字段
+
+- `cors_whitelist` `string` — CORS 来源白名单，逗号或分号分隔的域名列表（如 `"http://198.18.0.1:8001, http://localhost:3000"`）。严格精确匹配，不支持通配符。设置后仅允许白名单内的来源跨域请求 JadeView 内部 API（invoke、event、bulk）。
+
+#### 行为变更
+
+- **不设置白名单则不允许任何跨域**（安全优先）。传 `NULL` 或空字符串 `""` 均等同于禁止所有跨域。
+- CORS 预检（OPTIONS）提升到 dispatch 链最前面，确保预检请求在任何路径匹配之前被正确处理，修复了之前预检被 `invoke` 处理器拦截导致浏览器阻止 POST 请求的问题。
+
+#### JAPK 内存载入
+
+支持从内存直接加载 JAPK 包，无需本地文件系统，适用于将 JAPK 数据嵌入可执行文件或网络下载后直接使用。
+
+**新增 API：**
+
+- `JadeView_load_from_bytes(data, size)` — 从内存加载 JAPK 包，自动检测魔数选择签名验证或解混淆路径
+- `JadeView_set_public_key(public_key)` — 设置 Ed25519 公钥，调用后只接受 JAPK v2 签名包
+- `JadeView_is_loaded()` — 检查 JAPK 是否已成功加载
+- `JadeView_get_app_signature()` — 获取当前加载包的应用标识
+- `JadeView_get_signature_info()` — 获取签名信息 JSON（仅签名包）
+- `JadeView_unload()` — 清除加载状态并释放内存
+
+> 详见 [从内存载入](/v2api/japk-load-memory)。
+
+</div>
+
 ### v2.0.0-preview
 
 <div class="changelog-meta">
