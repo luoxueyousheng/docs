@@ -75,11 +75,11 @@ const result = await jade.invoke('message', { data: 'test' }, { timeout: 5000 })
 const char* message_callback(uint32_t window_id, const char* event_data) {
     printf("收到 message 命令，窗口ID: %u, 数据: %s\n", window_id, event_data);
 
-    char* result = (char*)malloc(256);
-    snprintf(result, 256,
+    char result[256];
+    snprintf(result, sizeof(result),
         "{\"status\":\"success\",\"message\":\"已收到\",\"window_id\":%u}",
         window_id);
-    return result;
+    return jade_text_create(result);
 }
 ```
 
