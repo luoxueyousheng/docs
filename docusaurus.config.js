@@ -78,7 +78,7 @@ const docs = [
 const defaultSettings = {
   breadcrumbs: true,
   editUrl: 'https://github.com/JadeViewDocs/docs/tree/main/',
-  showLastUpdateTime: true,
+  showLastUpdateTime: false,
   sidebarCollapsible: true,
   remarkPlugins: [
     [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],

@@ -14,9 +14,6 @@ RUN bun install
 # 复制源代码（包含预生成的 changelog 和 contributors）
 COPY . .
 
-# 初始化 Git 仓库（Docusaurus 需要 Git 信息来显示最后更新时间）
-RUN git init && git add -A && git -c user.name="build" -c user.email="build@local" commit -m "build"
-
 # 构建静态文件
 RUN bun run build
 
