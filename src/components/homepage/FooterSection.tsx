@@ -40,12 +40,16 @@ const socialLinks = [
   { name: "QQ群", href: "https://qm.qq.com/q/MVsl5VWokC" },
 ];
 
-export function FooterSection() {
+interface FooterSectionProps {
+  forceLight?: boolean;
+}
+
+export function FooterSection({ forceLight = false }: FooterSectionProps) {
   return (
-    <footer className="relative border-t border-foreground/10">
+    <footer className="relative border-t border-foreground/10" {...(forceLight ? { "data-theme": "light" } : {})}>
       {/* Animated wave background */}
       <div className="absolute inset-0 h-65 opacity-20 pointer-events-none overflow-hidden">
-        <AnimatedWave />
+        <AnimatedWave forceLight={forceLight} />
       </div>
 
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 lg:px-12">

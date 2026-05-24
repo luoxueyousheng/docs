@@ -19,7 +19,7 @@ export default function FooterWrapper() {
         <link rel="stylesheet" href="/homepage-fonts.css" />
       </Head>
 
-      <FooterSection />
+      <FooterSection forceLight={pathname === '/'} />
 
       <Docsly
         publicId="public_vzrAqhBkB7RSYu2xJ73FVYrZDBZwryg2Lkr4mluOpjUbbyp4PqVGZbs35RR6py6U"

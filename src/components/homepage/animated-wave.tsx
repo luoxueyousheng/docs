@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useColorMode } from "@docusaurus/theme-common";
 
-export function AnimatedWave() {
+export function AnimatedWave({ forceLight = false }: { forceLight?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRef = useRef(0);
   const { colorMode } = useColorMode();
-  const [isDark, setIsDark] = useState(colorMode === "dark");
+  const [isDark, setIsDark] = useState(!forceLight && colorMode === "dark");
 
   useEffect(() => {
-    setIsDark(colorMode === "dark");
-  }, [colorMode]);
+    setIsDark(!forceLight && colorMode === "dark");
+  }, [colorMode, forceLight]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
