@@ -1,53 +1,61 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
-import HeroSection from '@site/src/components/homepage/HeroSection';
-import SDKs from '@site/src/components/homepage/SDKs';
-import LovedTools from '@site/src/components/homepage/LovedTools';
-import APIReferenceSection from '@site/src/components/homepage/APIReferenceSection';
+import BrowserOnly from '@docusaurus/BrowserOnly';
+import { Navigation } from '@site/src/components/homepage/Navigation';
+import { HeroSection } from '@site/src/components/homepage/HeroSection';
+import { FeaturesSection } from '@site/src/components/homepage/FeaturesSection';
+import { HowItWorksSection } from '@site/src/components/homepage/HowItWorksSection';
+import { DevelopersSection } from '@site/src/components/homepage/MetricsSection';
+import { SDKsSection } from '@site/src/components/homepage/SDKsSection';
+import { TechStackSection } from '@site/src/components/homepage/TechStackSection';
+import { ArchitectureSection } from '@site/src/components/homepage/ArchitectureSection';
+import { ApiSection } from '@site/src/components/homepage/ApiSection';
+import { DistributionSection } from '@site/src/components/homepage/DistributionSection';
+import { CtaSection } from '@site/src/components/homepage/CTASection';
 
-/** 首页背景柔光（轻量漂移动效，见 custom.css，尊重 prefers-reduced-motion） */
-function AmbientBackground() {
-  return <div className="jv-ambient-bg" aria-hidden />;
+
+function ThemeFixer() {
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }, []);
+  return null;
 }
 
 export default function Homepage() {
   return (
     <Layout
-      title="JadeView Documentation"
-      wrapperClassName="homepage flex flex-col"
+      title="JadeView - 面向 Windows 的通用 WebView 宿主库"
+      wrapperClassName="homepage"
     >
       <Head>
-        <title>JadeView Documentation - 基于 Rust 的 WebView 窗口库</title>
+        <title>JadeView - 面向 Windows 的通用 WebView 宿主库</title>
         <meta
           name="description"
-          content="JadeView 是一个基于 Rust 开发的 WebView 窗口库，提供了 C 语言兼容的 API 接口。"
+          content="JadeView 是一个基于 Rust 开发的 WebView 窗口库，提供 DLL 动态库和 Lib 静态库。轻量、高性能、接口清晰。"
         />
+        <style>{`
+          .navbar { display: none !important; }
+          .main-wrapper { padding-top: 0 !important; }
+        `}</style>
       </Head>
 
+      <BrowserOnly>{() => <ThemeFixer />}</BrowserOnly>
+
       <div className="homepage-wrapper">
-        <AmbientBackground />
-        
-        <div className="homepage-content-wrapper">
-          {/* Hero Section - 产品特性展示 */}
-          <HeroSection />
-          
-          {/* SDKs Section - SDK 选择 */}
-          <SDKs />
-
-          {/* Loved Tools Section - 技术栈展示 */}
-          <LovedTools />
-          
-          {/* API Reference Section - API 文档 */}
-          <APIReferenceSection />
-          
-          
-          
-          {/* Help Section - 帮助 */}
-
-        </div>
+        <Navigation />
+        <HeroSection />
+        <FeaturesSection />
+        <HowItWorksSection />
+        <DevelopersSection />
+        <SDKsSection />
+        <TechStackSection />
+        <ArchitectureSection />
+        <ApiSection />
+        {/* <TestimonialsSection /> */}
+        <DistributionSection />
+        <CtaSection />
       </div>
-
     </Layout>
   );
 }

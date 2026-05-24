@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import Layout from '@theme/Layout';
-import HomeFooter from '../components/homepage/HomeFooter';
 import clsx from 'clsx';
 import { useMemo } from 'react';
 import { Minus, Plus, Search } from 'react-feather';
@@ -231,8 +230,6 @@ export default function FAQPage() {
       </section>
 
       <HelpSection className="relative z-10 border border-solid border-secondary-700" />
-
-      <HomeFooter className="-mt-20 pt-32 pb-12" />
     </Layout>
   );
 }

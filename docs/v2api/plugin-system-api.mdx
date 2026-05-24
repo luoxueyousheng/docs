@@ -13,7 +13,7 @@ sidebar_position: 14
 
 ## 协议与文件关联
 
-### 自定义 URL 协议（`register_url_scheme` / `unregister_url_scheme`） {#url-scheme}
+<h3 id="url-scheme">自定义 URL 协议（`register_url_scheme` / `unregister_url_scheme`）</h3>
 
 **用途**：在系统里登记**自定义 URL 协议**（例如 `myapp://open/...`），使用户在浏览器或其它应用里点开这类链接时，能启动你的 exe 并把 URL 传进来。卸载或关闭功能时可 `unregister` 取消登记。
 
@@ -26,7 +26,7 @@ int32_t unregister_url_scheme(const char* scheme);
 
 ---
 
-### 文件类型关联（`register_file_association` / `unregister_file_association`） {#file-association}
+<h3 id="file-association">文件类型关联（`register_file_association` / `unregister_file_association`）</h3>
 
 **用途**：让用户**双击某种扩展名**（如 `.mydata`）时，用当前应用打开。`friendly_name` 会出现在「打开方式」里给人看的名字。
 
@@ -41,7 +41,7 @@ int32_t unregister_file_association(const char* extension);
 
 ## 全局输入
 
-### 全局热键（`register_global_hotkey` / `unregister_global_hotkey`） {#global-hotkey-api}
+<h3 id="global-hotkey-api">全局热键（`register_global_hotkey` / `unregister_global_hotkey`）</h3>
 
 **用途**：注册**全局快捷键**（焦点不在你的窗口上也能响应），例如全局呼出主窗口、静音。按下后库会发事件 **`global-hotkey`**（负载为 JSON，含热键 id 与键值），你在 `jade_on` 里处理即可。
 

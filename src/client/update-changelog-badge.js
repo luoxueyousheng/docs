@@ -7,7 +7,7 @@ if (typeof window !== 'undefined') {
 
     try {
       // 从GitHub API获取最新版本
-      const response = await fetch('https://api.github.com/repos/JadeViewDocs/library/releases/latest', {
+      const response = await fetch('https://api.github.com/repos/JadeViewDocs/JadeView/releases/latest', {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
           'Accept': 'application/vnd.github.v3+json'

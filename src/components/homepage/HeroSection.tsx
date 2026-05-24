@@ -1,140 +1,157 @@
-import React from 'react';
-import Link from '@docusaurus/Link';
-import {
-  WindowRegular,
-  CodeRegular,
-  PaintBrushRegular,
-} from '@fluentui/react-icons';
-import clsx from 'clsx';
+import { useEffect, useState } from "react";
+import { AnimatedSphere } from "@site/src/components/homepage/animated-sphere";
 
-const PRODUCTS = [
-  {
-    title: '快速开始',
-    link: '/spec/quickstart',
-    icon: WindowRegular,
-    text: '了解如何快速集成 JadeView 到你的项目中，快速上手窗口开发',
-  },
-  {
-    title: '事件系统',
-    link: '/v2api/event-types',
-    icon: CodeRegular,
-    text: '通过 jade_on 订阅窗口、导航、IPC 等事件，IpcCallback 返回值控制拦截行为',
-  },
-  {
-    title: '自定义标题栏',
-    link: '/spec/custom-titlebar',
-    icon: PaintBrushRegular,
-    text: '两种方式：内置 title-overlay 或完全自定义，支持 Windows Snap Layout',
-  },
-];
+const words = ["前端", "桌面", "WebView", "窗口"];
 
-function HeroProduct({
-  link,
-  title,
-  icon: Icon,
-  text,
-}: (typeof PRODUCTS)[0]) {
+export function HeroSection() {
+  const [isVisible, setIsVisible] = useState(false);
+  const [wordIndex, setWordIndex] = useState(0);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setWordIndex((prev) => (prev + 1) % words.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <Link
-      to={link}
-      className={clsx(
-        'jv-feature-card group cursor-pointer text-inherit hover:no-underline',
-        'w-full sm:w-[340px] lg:w-[380px]'
-      )}
-    >
-      <div className="jv-feature-card__icon">
-        <Icon className="h-6 w-6" />
+    <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[600px] h-[600px] lg:w-[800px] lg:h-[800px] opacity-40 pointer-events-none">
+        <AnimatedSphere />
       </div>
-      <h3 className="jv-feature-card__title group-hover:text-primary transition-colors">
-        {title}
-      </h3>
-      <p className="jv-feature-card__description">{text}</p>
-      <div className="jv-feature-card__cta">
-        <span>了解更多</span>
-        <span className="jv-feature-card__cta-arrow" aria-hidden>
-          →
-        </span>
+      
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={`h-${i}`}
+            className="absolute h-px bg-foreground/10"
+            style={{
+              top: `${12.5 * (i + 1)}%`,
+              left: 0,
+              right: 0,
+            }}
+          />
+        ))}
+        {[...Array(12)].map((_, i) => (
+          <div
+            key={`v-${i}`}
+            className="absolute w-px bg-foreground/10"
+            style={{
+              left: `${8.33 * (i + 1)}%`,
+              top: 0,
+              bottom: 0,
+            }}
+          />
+        ))}
       </div>
-    </Link>
-  );
-}
-
-export default function HeroSection() {
-  return (
-    <div className="jv-home-hero">
-      <section className="jv-home-hero__intro no-underline-links">
-        <div className="jv-home-hero__inner jv-home-hero__inner--enter">
-          <p className="jv-home-hero__eyebrow">Rust · WebView2 · C 语言 API</p>
-          <h1 className="jv-hero__title">JadeView</h1>
-          <p className="jv-hero__subtitle">
-            面向 Windows 的通用 WebView 宿主库：轻量、高性能、接口清晰。
-            <span className="jv-hero__subtitle-break">
-              用熟悉的前端技术做出流畅、现代的桌面界面。
+      
+      <div className="relative z-10 max-w-[1400px] mx-auto px-6 lg:px-12 py-32 lg:py-40">
+        <div 
+          className={`mb-8 transition-all duration-700 ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
+        >
+          <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground">
+            <span className="w-8 h-px bg-foreground/30" />
+            Rust · WebView2 · C 语言 API
+          </span>
+        </div>
+        
+        <div className="mb-12">
+          <h1 
+            className={`text-[clamp(3rem,12vw,10rem)] font-display leading-[0.9] tracking-tight transition-all duration-1000 ${
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            }`}
+          >
+            <span className="block">JadeView</span>
+            <span className="block">
+              通用
+              <span className="relative inline-block">
+                <span 
+                  key={wordIndex}
+                  className="inline-flex"
+                >
+                  {words[wordIndex].split("").map((char, i) => (
+                    <span
+                      key={`${wordIndex}-${i}`}
+                      className="inline-block animate-char-in"
+                      style={{
+                        animationDelay: `${i * 50}ms`,
+                      }}
+                    >
+                      {char}
+                    </span>
+                  ))}
+                </span>
+                <span className="absolute -bottom-2 left-0 right-0 h-3 bg-foreground/10" />
+              </span>
             </span>
+          </h1>
+        </div>
+        
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-end">
+          <p 
+            className={`text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-xl transition-all duration-700 delay-200 ${
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            }`}
+          >
+            轻量、高性能、接口清晰。用熟悉的前端技术做出流畅、现代的桌面界面。
           </p>
-          <div className="jv-hero__actions">
-            <a
-              href="https://github.com/JadeViewDocs/library"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="jv-cta-button"
+          
+          <div 
+            className={`flex flex-col sm:flex-row items-start gap-4 transition-all duration-700 delay-300 ${
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            }`}
+          >
+            <a 
+              href="/spec/changelog"
+              className="inline-flex items-center bg-foreground hover:bg-foreground/90 text-background px-8 h-14 text-base rounded-full group font-medium transition-colors"
             >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="jv-hero__btn-icon"
-                aria-hidden
-              >
-                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
-              </svg>
-              GitHub 获取源码
+              获取核心库
+              <svg className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
             </a>
-            <a
-              href="https://gitee.com/ilinxuan/JadeView_library"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="jv-btn-secondary"
+            <a 
+              href="/spec/quickstart"
+              className="inline-flex items-center h-14 px-8 text-base rounded-full border border-foreground/20 hover:bg-foreground/5 font-medium transition-colors"
             >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="jv-hero__btn-icon"
-                aria-hidden
-              >
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-              </svg>
-              Gitee 镜像
+              快速开始
             </a>
           </div>
         </div>
-      </section>
-
-      <section
-        className="jv-home-hero__features jv-home-hero__features--enter"
-        aria-labelledby="jv-home-features-heading"
+        
+      </div>
+      
+      <div 
+        className={`absolute bottom-24 left-0 right-0 transition-all duration-700 delay-500 ${
+          isVisible ? "opacity-100" : "opacity-0"
+        }`}
       >
-        <div className="jv-home-hero__features-head">
-          <h2 id="jv-home-features-heading" className="jv-home-section-label">
-            核心能力
-          </h2>
-          <p className="jv-home-hero__features-desc">
-            窗口、事件与样式一站集成，文档与示例对齐维护。
-          </p>
-        </div>
-        <div className="jv-home-hero__features-grid">
-          {PRODUCTS.map((product) => (
-            <HeroProduct {...product} key={product.title} />
+        <div className="flex gap-16 marquee whitespace-nowrap">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="flex gap-16">
+              {[
+                { value: "Rust", label: "核心语言", company: "高性能" },
+                { value: "WebView2", label: "渲染引擎", company: "微软" },
+                { value: "C API", label: "接口兼容", company: "跨语言" },
+                { value: "DLL+Lib", label: "动态库静态库", company: "双版本" },
+              ].map((stat) => (
+                <div key={`${stat.company}-${i}`} className="flex items-baseline gap-4">
+                  <span className="text-4xl lg:text-5xl font-display">{stat.value}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {stat.label}
+                    <span className="block font-mono text-xs mt-1">{stat.company}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
           ))}
         </div>
-      </section>
-    </div>
+      </div>
+      
+    </section>
   );
 }

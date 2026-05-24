@@ -1,0 +1,148 @@
+/* ============================================
+   JADEVIEW HOMEPAGE — 独立设计系统
+   完全还原 jade.run_v2 (shadcn/ui light theme)
+   ============================================ */
+
+/* ---- jade.run_v2 精确配色 (来自编译后的 Tailwind CSS) ---- */
+.homepage-wrapper {
+  --background: #fafaf9;
+  --foreground: #080503;
+  --muted-foreground: #5e534a;
+  --primary: #080503;
+  --primary-foreground: #fafaf9;
+  --border: #dad7d0;
+  --input: #e7e4dd;
+  --ring: #080503;
+  --radius: 0.25rem;
+  --ifm-link-color: var(--foreground);
+  --ifm-link-hover-color: var(--foreground);
+
+  /* 基础样式 */
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Instrument Sans', system-ui, sans-serif;
+  min-height: 100vh;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  
+}
+a {
+  text-decoration: none !important;
+}
+/* ---- 隐藏 Docusaurus 原生导航栏 (首页) ---- */
+
+/* 修复 Tailwind v4 translate 与 v3 transform 双重应用问题
+   v4 用 translate 属性，v3 用 transform 属性，同名类两者都会生效 */
+.homepage-wrapper [class*="translate-"] {
+  translate: none !important;
+}
+
+/* 修复 Tailwind v4 字体与 v3 字体冲突
+   v3 (Docusaurus) 的 font-display/sans/mono 覆盖了 v4 (jade.run_v2) 的字体定义 */
+.homepage-wrapper .font-sans {
+  font-family: var(--font-instrument), "Instrument Sans", system-ui, sans-serif !important;
+}
+.homepage-wrapper .font-display {
+  font-family: var(--font-display) !important;
+}
+.homepage-wrapper .font-mono {
+  font-family: var(--font-jetbrains), "JetBrains Mono", monospace !important;
+}
+
+/* 修复 Docusaurus Infima 强制 heading fontWeight: 700
+   jade.run_v2 标题使用正常字重 */
+.homepage-wrapper h1,
+.homepage-wrapper h2,
+.homepage-wrapper h3,
+.homepage-wrapper h4 {
+  font-weight: 400;
+}
+
+/* 修复 Docusaurus Infima a:link/:hover 覆盖 Tailwind text-background
+   导致黑底按钮文字变蓝、hover 变黑 */
+.homepage-wrapper a.text-background,
+.homepage-wrapper a.text-background:link,
+.homepage-wrapper a.text-background:visited,
+.homepage-wrapper a.text-background:hover,
+.homepage-wrapper a.text-background:active {
+  color: var(--background) !important;
+}
+
+/* ---- 字符入场动画 ---- */
+.homepage-wrapper .animate-char-in {
+  animation: hp-char-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  opacity: 0;
+  filter: blur(40px);
+  transform: translateY(100%);
+}
+@keyframes hp-char-in {
+  0% {
+    opacity: 0;
+    filter: blur(40px);
+    transform: translateY(100%);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+/* ---- 文字描边 ---- */
+.homepage-wrapper .text-stroke {
+  -webkit-text-stroke: 1.5px currentColor;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ---- 跑马灯 ---- */
+.homepage-wrapper .marquee {
+  animation: hp-marquee 30s linear infinite;
+}
+@keyframes hp-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ---- 代码行动画 ---- */
+.homepage-wrapper .dev-code-line {
+  opacity: 0;
+  transform: translateX(-8px);
+  animation: hp-dev-line-reveal 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes hp-dev-line-reveal {
+  to { opacity: 1; transform: translateX(0); }
+}
+.homepage-wrapper .dev-code-char {
+  opacity: 0;
+  filter: blur(8px);
+  animation: hp-dev-char-reveal 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes hp-dev-char-reveal {
+  to { opacity: 1; filter: blur(0); }
+}
+
+/* ---- 隐藏 Docusaurus 原生导航栏 (首页) ---- */
+.homepage .navbar {
+  display: none !important;
+}
+
+/* ---- 首页全局重置 ---- */
+.homepage main {
+  padding-top: 0;
+}
+.homepage .main-wrapper {
+  padding-top: 0;
+}
+
+/* ---- 减少动画偏好 ---- */
+@media (prefers-reduced-motion: reduce) {
+  .homepage-wrapper .animate-char-in,
+  .homepage-wrapper .marquee,
+  .homepage-wrapper .dev-code-line,
+  .homepage-wrapper .dev-code-char {
+    animation: none !important;
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}

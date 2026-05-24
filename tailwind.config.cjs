@@ -11,9 +11,10 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Inter"', ...fontFamily.sans],
-        jakarta: ['"Plus Jakarta Sans"', ...fontFamily.sans],
-        mono: ['"Fira Code"', ...fontFamily.mono],
+        sans: ['"Instrument Sans"', '"PingFang SC"', '"Microsoft YaHei"', ...fontFamily.sans],
+        jakarta: ['"Plus Jakarta Sans"', '"Inter"', ...fontFamily.sans],
+        mono: ['"JetBrains Mono"', '"Fira Code"', '"Consolas"', ...fontFamily.mono],
+        display: ['"Instrument Sans"', '"PingFang SC"', '"Microsoft YaHei"', ...fontFamily.sans],
       },
       borderRadius: {
         sm: '4px',

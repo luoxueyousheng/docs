@@ -3,7 +3,7 @@
 const updateChangelog = async () => {
   try {
     // 获取最新发布信息
-    const response = await fetch('https://api.github.com/repos/JadeViewDocs/library/releases/latest', {
+    const response = await fetch('https://api.github.com/repos/JadeViewDocs/JadeView/releases/latest', {
       headers: {
         'User-Agent': 'JadeViewDocs',
         'Accept': 'application/vnd.github.v3+json'

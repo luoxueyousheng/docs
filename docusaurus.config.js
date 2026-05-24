@@ -118,12 +118,16 @@ const config = {
   ...meta,
   plugins,
   future: {
-    experimental_faster: true,
+    v4: true,
   },
 
   // 禁用断链检查，因为文档是从 Dyte fork 而来，包含大量 Dyte 特定链接
   onBrokenLinks: 'ignore',
-  onBrokenMarkdownLinks: 'ignore',
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'ignore',
+    },
+  },
   trailingSlash: false,
   themes: ['@docusaurus/theme-live-codeblock', '@docusaurus/theme-mermaid'],
   clientModules: [
@@ -155,6 +159,7 @@ const config = {
             require.resolve('./src/css/custom.css'),
             require.resolve('./src/css/api-reference.css'),
             require.resolve('./src/css/sdks-dropdown.css'),
+            require.resolve('./src/css/homepage.css'),
           ],
         },
         sitemap: {
@@ -194,16 +199,15 @@ const config = {
           href: '/',
           src: '/logo/light.svg',
           srcDark: '/logo/dark.svg',
-          alt: 'JadeView Documentation',
-          height: '40px',
-          width: '101px',
+          alt: 'JadeView',
+          height: '36px',
+          width: '110px',
         },
         items: [
           {
-            label: '研发',
+            label: '文档指南',
             to: '/spec',
           },
-
           {
             label: 'SDKs',
             type: 'dropdown',
@@ -217,25 +221,32 @@ const config = {
             ],
           },
           {
+            label: 'SDK 下载',
+            to: '/sdks',
+          },
+          {
             to: '/v2api',
             label: 'API',
             activeBasePath: '/v2api',
           },
-          {
-            label: 'Api v1',
-            to: 'v1api',
+           {
+            to: '/v1api',
+            label: 'API v1',
+            activeBasePath: '/v1api',
           },
-
-          // 更新日志已移至设计页面，从导航栏移除
+          {
+            label: '案例',
+            to: '/showcase',
+          },
           {
             type: 'search',
             position: 'right',
           },
           {
-            label: '获取',
-            href: 'https://github.com/JadeViewDocs/library/releases',
+            label: '快速开始',
+            to: '/spec/quickstart',
             className:
-              'get-button bg-primary text-white  rounded-md hover:bg-primary/90 font-medium',
+              'get-button bg-primary text-white rounded-md hover:bg-primary/90 font-medium',
             position: 'right',
           },
         ],
@@ -245,54 +256,83 @@ const config = {
           href: '/',
           src: '/logo/light.svg',
           srcDark: '/logo/dark.svg',
-          alt: 'JadeView Documentation',
-          height: '36px',
+          alt: 'JadeView',
+          height: '32px',
         },
         links: [
           {
-            title: '产品',
+            title: '文档',
             items: [
               {
-                label: '文档',
-                href: '/v1api',
+                label: '快速开始',
+                to: '/spec/quickstart',
               },
               {
-                label: 'SDKs',
-                href: '/web-sdk',
+                label: 'API 参考',
+                to: '/v2api',
               },
               {
                 label: '更新日志',
-                href: '/changelog',
+                to: '/spec/changelog',
               },
             ],
           },
           {
-            title: '社群',
+            title: 'SDK',
             items: [
               {
-                label: 'QQ群',
-                href: 'https://qm.qq.com/q/tU0aOkV5lu',
+                label: 'Web SDK',
+                to: '/web-sdk',
               },
               {
-                label: 'issues',
-                href: 'https://github.com/JadeViewDocs/library/issues',
+                label: 'Python SDK',
+                to: '/python-sdk',
+              },
+              {
+                label: '易语言 SDK',
+                to: '/easy-language-sdk',
+              },
+              {
+                label: '火山 SDK',
+                to: '/voldp-sdk',
+              },
+            ],
+          },
+          {
+            title: '社区',
+            items: [
+              {
+                label: 'QQ群: 703623743',
+                href: 'https://qm.qq.com/q/MVsl5VWokC',
+              },
+              {
+                label: 'GitHub Issues',
+                href: 'https://github.com/JadeViewDocs/JadeView/issues',
+              },
+              {
+                label: 'Gitee',
+                href: 'https://gitee.com/ilinxuan/JadeView_library',
               },
               {
                 label: '邮箱',
-                href: 'ihanlong@qq.com',
+                href: 'mailto:ihanlong@qq.com',
               },
             ],
           },
           {
-            title: '资源',
+            title: '友情链接',
             items: [
               {
-                label: 'GitHub',
-                href: '#',
+                label: '镜芯API',
+                href: 'https://api2.wer.plus/',
               },
               {
-                label: '博客',
-                href: '#',
+                label: '小维API',
+                href: 'https://openapi.52vmy.cn/',
+              },
+              {
+                label: '科利特尔网',
+                href: 'https://www.colithel.com/',
               },
             ],
           },

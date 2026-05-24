@@ -12,7 +12,7 @@ import { fileURLToPath } from 'url';
 
 // GitHub API 配置
 const OWNER = 'JadeViewDocs';
-const REPO = 'library';
+const REPO = 'JadeView';
 const API_URL = `https://api.github.com/repos/${OWNER}/${REPO}/releases`;
 
 // 获取当前文件的目录路径（ES模块方式）
@@ -99,7 +99,7 @@ sidebar_position: 1
     
     // 将#123转换为GitHub Issue链接，避免被解析为标题
     // 匹配#后面跟数字，前面不是:，避免匹配URL中的#片段
-    processedBody = processedBody.replace(/(^|[^:])#(\d+)(?![\d])/g, '$1[#$2](https://github.com/JadeViewDocs/library/issues/$2)');
+    processedBody = processedBody.replace(/(^|[^:])#(\d+)(?![\d])/g, '$1[#$2](https://github.com/JadeViewDocs/JadeView/issues/$2)');
     
     // 将内部标题转换为粗体文本，避免出现在目录中
     processedBody = processedBody.replace(/^##\s+(.*)$/gm, '**$1**');

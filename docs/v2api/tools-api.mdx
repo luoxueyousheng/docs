@@ -90,7 +90,7 @@ int32_t get_displays_info(char* buffer, size_t buffer_size);
 
 ---
 
-## YAML 配置读写 {#yaml-config}
+<h2 id="yaml-config">YAML 配置读写</h2>
 
 对应 API：**`yaml_set`**、**`yaml_get`**。**用途**：在 JadeView 为应用准备的**数据目录**里，用一个小 **YAML 文件**存配置（主题、上次打开的路径、开关等），**不需要**经过网页。适合宿主进程自己要持久化一点键值结构。
 
@@ -116,7 +116,7 @@ int32_t clear_data_directory(const char* confirm_token);
 
 `confirm_token` 必须**完全等于**字符串 `I_UNDERSTAND_CLEAR_DATA`（与源码常量一致）。
 
-## 其它工具函数 {#misc-tools}
+<h2 id="misc-tools">其它工具函数</h2>
 
 ### 获取窗口数量（`get_window_count`）
 

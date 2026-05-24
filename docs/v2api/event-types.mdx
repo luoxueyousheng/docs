@@ -11,7 +11,7 @@ sidebar_position: 7
 
 ---
 
-## 回调返回值速查（`IpcCallback`）{#ipc-callback-returns}
+<h2 id="ipc-callback-returns">回调返回值速查（`IpcCallback`）</h2>
 
 类型是 **`const char*`**，但多数场景把它当**哨兵**用，不必指向真实字符串。
 
@@ -33,7 +33,7 @@ sidebar_position: 7
 
 ---
 
-## 窗口事件 {#window-events}
+<h2 id="window-events">窗口事件</h2>
 
 | 事件名 | 触发时机 | `event_data` |
 |--------|----------|----------------|
@@ -51,7 +51,7 @@ sidebar_position: 7
 
 ---
 
-## WebView 与页面事件 {#webview-events}
+<h2 id="webview-events">WebView 与页面事件</h2>
 
 | 事件名 | 触发时机 | `event_data` |
 |--------|----------|----------------|
@@ -68,7 +68,7 @@ sidebar_position: 7
 
 ---
 
-## 脚本执行结果事件（`javascript-result`） {#javascript-result}
+<h2 id="javascript-result">脚本执行结果事件（`javascript-result`）</h2>
 
 | 项 | 说明 |
 |----|------|
@@ -78,7 +78,7 @@ sidebar_position: 7
 
 ---
 
-## 主题与其它 {#misc-events}
+<h2 id="misc-events">主题与其它</h2>
 
 | 事件名 | 触发时机 | `event_data` |
 |--------|----------|----------------|
@@ -87,7 +87,7 @@ sidebar_position: 7
 
 ---
 
-## 通知相关事件 {#notification-events}
+<h2 id="notification-events">通知相关事件</h2>
 
 | 事件名 | 触发时机 | `event_data`（示例字段） |
 |--------|----------|---------------------------|
@@ -133,7 +133,7 @@ sidebar_position: 7
 
 ---
 
-### 全局热键事件（`global-hotkey`） {#global-hotkey}
+<h3 id="global-hotkey">全局热键事件（`global-hotkey`）</h3>
 
 **用途**：用户按下了你用 `register_global_hotkey` 注册的**全局快捷键**（即使焦点不在你的窗口上）。你在回调里根据 JSON 里的 id / 键码做相应逻辑。
 
