@@ -358,16 +358,23 @@ function SdksContent() {
         try {
           dirsRes = await fetchWithTimeout(GITHUB_API);
           dirs = await dirsRes.json();
-        } catch (e) {
-          useGitee = true;
+          if (!Array.isArray(dirs)) {
+            dirs = null;
+          }
+        } catch {
+          dirs = null;
         }
 
         // GitHub 失败或无数据，用 Gitee
-        if (useGitee || !Array.isArray(dirs)) {
+        if (!dirs) {
           try {
             dirsRes = await fetchWithTimeout(GITEE_API);
             dirs = await dirsRes.json();
             useGitee = true;
+            if (!Array.isArray(dirs)) {
+              setLoading(false);
+              return;
+            }
           } catch {
             setLoading(false);
             return;
@@ -388,11 +395,25 @@ function SdksContent() {
                 ? `https://gitee.com/api/v5/repos/ilinxuan/JadeView_library/contents/SDK/${dirName}/SDK`
                 : `https://api.github.com/repos/JadeViewDocs/JadeView/contents/SDK/${dirName}/SDK`;
 
-              const [infoRes, readmeRes, sdkFilesRes] = await Promise.allSettled([
+              let [infoRes, readmeRes, sdkFilesRes] = await Promise.allSettled([
                 fetchWithTimeout(`${baseRaw}/Info.json`).then((r) => r.json()),
                 fetchWithTimeout(`${baseRaw}/README.md`).then((r) => (r.ok ? r.text() : null)),
                 fetchWithTimeout(filesApi).then((r) => r.json()),
               ]);
+
+              // GitHub 获取失败时回退 Gitee
+              if (!useGitee && (infoRes.status === 'rejected' || !infoRes.value)) {
+                const giteeBase = `https://gitee.com/ilinxuan/JadeView_library/raw/main/SDK/${dirName}`;
+                const giteeFilesApi = `https://gitee.com/api/v5/repos/ilinxuan/JadeView_library/contents/SDK/${dirName}/SDK`;
+                const [giteeInfo, giteeReadme, giteeFiles] = await Promise.allSettled([
+                  fetchWithTimeout(`${giteeBase}/Info.json`).then((r) => r.json()),
+                  fetchWithTimeout(`${giteeBase}/README.md`).then((r) => (r.ok ? r.text() : null)),
+                  fetchWithTimeout(giteeFilesApi).then((r) => r.json()),
+                ]);
+                if (giteeInfo.status === 'fulfilled') infoRes = giteeInfo;
+                if (giteeReadme.status === 'fulfilled') readmeRes = giteeReadme;
+                if (giteeFiles.status === 'fulfilled') sdkFilesRes = giteeFiles;
+              }
 
               const info = infoRes.status === 'fulfilled' ? infoRes.value : null;
               const readme = readmeRes.status === 'fulfilled' ? readmeRes.value : null;

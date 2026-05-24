@@ -53,26 +53,48 @@ export function SDKsSection() {
       .catch(() => undefined);
   }, []);
 
-  // 从 GitHub 获取火山视窗 SDK 最新版本号
+  // 从 GitHub 获取火山视窗 SDK 最新版本号，失败回退 Gitee
   useEffect(() => {
     fetch("https://raw.githubusercontent.com/JadeViewDocs/JadeView/main/SDK/Vol_SDK/Info.json")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("GitHub fetch failed");
+        return res.json();
+      })
       .then((data) => {
         if (data.changelog?.[0]?.version) setVolVersion(`v${data.changelog[0].version}`);
         if (data.title) setVolRegion(data.title);
       })
-      .catch(() => undefined);
+      .catch(() => {
+        fetch("https://gitee.com/ilinxuan/JadeView_library/raw/main/SDK/Vol_SDK/Info.json")
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.changelog?.[0]?.version) setVolVersion(`v${data.changelog[0].version}`);
+            if (data.title) setVolRegion(data.title);
+          })
+          .catch(() => undefined);
+      });
   }, []);
 
-  // 从 GitHub 获取易语言 SDK 最新版本号
+  // 从 GitHub 获取易语言 SDK 最新版本号，失败回退 Gitee
   useEffect(() => {
     fetch("https://raw.githubusercontent.com/JadeViewDocs/JadeView/main/SDK/e_Sdk/Info.json")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("GitHub fetch failed");
+        return res.json();
+      })
       .then((data) => {
         if (data.changelog?.[0]?.version) setEVersion(`v${data.changelog[0].version}`);
         if (data.title) setERegion(data.title);
       })
-      .catch(() => undefined);
+      .catch(() => {
+        fetch("https://gitee.com/ilinxuan/JadeView_library/raw/main/SDK/e_Sdk/Info.json")
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.changelog?.[0]?.version) setEVersion(`v${data.changelog[0].version}`);
+            if (data.title) setERegion(data.title);
+          })
+          .catch(() => undefined);
+      });
   }, []);
 
   useEffect(() => {
