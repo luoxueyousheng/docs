@@ -80,16 +80,23 @@ export function DistributionSection() {
                   </li>
                 ))}
               </ul>
-              <button className={`w-full py-4 flex items-center justify-center gap-2 text-sm font-medium transition-all group ${plan.popular ? "bg-foreground text-white hover:bg-foreground/90" : "border border-foreground/20 text-foreground hover:border-foreground hover:bg-foreground/5"}`}>
-                {plan.cta}
-                <ArrowRightIcon />
-              </button>
+              {plan.cta === "联系我们" ? (
+                <a href="mailto:ihanlong@qq.com" className={`w-full py-4 flex items-center justify-center gap-2 text-sm font-medium transition-all group ${plan.popular ? "bg-foreground text-white hover:bg-foreground/90" : "border border-foreground/20 text-foreground hover:border-foreground hover:bg-foreground/5"}`}>
+                  {plan.cta}
+                  <ArrowRightIcon />
+                </a>
+              ) : (
+                <a href="/spec/changelog" target="_blank" rel="noopener noreferrer" className={`w-full py-4 flex items-center justify-center gap-2 text-sm font-medium transition-all group ${plan.popular ? "bg-foreground text-white hover:bg-foreground/90" : "border border-foreground/20 text-foreground hover:border-foreground hover:bg-foreground/5"}`}>
+                  {plan.cta}
+                  <ArrowRightIcon />
+                </a>
+              )}
             </div>
           ))}
         </div>
         <p className="mt-12 text-center text-sm text-muted-foreground">
           DLL 和 Lib 的 C API 完全一致，仅在链接方式上有区别。{" "}
-          <a href="/guides" className="underline underline-offset-4 hover:text-foreground transition-colors">查看 API 文档</a>
+          <a href="/v2api" className="underline underline-offset-4 hover:text-foreground transition-colors">查看 API 文档</a>
         </p>
       </div>
     </section>

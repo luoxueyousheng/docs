@@ -160,7 +160,7 @@ export function ApiSection() {
               </div>
             </div>
             <div className="mt-6 flex items-center gap-6 text-sm">
-              <a href="/guides" className="text-foreground hover:underline underline-offset-4">浏览 API 文档</a>
+              <a href="/v2api" className="text-foreground hover:underline underline-offset-4">浏览 API 文档</a>
               <span className="text-foreground/20">|</span>
               <a href="https://github.com/JadeViewDocs/JadeView" className="text-muted-foreground hover:text-foreground">GitHub 源码</a>
             </div>
