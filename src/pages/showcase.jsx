@@ -5,11 +5,11 @@ import { useColorMode } from '@docusaurus/theme-common';
 
 
 
-function FloatingPanel({ isDark }) {
+function FloatingPanel({ isDark, className }) {
   return (
     <div
-      className="absolute top-7 right-7 w-36 md:w-48 rounded-[1.29rem] py-2 px-4 shadow-2xl z-10
-                 transition-all duration-500 group-hover:translate-x-1 group-hover:-translate-y-1 pointer-events-none"
+      className={`absolute top-7 right-7 w-36 md:w-48 rounded-[1.29rem] py-2 px-4 shadow-2xl z-10
+                 transition-all duration-500 group-hover:translate-x-1 group-hover:-translate-y-1 pointer-events-none ${className || ''}`}
       style={{
         background: isDark ? 'rgba(44, 44, 46, 0.7)' : 'rgba(255, 255, 255, 0.6)',
         border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
@@ -73,7 +73,7 @@ function ShowcaseContent() {
       </div>
 
       {/* 案例网格：自适应多列高密度布局 */}
-      <div className="max-w-[1600px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 md:gap-8">
+      <div className="max-w-[1600px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5 md:gap-8">
         {showcaseItems.map((item) => (
           <div
             key={item.id}
@@ -123,8 +123,8 @@ function ShowcaseContent() {
               </a>
             </div>
 
-            {/* 智能缩放的悬浮控制面板 */}
-            {item.hasOverlay && <FloatingPanel isDark={isDark} />}
+            {/* 智能缩放的悬浮控制面板：仅桌面端显示 */}
+            {item.hasOverlay && <FloatingPanel isDark={isDark} className="hidden md:block" />}
           </div>
         ))}
       </div>

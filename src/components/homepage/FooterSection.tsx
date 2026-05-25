@@ -15,12 +15,6 @@ const footerLinks = {
     { name: "更新日志", href: "/spec/changelog" },
     { name: "IPC 通信", href: "/spec/ipc-communication" },
   ],
-  SDK: [
-    { name: "Web SDK", href: "/web-sdk" },
-    { name: "Python SDK", href: "/python-sdk" },
-    { name: "易语言 SDK", href: "/easy-language-sdk" },
-    { name: "火山 SDK", href: "/voldp-sdk" },
-  ],
   社区: [
     { name: "QQ群", href: "https://qm.qq.com/q/MVsl5VWokC" },
     { name: "GitHub", href: "https://github.com/JadeViewDocs/JadeView", badge: "Issues" as const },
@@ -34,11 +28,8 @@ const footerLinks = {
   ],
 };
 
-const socialLinks = [
-  { name: "GitHub", href: "https://github.com/JadeViewDocs/JadeView" },
-  { name: "Gitee", href: "https://gitee.com/ilinxuan/JadeView_library" },
-  { name: "QQ群", href: "https://qm.qq.com/q/MVsl5VWokC" },
-];
+const socialLinks:{name:string,href:string}[] = [
+] 
 
 interface FooterSectionProps {
   forceLight?: boolean;
@@ -48,16 +39,16 @@ export function FooterSection({ forceLight = false }: FooterSectionProps) {
   return (
     <footer className="relative border-t border-foreground/10" {...(forceLight ? { "data-theme": "light" } : {})}>
       {/* Animated wave background */}
-      <div className="absolute inset-0 h-65 opacity-20 pointer-events-none overflow-hidden">
+      <div className="absolute inset-0 h-64 opacity-20 pointer-events-none overflow-hidden">
         <AnimatedWave forceLight={forceLight} />
       </div>
 
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 lg:px-12">
         {/* Main Footer */}
-        <div className="py-16 lg:py-24">
+        <div className="py-16 lg:py-12">
           <div className="grid grid-cols-2 md:grid-cols-6 gap-12 lg:gap-8">
             {/* Brand Column */}
-            <div className="col-span-2">
+            <div className="col-span-3">
               <a href="/" className="inline-flex items-center gap-2 mb-6">
                 <span className="text-2xl font-display">JadeView</span>
               </a>
@@ -70,13 +61,13 @@ export function FooterSection({ forceLight = false }: FooterSectionProps) {
               <div className="flex gap-6">
                 {socialLinks.map((link) => (
                   <a
-                    key={link.name}
-                    href={link.href}
-                    target={link.href.startsWith("http") ? "_blank" : undefined}
-                    rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                    key={link?.name}
+                    href={link?.href}
+                    target={link?.href?.startsWith("http") ? "_blank" : undefined}
+                    rel={link?.href?.startsWith("http") ? "noopener noreferrer" : undefined}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 group"
                   >
-                    {link.name}
+                    {link?.name}
                     <ArrowUpRightIcon />
                   </a>
                 ))}
@@ -120,7 +111,7 @@ export function FooterSection({ forceLight = false }: FooterSectionProps) {
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500" />
-              Windows WebView 宿主 · Rust 与 WebView2 · C 语言 API
+              欢迎使用 JadeView！
             </span>
           </div>
         </div>

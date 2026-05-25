@@ -215,7 +215,7 @@ function SdkCard({ sdk, isDark }) {
 
   return (
     <div
-      className="group rounded-[2rem] p-5 md:p-6 shadow-sm hover:shadow-lg transition-all duration-400 ease-out flex flex-col justify-between"
+      className="group rounded-2xl md:rounded-[2rem] p-4 md:p-5 lg:p-6 shadow-sm hover:shadow-lg transition-all duration-400 ease-out flex flex-col justify-between"
       style={{
         backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
         border: isDark ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(0,0,0,0.04)',
@@ -291,7 +291,7 @@ function SdkCard({ sdk, isDark }) {
       {/* 版本选择 + 下载 */}
       <div className="mb-5">
         {(downloadUrl || giteeFilePath) ? (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <VersionDropdown
               versions={versions}
               selected={selectedVersion}
@@ -554,7 +554,7 @@ function SdksContent() {
         </p>
       </div>
 
-      <div className="max-w-[1600px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 md:gap-8 items-start">
+      <div className="max-w-[1600px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5 md:gap-8 items-start">
         {loading
           ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} isDark={isDark} />)
           : activeSdks.map((sdk) => <SdkCard key={sdk.dirName} sdk={sdk} isDark={isDark} />)}

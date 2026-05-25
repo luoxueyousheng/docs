@@ -121,13 +121,21 @@ export function Navigation() {
         style={{ top: 0 }}
       >
         <div className="flex flex-col h-full px-8 pt-28 pb-8">
-          <div className="flex-1 flex flex-col justify-center gap-8">
+          {/* 关闭按钮 */}
+          <button
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="absolute top-6 right-6 p-2 text-foreground hover:text-muted-foreground transition-colors"
+            aria-label="Close menu"
+          >
+            <CloseIcon />
+          </button>
+          <div className="flex-1 flex flex-col justify-center divide-y divide-foreground/10">
             {navLinks.map((link, i) => (
               <a
                 key={link.name}
                 href={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`text-5xl font-display text-foreground hover:text-muted-foreground transition-all duration-500 ${
+                className={`text-5xl font-display text-foreground hover:text-muted-foreground transition-all duration-500 py-6 ${
                   isMobileMenuOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                 }`}
                 style={{ transitionDelay: isMobileMenuOpen ? `${i * 75}ms` : "0ms" }}
