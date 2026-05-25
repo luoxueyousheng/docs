@@ -363,8 +363,25 @@ function SdksContent() {
           return res.text();
         };
 
-        async function fetchFromSource(apiUrl, baseRawUrl, filesApiFn) {
-          const dirsRes = await fetchWithTimeout(apiUrl);
+        // 通过 Gitee API 获取文件内容（避免 CORS），返回解析后的对象
+        const fetchGiteeFile = async (filePath) => {
+          const res = await fetchWithTimeout(`https://gitee.com/api/v5/repos/ilinxuan/JadeView_library/contents/${filePath}`);
+          if (!res.ok) return null;
+          const data = await res.json();
+          if (!data.content) return null;
+          return JSON.parse(atob(data.content.replace(/\n/g, '')));
+        };
+        // 通过 Gitee API 获取文件文本内容
+        const fetchGiteeText = async (filePath) => {
+          const res = await fetchWithTimeout(`https://gitee.com/api/v5/repos/ilinxuan/JadeView_library/contents/${filePath}`);
+          if (!res.ok) return null;
+          const data = await res.json();
+          if (!data.content) return null;
+          return atob(data.content.replace(/\n/g, ''));
+        };
+
+        async function fetchFromGithub() {
+          const dirsRes = await fetchWithTimeout(GITHUB_API);
           const dirs = await dirsRes.json();
           if (!Array.isArray(dirs)) return [];
 
@@ -372,8 +389,8 @@ function SdksContent() {
           const results = await Promise.all(
             sdkDirs.map(async (dir) => {
               const dirName = dir.name;
-              const baseRaw = `${baseRawUrl}/${dirName}`;
-              const filesApi = filesApiFn(dirName);
+              const baseRaw = `https://raw.githubusercontent.com/JadeViewDocs/JadeView/main/SDK/${dirName}`;
+              const filesApi = `https://api.github.com/repos/JadeViewDocs/JadeView/contents/SDK/${dirName}/SDK`;
 
               try {
                 const [infoRes, readmeRes, sdkFilesRes] = await Promise.allSettled([
@@ -405,25 +422,57 @@ function SdksContent() {
           return results;
         }
 
+        async function fetchFromGitee() {
+          const dirsRes = await fetchWithTimeout(GITEE_API);
+          const dirs = await dirsRes.json();
+          if (!Array.isArray(dirs)) return [];
+
+          const sdkDirs = dirs.filter((d) => d.type === 'dir');
+          const results = await Promise.all(
+            sdkDirs.map(async (dir) => {
+              const dirName = dir.name;
+
+              try {
+                const [infoRes, readmeRes, sdkFilesRes] = await Promise.allSettled([
+                  fetchGiteeFile(`SDK/${dirName}/Info.json`),
+                  fetchGiteeText(`SDK/${dirName}/README.md`),
+                  fetchJson(`https://gitee.com/api/v5/repos/ilinxuan/JadeView_library/contents/SDK/${dirName}/SDK`),
+                ]);
+
+                const info = infoRes.status === 'fulfilled' ? infoRes.value : null;
+                const readme = readmeRes.status === 'fulfilled' ? readmeRes.value : null;
+
+                let downloadUrl = null;
+                let downloadName = null;
+                if (sdkFilesRes.status === 'fulfilled' && Array.isArray(sdkFilesRes.value)) {
+                  const files = sdkFilesRes.value.filter((f) => f.type === 'file');
+                  if (files.length > 0) {
+                    downloadName = files[0].name.replace(/^['"]+|['"]+$/g, '');
+                    downloadUrl = files[0].download_url
+                      || `https://gitee.com/ilinxuan/JadeView_library/raw/main/SDK/${dirName}/SDK/${encodeURIComponent(downloadName)}`;
+                  }
+                }
+
+                return { dirName, info, readme, downloadUrl, downloadName };
+              } catch {
+                return { dirName, info: null, readme: null, downloadUrl: null, downloadName: null };
+              }
+            })
+          );
+          return results;
+        }
+
         // 先尝试 GitHub
         let sdkResults = [];
         try {
-          sdkResults = await fetchFromSource(
-            GITHUB_API,
-            'https://raw.githubusercontent.com/JadeViewDocs/JadeView/main/SDK',
-            (dirName) => `https://api.github.com/repos/JadeViewDocs/JadeView/contents/SDK/${dirName}/SDK`
-          );
+          sdkResults = await fetchFromGithub();
         } catch {}
 
         // GitHub 结果为空则回退 Gitee
         const hasValidSdks = sdkResults.some((s) => s.info);
         if (!hasValidSdks) {
           try {
-            sdkResults = await fetchFromSource(
-              GITEE_API,
-              'https://gitee.com/ilinxuan/JadeView_library/raw/main/SDK',
-              (dirName) => `https://gitee.com/api/v5/repos/ilinxuan/JadeView_library/contents/SDK/${dirName}/SDK`
-            );
+            sdkResults = await fetchFromGitee();
           } catch {}
         }
 

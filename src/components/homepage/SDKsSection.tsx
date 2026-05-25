@@ -53,7 +53,7 @@ export function SDKsSection() {
       .catch(() => undefined);
   }, []);
 
-  // 从 GitHub 获取火山视窗 SDK 最新版本号，失败回退 Gitee
+  // 从 GitHub 获取火山视窗 SDK 最新版本号，失败回退 Gitee API（避免 CORS）
   useEffect(() => {
     fetch("https://raw.githubusercontent.com/JadeViewDocs/JadeView/main/SDK/Vol_SDK/Info.json")
       .then((res) => {
@@ -65,17 +65,19 @@ export function SDKsSection() {
         if (data.title) setVolRegion(data.title);
       })
       .catch(() => {
-        fetch("https://gitee.com/ilinxuan/JadeView_library/raw/main/SDK/Vol_SDK/Info.json")
+        fetch("https://gitee.com/api/v5/repos/ilinxuan/JadeView_library/contents/SDK/Vol_SDK/Info.json")
           .then((res) => res.json())
           .then((data) => {
-            if (data.changelog?.[0]?.version) setVolVersion(`v${data.changelog[0].version}`);
-            if (data.title) setVolRegion(data.title);
+            if (!data.content) return;
+            const parsed = JSON.parse(atob(data.content.replace(/\n/g, '')));
+            if (parsed.changelog?.[0]?.version) setVolVersion(`v${parsed.changelog[0].version}`);
+            if (parsed.title) setVolRegion(parsed.title);
           })
           .catch(() => undefined);
       });
   }, []);
 
-  // 从 GitHub 获取易语言 SDK 最新版本号，失败回退 Gitee
+  // 从 GitHub 获取易语言 SDK 最新版本号，失败回退 Gitee API（避免 CORS）
   useEffect(() => {
     fetch("https://raw.githubusercontent.com/JadeViewDocs/JadeView/main/SDK/e_Sdk/Info.json")
       .then((res) => {
@@ -87,11 +89,13 @@ export function SDKsSection() {
         if (data.title) setERegion(data.title);
       })
       .catch(() => {
-        fetch("https://gitee.com/ilinxuan/JadeView_library/raw/main/SDK/e_Sdk/Info.json")
+        fetch("https://gitee.com/api/v5/repos/ilinxuan/JadeView_library/contents/SDK/e_Sdk/Info.json")
           .then((res) => res.json())
           .then((data) => {
-            if (data.changelog?.[0]?.version) setEVersion(`v${data.changelog[0].version}`);
-            if (data.title) setERegion(data.title);
+            if (!data.content) return;
+            const parsed = JSON.parse(atob(data.content.replace(/\n/g, '')));
+            if (parsed.changelog?.[0]?.version) setEVersion(`v${parsed.changelog[0].version}`);
+            if (parsed.title) setERegion(parsed.title);
           })
           .catch(() => undefined);
       });
