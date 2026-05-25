@@ -395,38 +395,55 @@ function SdksContent() {
                 ? `https://gitee.com/api/v5/repos/ilinxuan/JadeView_library/contents/SDK/${dirName}/SDK`
                 : `https://api.github.com/repos/JadeViewDocs/JadeView/contents/SDK/${dirName}/SDK`;
 
-              let [infoRes, readmeRes, sdkFilesRes] = await Promise.allSettled([
-                fetchWithTimeout(`${baseRaw}/Info.json`).then((r) => r.json()),
-                fetchWithTimeout(`${baseRaw}/README.md`).then((r) => (r.ok ? r.text() : null)),
-                fetchWithTimeout(filesApi).then((r) => r.json()),
-              ]);
+              // 封装 fetch JSON，检查响应状态
+              const fetchJson = async (url) => {
+                const res = await fetchWithTimeout(url);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+              };
+              const fetchText = async (url) => {
+                const res = await fetchWithTimeout(url);
+                if (!res.ok) return null;
+                return res.text();
+              };
 
-              // GitHub 获取失败时回退 Gitee
-              if (!useGitee && (infoRes.status === 'rejected' || !infoRes.value)) {
+              let info = null;
+              let readme = null;
+              let sdkFiles = null;
+
+              // 尝试主源获取（分别处理，避免一个失败导致全部丢失）
+              const [infoRes, readmeRes, sdkFilesRes] = await Promise.allSettled([
+                fetchJson(`${baseRaw}/Info.json`),
+                fetchText(`${baseRaw}/README.md`),
+                fetchJson(filesApi),
+              ]);
+              if (infoRes.status === 'fulfilled' && infoRes.value) info = infoRes.value;
+              if (readmeRes.status === 'fulfilled') readme = readmeRes.value;
+              if (sdkFilesRes.status === 'fulfilled' && Array.isArray(sdkFilesRes.value)) sdkFiles = sdkFilesRes.value;
+
+              // 主源获取失败时回退到备用源（info 或 sdkFiles 任一失败即回退）
+              if ((!info || !sdkFiles) && !useGitee) {
                 const giteeBase = `https://gitee.com/ilinxuan/JadeView_library/raw/main/SDK/${dirName}`;
                 const giteeFilesApi = `https://gitee.com/api/v5/repos/ilinxuan/JadeView_library/contents/SDK/${dirName}/SDK`;
-                const [giteeInfo, giteeReadme, giteeFiles] = await Promise.allSettled([
-                  fetchWithTimeout(`${giteeBase}/Info.json`).then((r) => r.json()),
-                  fetchWithTimeout(`${giteeBase}/README.md`).then((r) => (r.ok ? r.text() : null)),
-                  fetchWithTimeout(giteeFilesApi).then((r) => r.json()),
+                const [giteeInfoRes, giteeReadmeRes, giteeFilesRes] = await Promise.allSettled([
+                  fetchJson(`${giteeBase}/Info.json`),
+                  fetchText(`${giteeBase}/README.md`),
+                  fetchJson(giteeFilesApi),
                 ]);
-                if (giteeInfo.status === 'fulfilled') infoRes = giteeInfo;
-                if (giteeReadme.status === 'fulfilled') readmeRes = giteeReadme;
-                if (giteeFiles.status === 'fulfilled') sdkFilesRes = giteeFiles;
+                if (!info && giteeInfoRes.status === 'fulfilled' && giteeInfoRes.value) info = giteeInfoRes.value;
+                if (!readme && giteeReadmeRes.status === 'fulfilled') readme = giteeReadmeRes.value;
+                if (!sdkFiles && giteeFilesRes.status === 'fulfilled' && Array.isArray(giteeFilesRes.value)) sdkFiles = giteeFilesRes.value;
               }
-
-              const info = infoRes.status === 'fulfilled' ? infoRes.value : null;
-              const readme = readmeRes.status === 'fulfilled' ? readmeRes.value : null;
 
               let downloadUrl = null;
               let downloadName = null;
-              if (sdkFilesRes.status === 'fulfilled' && Array.isArray(sdkFilesRes.value)) {
-                const files = sdkFilesRes.value.filter((f) => f.type === 'file');
+              if (Array.isArray(sdkFiles)) {
+                const files = sdkFiles.filter((f) => f.type === 'file');
                 if (files.length > 0) {
-                  // 清理文件名中可能存在的引号等特殊字符
                   downloadName = files[0].name.replace(/^['"]+|['"]+$/g, '');
-                  // 强制使用 gitee 下载链接，对文件名做 URL 编码
-                  downloadUrl = `https://gitee.com/ilinxuan/JadeView_library/raw/main/SDK/${dirName}/SDK/${encodeURIComponent(downloadName)}`;
+                  // 优先使用 API 返回的 download_url，否则拼接 Gitee raw 链接
+                  downloadUrl = files[0].download_url
+                    || `https://gitee.com/ilinxuan/JadeView_library/raw/main/SDK/${dirName}/SDK/${encodeURIComponent(downloadName)}`;
                 }
               }
 
