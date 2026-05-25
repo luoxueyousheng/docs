@@ -351,108 +351,81 @@ function SdksContent() {
   useEffect(() => {
     async function fetchSdks() {
       try {
-        let useGitee = false;
-        let dirsRes, dirs;
+        // 封装 fetch JSON，检查响应状态
+        const fetchJson = async (url) => {
+          const res = await fetchWithTimeout(url);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        };
+        const fetchText = async (url) => {
+          const res = await fetchWithTimeout(url);
+          if (!res.ok) return null;
+          return res.text();
+        };
+
+        async function fetchFromSource(apiUrl, baseRawUrl, filesApiFn) {
+          const dirsRes = await fetchWithTimeout(apiUrl);
+          const dirs = await dirsRes.json();
+          if (!Array.isArray(dirs)) return [];
+
+          const sdkDirs = dirs.filter((d) => d.type === 'dir');
+          const results = await Promise.all(
+            sdkDirs.map(async (dir) => {
+              const dirName = dir.name;
+              const baseRaw = `${baseRawUrl}/${dirName}`;
+              const filesApi = filesApiFn(dirName);
+
+              try {
+                const [infoRes, readmeRes, sdkFilesRes] = await Promise.allSettled([
+                  fetchJson(`${baseRaw}/Info.json`),
+                  fetchText(`${baseRaw}/README.md`),
+                  fetchJson(filesApi),
+                ]);
+
+                const info = infoRes.status === 'fulfilled' ? infoRes.value : null;
+                const readme = readmeRes.status === 'fulfilled' ? readmeRes.value : null;
+
+                let downloadUrl = null;
+                let downloadName = null;
+                if (sdkFilesRes.status === 'fulfilled' && Array.isArray(sdkFilesRes.value)) {
+                  const files = sdkFilesRes.value.filter((f) => f.type === 'file');
+                  if (files.length > 0) {
+                    downloadName = files[0].name.replace(/^['"]+|['"]+$/g, '');
+                    downloadUrl = files[0].download_url
+                      || `https://gitee.com/ilinxuan/JadeView_library/raw/main/SDK/${dirName}/SDK/${encodeURIComponent(downloadName)}`;
+                  }
+                }
+
+                return { dirName, info, readme, downloadUrl, downloadName };
+              } catch {
+                return { dirName, info: null, readme: null, downloadUrl: null, downloadName: null };
+              }
+            })
+          );
+          return results;
+        }
 
         // 先尝试 GitHub
+        let sdkResults = [];
         try {
-          dirsRes = await fetchWithTimeout(GITHUB_API);
-          dirs = await dirsRes.json();
-          if (!Array.isArray(dirs)) {
-            dirs = null;
-          }
-        } catch {
-          dirs = null;
-        }
+          sdkResults = await fetchFromSource(
+            GITHUB_API,
+            'https://raw.githubusercontent.com/JadeViewDocs/JadeView/main/SDK',
+            (dirName) => `https://api.github.com/repos/JadeViewDocs/JadeView/contents/SDK/${dirName}/SDK`
+          );
+        } catch {}
 
-        // GitHub 失败或无数据，用 Gitee
-        if (!dirs) {
+        // GitHub 结果为空则回退 Gitee
+        const hasValidSdks = sdkResults.some((s) => s.info);
+        if (!hasValidSdks) {
           try {
-            dirsRes = await fetchWithTimeout(GITEE_API);
-            dirs = await dirsRes.json();
-            useGitee = true;
-            if (!Array.isArray(dirs)) {
-              setLoading(false);
-              return;
-            }
-          } catch {
-            setLoading(false);
-            return;
-          }
+            sdkResults = await fetchFromSource(
+              GITEE_API,
+              'https://gitee.com/ilinxuan/JadeView_library/raw/main/SDK',
+              (dirName) => `https://gitee.com/api/v5/repos/ilinxuan/JadeView_library/contents/SDK/${dirName}/SDK`
+            );
+          } catch {}
         }
-
-        const sdkDirs = dirs.filter((d) => d.type === 'dir');
-
-        const sdkResults = await Promise.all(
-          sdkDirs.map(async (dir) => {
-            const dirName = dir.name;
-            const baseRawGithub = `https://raw.githubusercontent.com/JadeViewDocs/JadeView/main/SDK/${dirName}`;
-            const baseRawGitee = `https://gitee.com/ilinxuan/JadeView_library/raw/main/SDK/${dirName}`;
-            const baseRaw = useGitee ? baseRawGitee : baseRawGithub;
-
-            try {
-              const filesApi = useGitee
-                ? `https://gitee.com/api/v5/repos/ilinxuan/JadeView_library/contents/SDK/${dirName}/SDK`
-                : `https://api.github.com/repos/JadeViewDocs/JadeView/contents/SDK/${dirName}/SDK`;
-
-              // 封装 fetch JSON，检查响应状态
-              const fetchJson = async (url) => {
-                const res = await fetchWithTimeout(url);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                return res.json();
-              };
-              const fetchText = async (url) => {
-                const res = await fetchWithTimeout(url);
-                if (!res.ok) return null;
-                return res.text();
-              };
-
-              let info = null;
-              let readme = null;
-              let sdkFiles = null;
-
-              // 尝试主源获取（分别处理，避免一个失败导致全部丢失）
-              const [infoRes, readmeRes, sdkFilesRes] = await Promise.allSettled([
-                fetchJson(`${baseRaw}/Info.json`),
-                fetchText(`${baseRaw}/README.md`),
-                fetchJson(filesApi),
-              ]);
-              if (infoRes.status === 'fulfilled' && infoRes.value) info = infoRes.value;
-              if (readmeRes.status === 'fulfilled') readme = readmeRes.value;
-              if (sdkFilesRes.status === 'fulfilled' && Array.isArray(sdkFilesRes.value)) sdkFiles = sdkFilesRes.value;
-
-              // 主源获取失败时回退到备用源（info 或 sdkFiles 任一失败即回退）
-              if ((!info || !sdkFiles) && !useGitee) {
-                const giteeBase = `https://gitee.com/ilinxuan/JadeView_library/raw/main/SDK/${dirName}`;
-                const giteeFilesApi = `https://gitee.com/api/v5/repos/ilinxuan/JadeView_library/contents/SDK/${dirName}/SDK`;
-                const [giteeInfoRes, giteeReadmeRes, giteeFilesRes] = await Promise.allSettled([
-                  fetchJson(`${giteeBase}/Info.json`),
-                  fetchText(`${giteeBase}/README.md`),
-                  fetchJson(giteeFilesApi),
-                ]);
-                if (!info && giteeInfoRes.status === 'fulfilled' && giteeInfoRes.value) info = giteeInfoRes.value;
-                if (!readme && giteeReadmeRes.status === 'fulfilled') readme = giteeReadmeRes.value;
-                if (!sdkFiles && giteeFilesRes.status === 'fulfilled' && Array.isArray(giteeFilesRes.value)) sdkFiles = giteeFilesRes.value;
-              }
-
-              let downloadUrl = null;
-              let downloadName = null;
-              if (Array.isArray(sdkFiles)) {
-                const files = sdkFiles.filter((f) => f.type === 'file');
-                if (files.length > 0) {
-                  downloadName = files[0].name.replace(/^['"]+|['"]+$/g, '');
-                  // 优先使用 API 返回的 download_url，否则拼接 Gitee raw 链接
-                  downloadUrl = files[0].download_url
-                    || `https://gitee.com/ilinxuan/JadeView_library/raw/main/SDK/${dirName}/SDK/${encodeURIComponent(downloadName)}`;
-                }
-              }
-
-              return { dirName, info, readme, downloadUrl, downloadName };
-            } catch {
-              return { dirName, info: null, readme: null, downloadUrl: null, downloadName: null };
-            }
-          })
-        );
 
         setSdks(sdkResults);
       } catch {
