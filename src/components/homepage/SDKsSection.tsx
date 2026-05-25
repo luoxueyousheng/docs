@@ -69,7 +69,8 @@ export function SDKsSection() {
           .then((res) => res.json())
           .then((data) => {
             if (!data.content) return;
-            const parsed = JSON.parse(atob(data.content.replace(/\n/g, '')));
+            const bytes = Uint8Array.from(atob(data.content.replace(/\n/g, '')), (c) => c.charCodeAt(0));
+            const parsed = JSON.parse(new TextDecoder('utf-8').decode(bytes));
             if (parsed.changelog?.[0]?.version) setVolVersion(`v${parsed.changelog[0].version}`);
             if (parsed.title) setVolRegion(parsed.title);
           })
@@ -93,7 +94,8 @@ export function SDKsSection() {
           .then((res) => res.json())
           .then((data) => {
             if (!data.content) return;
-            const parsed = JSON.parse(atob(data.content.replace(/\n/g, '')));
+            const bytes = Uint8Array.from(atob(data.content.replace(/\n/g, '')), (c) => c.charCodeAt(0));
+            const parsed = JSON.parse(new TextDecoder('utf-8').decode(bytes));
             if (parsed.changelog?.[0]?.version) setEVersion(`v${parsed.changelog[0].version}`);
             if (parsed.title) setERegion(parsed.title);
           })
