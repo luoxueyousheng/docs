@@ -80,17 +80,16 @@ export function DistributionSection() {
                   </li>
                 ))}
               </ul>
-              {plan.cta === "联系我们" ? (
-                <a href="mailto:ihanlong@qq.com" className={`w-full py-4 flex items-center justify-center gap-2 text-sm font-medium transition-all group ${plan.popular ? "bg-foreground text-white hover:bg-foreground/90" : "border border-foreground/20 text-foreground hover:border-foreground hover:bg-foreground/5"}`}>
-                  {plan.cta}
-                  <ArrowRightIcon />
-                </a>
-              ) : (
-                <a href="/spec/changelog" target="_blank" rel="noopener noreferrer" className={`w-full py-4 flex items-center justify-center gap-2 text-sm font-medium transition-all group ${plan.popular ? "bg-foreground text-white hover:bg-foreground/90" : "border border-foreground/20 text-foreground hover:border-foreground hover:bg-foreground/5"}`}>
-                  {plan.cta}
-                  <ArrowRightIcon />
-                </a>
-              )}
+              <button onClick={() => {
+                if (plan.cta === "联系我们") {
+                  window.location.href = "mailto:ihanlong@qq.com";
+                } else {
+                  window.open("/spec/changelog", "_blank");
+                }
+              }} className={`w-full py-4 flex items-center justify-center gap-2 text-sm font-medium transition-all group ${plan.popular ? "bg-foreground text-white hover:bg-foreground/90" : "border border-foreground/20 text-foreground hover:border-foreground hover:bg-foreground/5"}`}>
+                {plan.cta}
+                <ArrowRightIcon />
+              </button>
             </div>
           ))}
         </div>
