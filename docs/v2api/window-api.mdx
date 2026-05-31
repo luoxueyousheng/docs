@@ -5,7 +5,9 @@ sidebar_position: 3
 
 # 窗口 API
 
-窗口 API 提供了创建和管理 WebView 窗口的所有功能，包括创建窗口、导航、调整大小、设置主题等。
+窗口 API 提供了创建和管理窗口的所有功能，包括创建窗口、调整大小、设置主题等。
+
+页面导航、脚本执行、DevTools、打印等 WebView 相关操作见 [WebView API](/v2api/webview-api)。
 
 以下函数都针对某个 **`window_id`**（创建窗口时返回的整数）。没有特殊说明时，成功多为 `1`，失败为 `0`。
 
@@ -70,12 +72,16 @@ uint32_t create_webview_window(
   - `postmessage_whitelist` `string` - **页面 `postMessage` 是否转发给宿主**的白名单，值为**一条 UTF-8 字符串**（通常接近页面的 `origin`，如 `https://example.com`）。库在匹配时：`event.origin` **等于**该字符串，或 **`origin` 以该字符串为后缀**，则通过。若指针为 **`NULL`/未设置**：当前实现下**不会放行任何来源**（即收不到 `postmessage-received`）。**通过 `set_protocol_service_path` 加载的内置静态页**在实现里会**跳过白名单**、始终可收
   - `cors_whitelist` `string` - 版本支持 **v2.1+**， CORS 来源白名单，逗号或分号分隔的域名列表（如 `"http://198.18.0.1:8001, http://localhost:3000"`）。
     - 严格精确匹配，不支持通配符。设置后仅允许白名单内的来源跨域请求 JadeView 内部 API（invoke、on）；不设置（`NULL`）或空字符串则不允许任何跨域，无法与程序通信。
-  - `autofill` `int32_t` - 是否启用账号/密码自动填充。`0` = 禁用，`1` = 启用。*(2.2 新增)*
-  - `general_autofill_enabled` `int32_t` - 是否启用通用表单自动填充（姓名/地址/电话等）。`0` = 禁用，`1` = 启用。*(2.2 新增)*
-  - `incognito` `int32_t` - 是否以无痕/隐私浏览模式运行。`0` = 正常模式，`1` = 无痕模式。开启后页面渲染会变慢。*(2.2 新增)*
-  - `disable_clipboard` `int32_t` - 是否禁用剪贴板读写权限。`0` = 允许，`1` = 禁用。*(2.2 新增)*
-  - `proxy_url` `string` - 代理URL，支持 HTTP 和 SOCKS5 代理（如 `"http://127.0.0.1:7890"` 或 `"socks5://127.0.0.1:1080"`）。`NULL` 表示不使用代理。*(2.2 新增)*
-  - `focused` `int32_t` - WebView 初始是否自动获取焦点。`0` = 不获取焦点，`1` = 自动聚焦（默认 `1`）。*(2.2 新增)*
+  :::warning
+          以下结构在 v2.2 开始支持
+  :::
+
+  - `autofill` `int32_t` - 是否启用账号/密码自动填充。`0` = 禁用，`1` = 启用。
+  - `general_autofill_enabled` `int32_t` - 是否启用通用表单自动填充（姓名/地址/电话等）。`0` = 禁用，`1` = 启用。
+  - `incognito` `int32_t` - 是否以无痕/隐私浏览模式运行。`0` = 正常模式，`1` = 无痕模式。开启后页面渲染会变慢。
+  - `disable_clipboard` `int32_t` - 是否禁用剪贴板读写权限。`0` = 允许，`1` = 禁用。
+  - `proxy_url` `string` - 代理URL，支持 HTTP 和 SOCKS5 代理（如 `"http://127.0.0.1:7890"` 或 `"socks5://127.0.0.1:1080"`）。`NULL` 表示不使用代理。
+  - `focused` `int32_t` - WebView 初始是否自动获取焦点。`0` = 不获取焦点，`1` = 自动聚焦（默认 `1`）。
 
 **返回值：**
 
@@ -126,72 +132,7 @@ size_t get_window_hwnd(uint32_t window_id);
 
 ---
 
-## 导航与脚本
-
-### 导航到 URL
-
-让指定窗口里的网页打开另一个地址（http、file、自定义协议等）。
-
-```c
-int32_t navigate_to_url(uint32_t window_id, const char* url);
-```
-
-**参数：**
-
-- `window_id` `uint32_t` - 目标窗口 id
-- `url` `string` - 要导航到的地址
-
----
-
-### 刷新页面
-
-重新加载当前页，和用户按 F5 类似。
-
-```c
-int32_t reload_webview_window(uint32_t window_id);
-```
-
-**参数：**
-
-- `window_id` `uint32_t` - 目标窗口 id
-
----
-
-### 执行 JavaScript
-
-往页面里注入并执行一段 JavaScript。
-
-若需要执行结果，通过事件 `javascript-result` 等取回（见 [事件类型](/v2api/event-types#javascript-result)）。
-
-返回值只表示「请求有没有提交成功」，不是 JS 的返回值。
-
-```c
-int32_t execute_javascript(uint32_t window_id, const char* script);
-```
-
-**参数：**
-
-- `window_id` `uint32_t` - 目标窗口 id
-- `script` `string` - 要执行的 JavaScript 代码
-
----
-
-### 设置网页缩放
-
-整页缩放，例如 `1.0` 为 100%，`1.5` 为 150%。
-
-```c
-int32_t set_webview_zoom(uint32_t window_id, double level);
-```
-
-**参数：**
-
-- `window_id` `uint32_t` - 目标窗口 id
-- `level` `double` - 缩放比例
-
----
-
-## 标题、位置、大小、显示
+## 位置、尺寸与标题
 
 ### 设置窗口标题
 
@@ -240,6 +181,28 @@ int32_t set_window_position(uint32_t window_id, int32_t x, int32_t y);
 
 ---
 
+### 获取窗口位置和尺寸（`get_window_bounds`）
+
+:::warning
+v2.2 开始支持。
+:::
+
+```c
+int32_t get_window_bounds(uint32_t window_id, char* buffer, int buffer_size);
+```
+
+**参数：**
+
+- `window_id` `uint32_t` - 目标窗口 id
+- `buffer` `char*` - 输出缓冲区
+- `buffer_size` `int` - 缓冲区大小
+
+**返回值：** `1` = 成功，buffer 写入 JSON `{"x":0,"y":0,"width":800,"height":600}`；`0` = 失败
+
+---
+
+## 显隐与焦点
+
 ### 显示或隐藏窗口
 
 显示或隐藏窗口（最小化以外的显隐）。
@@ -284,21 +247,24 @@ int32_t set_window_always_on_top(uint32_t window_id, int32_t always_on_top);
 
 ---
 
-### 请求重绘
+### 设置忽略鼠标事件（`set_window_ignore_cursor_events`）
 
-通知系统重画客户区（一般很少需要手动调用）。
+:::warning
+v2.2 开始支持。
+:::
+
+设置窗口是否忽略鼠标事件（鼠标穿透），适用于悬浮窗 / overlay 场景。
 
 ```c
-int32_t request_redraw(uint32_t window_id);
+int32_t set_window_ignore_cursor_events(uint32_t window_id, int ignore);
 ```
 
-**参数：**
-
-- `window_id` `uint32_t` - 目标窗口 id
+- **参数**：`window_id`、`ignore`（`1` = 忽略鼠标事件/穿透，`0` = 正常）
+- **返回值**：`1` = 成功，`0` = 失败
 
 ---
 
-## 最大化、全屏、是否可点
+## 窗口状态
 
 ### 最小化窗口
 
@@ -362,6 +328,113 @@ int32_t set_window_fullscreen(uint32_t window_id, int32_t fullscreen);
 
 ---
 
+### 查询窗口是否最小化（`is_window_minimized`）
+
+:::warning
+v2.2 开始支持。
+:::
+
+```c
+int32_t is_window_minimized(uint32_t window_id);
+```
+
+- **参数**：`window_id` `uint32_t`
+- **返回值**：`1` = 已最小化，`0` = 否
+
+---
+
+### 查询窗口是否可见（`is_window_visible`）
+
+:::warning
+v2.2 开始支持。
+:::
+
+```c
+int32_t is_window_visible(uint32_t window_id);
+```
+
+- **参数**：`window_id` `uint32_t`
+- **返回值**：`1` = 可见，`0` = 不可见
+
+---
+
+### 查询窗口是否聚焦（`is_window_focused`）
+
+:::warning
+v2.2 开始支持。
+:::
+
+```c
+int32_t is_window_focused(uint32_t window_id);
+```
+
+- **参数**：`window_id` `uint32_t`
+- **返回值**：`1` = 已聚焦，`0` = 否
+
+---
+
+### 查询窗口是否全屏（`is_window_fullscreen`）
+
+:::warning
+v2.2 开始支持。
+:::
+
+```c
+int32_t is_window_fullscreen(uint32_t window_id);
+```
+
+- **参数**：`window_id` `uint32_t`
+- **返回值**：`1` = 全屏，`0` = 否
+
+---
+
+## 窗口约束
+
+### 设置窗口最小尺寸（`set_window_min_size`）
+
+:::warning
+v2.2 开始支持。
+:::
+
+```c
+int32_t set_window_min_size(uint32_t window_id, int32_t width, int32_t height);
+```
+
+- **参数**：`window_id`、`width`（最小宽度）、`height`（最小高度）
+- **返回值**：`1` = 成功，`0` = 失败
+
+---
+
+### 设置窗口最大尺寸（`set_window_max_size`）
+
+:::warning
+v2.2 开始支持。
+:::
+
+```c
+int32_t set_window_max_size(uint32_t window_id, int32_t width, int32_t height);
+```
+
+- **参数**：`window_id`、`width`（最大宽度）、`height`（最大高度）
+- **返回值**：`1` = 成功，`0` = 失败
+
+---
+
+### 设置窗口是否可调整大小（`set_window_resizable`）
+
+:::warning
+v2.2 开始支持。
+:::
+
+```c
+int32_t set_window_resizable(uint32_t window_id, int32_t resizable);
+```
+
+- **参数**：`window_id`、`resizable`（`1` = 可调整，`0` = 不可）
+- **返回值**：`1` = 成功，`0` = 失败
+
+---
+
 ### 启用或禁用窗口
 
 禁用窗口时用户点不了上面控件（像模态对话框背后的灰窗）；传非 `0` 恢复。
@@ -377,7 +450,48 @@ int32_t set_window_enabled(uint32_t window_id, int32_t enabled);
 
 ---
 
-## 主题、背景、防录屏
+## 外观与样式
+
+### 运行时修改窗口边框样式
+
+动态修改窗口的边框样式，无需重新创建窗口。
+
+```c
+int32_t set_window_frame_style(uint32_t window_id, const char* frame_style);
+```
+
+**参数：**
+
+- `window_id` `uint32_t` - 目标窗口 id
+- `frame_style` `string` - 边框样式字符串，可选值：`normal`（有边框+标题栏）、`no-titlebar`（有边框+无标题栏）、`borderless`（无边框+无标题栏）、`title-overlay`（有边框+无标题栏+内置标题栏按钮）
+
+---
+
+### 自定义标题栏覆盖层样式（Windows 专属）
+
+自定义 `title-overlay` 样式窗口的标题栏按钮覆盖层外观。
+
+```c
+int32_t set_titlebar_overlay_style(
+    uint32_t window_id,
+    int32_t height,
+    const char* icon_color_hex,
+    const char* hover_bg_hex
+);
+```
+
+**参数：**
+
+- `window_id` `uint32_t` - 目标窗口 id
+- `height` `int32_t` - 按钮高度（像素），传 `0` 或负数使用默认值 32
+- `icon_color_hex` `string` (可选) - 图标颜色，格式为 `#RRGGBB`（如 `"#FFFFFF"`），传 `NULL` 使用默认颜色
+- `hover_bg_hex` `string` (可选) - 非关闭按钮悬浮背景色，格式为 `#RRGGBB` 或 `#RRGGBBAA`（支持透明度，如 `"#00000080"`），传 `NULL` 使用默认深灰色
+
+:::info
+关闭按钮悬浮背景色固定为红色（`#E81123`），图标固定为白色，不受此 API 影响。
+:::
+
+---
 
 ### 设置窗口明暗主题
 
@@ -442,90 +556,70 @@ int32_t set_window_background_color(uint32_t window_id, const char* background_c
 
 ---
 
-### 设置内容保护
+### 请求重绘
 
-打开后，部分截屏/录屏软件较难采到窗口内容（效果因系统和采集方式而异）。
+通知系统重画客户区（一般很少需要手动调用）。
 
 ```c
-int32_t set_content_protection(uint32_t window_id, int32_t content_protection);
+int32_t request_redraw(uint32_t window_id);
 ```
 
 **参数：**
 
 - `window_id` `uint32_t` - 目标窗口 id
-- `content_protection` `int32_t` - 非 `0` 启用保护，`0` 禁用保护
 
 ---
 
-## 边框样式
+## 任务栏特效
 
-### 运行时修改窗口边框样式
-
-动态修改窗口的边框样式，无需重新创建窗口。
-
-```c
-int32_t set_window_frame_style(uint32_t window_id, const char* frame_style);
-```
-
-**参数：**
-
-- `window_id` `uint32_t` - 目标窗口 id
-- `frame_style` `string` - 边框样式字符串，可选值：`normal`（有边框+标题栏）、`no-titlebar`（有边框+无标题栏）、`borderless`（无边框+无标题栏）、`title-overlay`（有边框+无标题栏+内置标题栏按钮）
-
----
-
-### 自定义标题栏覆盖层样式（Windows 专属）
-
-自定义 `title-overlay` 样式窗口的标题栏按钮覆盖层外观。
-
-```c
-int32_t set_titlebar_overlay_style(
-    uint32_t window_id,
-    int32_t height,
-    const char* icon_color_hex,
-    const char* hover_bg_hex
-);
-```
-
-**参数：**
-
-- `window_id` `uint32_t` - 目标窗口 id
-- `height` `int32_t` - 按钮高度（像素），传 `0` 或负数使用默认值 32
-- `icon_color_hex` `string` (可选) - 图标颜色，格式为 `#RRGGBB`（如 `"#FFFFFF"`），传 `NULL` 使用默认颜色
-- `hover_bg_hex` `string` (可选) - 非关闭按钮悬浮背景色，格式为 `#RRGGBB` 或 `#RRGGBBAA`（支持透明度，如 `"#00000080"`），传 `NULL` 使用默认深灰色
-
-:::info
-关闭按钮悬浮背景色固定为红色（`#E81123`），图标固定为白色，不受此 API 影响。
-:::
-
----
-
-## 打印
-
-### 打印 WebView 内容
-
-打开 Windows 标准打印对话框，打印当前 WebView 内容。
-
-```c
-int32_t jade_print(uint32_t window_id);
-```
-
-**参数：**
-
-- `window_id` `uint32_t` - 目标窗口 id
-
-**返回值：**
-
-- `1` - 打印对话框已打开
-- `0` - 失败（窗口不存在或不支持打印）
+### 设置任务栏进度条（`set_window_progress`）
 
 :::warning
-此功能仅 Windows 平台支持。
+v2.2 开始支持。
+:::
+
+在任务栏按钮上显示进度条（如下载进度、安装进度等）。
+
+```c
+int32_t set_window_progress(uint32_t window_id, int progress, int state);
+```
+
+- **参数**：
+  - `window_id` `uint32_t`
+  - `progress` `int` - 进度值（0–100）
+  - `state` `int` - 状态：`0`=无进度，`1`=正常，`2`=暂停(黄色)，`3`=错误(红色)，`4`=不确定
+- **返回值**：`1` = 成功，`0` = 失败
+
+:::warning
+仅 Windows 平台。
 :::
 
 ---
 
-## 关闭窗口
+### 任务栏图标闪烁（`flash_window`）
+
+:::warning
+v2.2 开始支持。
+:::
+
+闪烁任务栏图标以吸引用户注意（如收到消息时）。
+
+```c
+int32_t flash_window(uint32_t window_id, uint32_t count);
+```
+
+- **参数**：`window_id` `uint32_t`；`count` `uint32_t` - 闪烁次数，`0` = 停止闪烁
+- **返回值**：`1` = 成功，`0` = 失败
+
+:::warning
+仅 Windows 平台。
+:::
+
+---
+
+## 关闭与计数
+
+### 关闭窗口
 
 发起关闭；若页面注册了 `beforeunload` 且用户选择留下，关闭可能被推迟或取消，具体以 WebView 与页面脚本为准。
 
@@ -539,7 +633,7 @@ int32_t close_window(uint32_t window_id);
 
 ---
 
-## 获取窗口数量
+### 获取窗口数量
 
 查询当前 JadeView 里还有几个窗口没关。
 

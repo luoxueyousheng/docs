@@ -81,7 +81,11 @@ int32_t cleanup_all_windows(void);
 
 ---
 
-### 退出应用（`jadeview_exit`）*(2.2 新增)*
+### 退出应用（`jadeview_exit`）
+
+:::warning
+v2.2 开始支持。
+:::
 
 **用途**：替代 `cleanup_all_windows`，关掉所有 JadeView 窗口、收尾资源、让事件循环结束。
 
@@ -173,3 +177,7 @@ int32_t jadeview_exit(void);
 | `disable_clipboard` | 是否禁用剪贴板读写权限。`0` = 允许，`1` = 禁用。*(2.2 新增)* |
 | `proxy_url` | 代理URL，支持 HTTP 和 SOCKS5 代理（如 `"http://127.0.0.1:7890"` 或 `"socks5://127.0.0.1:1080"`）。`NULL` 表示不使用代理。*(2.2 新增)* |
 | `focused` | WebView 初始是否自动获取焦点。`0` = 不获取焦点，`1` = 自动聚焦（默认 `1`）。*(2.2 新增)* |
+
+---
+
+系统集成相关 API（`get_cursor_position`、`clipboard_read_text`、`clipboard_write_text`、`jade_print_dialog`、`jade_get_printer_list`）已移至 [系统集成 API](/v2api/system-api) 独立文档。

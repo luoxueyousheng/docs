@@ -3,7 +3,11 @@ title: 右键菜单
 sidebar_position: 9
 ---
 
-# 右键菜单 *(2.2 新增)*
+# 右键菜单
+
+:::warning
+v2.2 开始支持。
+:::
 
 利用 WebView2 原生上下文菜单 API，实现类似 Electron 的右键菜单自定义系统。
 
@@ -44,7 +48,7 @@ sidebar_position: 9
 | `has_link` / `link_url` / `link_text` | 链接信息 |
 | `has_source` / `source_url` | 资源源信息（图片/音视频） |
 | `has_selection` / `selection_text` | 选中文本信息 |
-| `default_menu_names` | WebView2 默认菜单项列表，每项含 `name`、`label`、`kind`（见下方 Name 列表） |
+| `default_menu_names` *(2.2 新增)* | WebView2 默认菜单项列表，每项含 `name`、`label`、`kind`（见 [菜单项类型与原生菜单项](/v2api/context-menu-items)） |
 
 ### 菜单项点击事件（`menu-item-clicked`）
 

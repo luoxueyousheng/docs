@@ -14,6 +14,11 @@ const sidebars = {
     },
     {
       type: 'doc',
+      id: 'system-api',
+      label: '系统集成Api',
+    },
+    {
+      type: 'doc',
       id: 'tools-api',
       label: '工具Api',
     },
@@ -50,7 +55,12 @@ const sidebars = {
     {
       type: 'category',
       label: '插件',
-      items: ['plugin-system-api', 'tray-api', 'notification', 'dialog-api'],
+      items: ['tray-api', 'notification'],
+    },
+    {
+      type: 'doc',
+      id: 'dialog-api',
+      label: '对话框Api',
     },
     {
       type: 'category',

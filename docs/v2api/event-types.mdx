@@ -33,6 +33,25 @@ sidebar_position: 7
 
 ---
 
+## `app-ready` 事件
+
+:::warning
+v2.2 修改。
+:::
+
+JadeView 初始化完成后触发。所有窗口创建、API 调用都必须在收到此事件之后进行，在此之前调用会返回 `0`（失败）。
+
+2.2 起 `event_data` 统一为纯文本：
+
+| 场景 | `window_id` | `event_data` |
+|------|-------------|-------------|
+| 初始化成功 | `1` | `"success"` |
+| 初始化参数校验失败 | `0` | `"invalid_param: app_name is required"` |
+
+宿主判断方式：`window_id === 1` 表示成功，`window_id === 0` 表示失败。
+
+---
+
 ## 窗口事件
 
 ### `window-created`
@@ -199,7 +218,24 @@ sidebar_position: 7
 
 ---
 
-### `file-drop` *(2.2 起废弃)*
+### `webview-download-completed`
+
+:::warning
+v2.2 开始支持。
+:::
+
+下载完成时触发（无论成功或失败）。
+
+- **`event_data`**：JSON，含下载结果信息
+- **`window_id`**：目标窗口的 id
+
+---
+
+### `file-drop`
+
+:::warning
+v2.2 起废弃。
+:::
 > **⚠️ 2.2起，此事件已移除，请迁移到 [`drag-drop`](#drag-drop-22-新增替换-file-drop) 事件并检查 `type == "drag-drop"`。
 
 文件拖入 WebView 时触发。注册后会接管拖拽，前端可能收不到原生 drop 事件。
@@ -210,7 +246,11 @@ sidebar_position: 7
 
 ---
 
-### `drag-drop` *(2.2 新增，替换 `file-drop`)*
+### `drag-drop`
+
+:::warning
+v2.2 开始支持，替换 `file-drop`。
+:::
 
 拖拽生命周期事件，覆盖完整的拖拽流程（进入、移动、放下、离开），类似 Tauri 的 `onDragDropEvent`。
 
@@ -264,6 +304,19 @@ jade_on("drag-drop", my_callback);
 页面通过 `postMessage` 发送消息。**仅当来源通过白名单**时才会触发（见 [核心 API · WebViewSettings](/v2api/index#webview-settings)）。
 
 - **`event_data`**：`{"origin": "来源", "message": "字符串"}`
+- **`window_id`**：目标窗口的 id
+
+---
+
+### `devtools-open-state`
+
+:::warning
+v2.2 开始支持。
+:::
+
+DevTools 打开/关闭状态变化，或用户手动开关 DevTools 时触发。
+
+- **`event_data`**：JSON，含 `open` 布尔值（`true`=已打开，`false`=已关闭）
 - **`window_id`**：目标窗口的 id
 
 ---
@@ -327,19 +380,6 @@ jade_on("drag-drop", my_callback);
 
 ---
 
-## `app-ready` 事件 *(2.2 更新)*
-
-事件名还是 **`app-ready`**，2.2 起 `event_data` 统一为纯文本：
-
-| 场景 | `window_id` | `event_data` |
-|------|-------------|-------------|
-| 初始化成功 | `1` | `"success"` |
-| 初始化参数校验失败 | `0` | `"invalid_param: app_name is required"` |
-
-宿主判断方式：`window_id === 1` 表示成功，`window_id === 0` 表示失败。
-
----
-
 ## 全局系统事件
 
 ### `second-instance`
@@ -382,7 +422,11 @@ jade_on("drag-drop", my_callback);
 
 ---
 
-### `crash` *(2.2 新增)*
+### `crash`
+
+:::warning
+v2.2 开始支持。
+:::
 
 程序崩溃时触发（SEH 异常、Rust Panic 或 WebView2 进程崩溃），`event_data` 为错误代码字符串，不泄露源码信息。
 
