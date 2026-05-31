@@ -125,36 +125,36 @@ sidebar_position: 10
 
 ### 完整 Name 索引
 
-| Name | 说明 | 出现场景 |
-|------|------|----------|
-| `back` | 后退 | 页面 |
-| `forward` | 前进 | 页面 |
-| `reload` | 刷新 | 页面 |
-| `cut` | 剪切 | 可编辑区域 |
-| `copy` | 复制 | 选中文本 / 可编辑区域 |
-| `paste` | 粘贴 | 可编辑区域 |
-| `pasteAndMatchStyle` | 粘贴为纯文本 | 可编辑区域 |
-| `selectAll` | 全选 | 可编辑区域 |
-| `undo` | 撤消 | 可编辑区域 |
-| `redo` | 恢复 | 可编辑区域 |
-| `emoji` | 表情符号 | 可编辑区域 |
-| `saveAs` | 另存为 | 页面 |
-| `saveLinkAs` | 将链接另存为 | 链接 |
-| `saveImageAs` | 图片另存为 | 图片 |
-| `saveMediaAs` | 将媒体另存为 | 视频 / 音频 |
-| `copyImage` | 复制图片 | 图片 |
-| `copyImageLocation` | 复制图片地址 | 图片 |
-| `copyLinkLocation` | 复制链接 | 链接 |
-| `copyLink` | 复制链接 | 视频 / 音频 |
-| `copyLinkToHighlight` | 复制指向突出显示的链接 | 选中文本 |
-| `openLinkInNewWindow` | 在新窗口打开链接 | 链接 |
-| `print` | 打印 | 页面 / 选中文本 |
-| `inspectElement` | 检查元素 | 所有场景 |
-| `moreTools` | 更多工具（子菜单） | 大部分场景 |
-| `magnifyImage` | 放大图像 | 图片（moreTools 子项） |
-| `share` | 共享 | 大部分场景（moreTools 子项） |
-| `spellCheck` | 拼写检查（子菜单） | 可编辑区域（取决于 WebView2 版本） |
-| `extension` | 扩展（子菜单） | 取决于已安装扩展 |
+| # | Name | 说明 | 出现场景 |
+|---|------|------|----------|
+| 1 | `back` | 后退 | 页面 |
+| 2 | `forward` | 前进 | 页面 |
+| 3 | `reload` | 刷新 | 页面 |
+| 4 | `cut` | 剪切 | 可编辑区域 |
+| 5 | `copy` | 复制 | 选中文本 / 可编辑区域 |
+| 6 | `paste` | 粘贴 | 可编辑区域 |
+| 7 | `pasteAndMatchStyle` | 粘贴为纯文本 | 可编辑区域 |
+| 8 | `selectAll` | 全选 | 可编辑区域 |
+| 9 | `undo` | 撤消 | 可编辑区域 |
+| 10 | `redo` | 恢复 | 可编辑区域 |
+| 11 | `emoji` | 表情符号 | 可编辑区域 |
+| 12 | `saveAs` | 另存为 | 页面 |
+| 13 | `saveLinkAs` | 将链接另存为 | 链接 |
+| 14 | `saveImageAs` | 图片另存为 | 图片 |
+| 15 | `saveMediaAs` | 将媒体另存为 | 视频 / 音频 |
+| 16 | `copyImage` | 复制图片 | 图片 |
+| 17 | `copyImageLocation` | 复制图片地址 | 图片 |
+| 18 | `copyLinkLocation` | 复制链接 | 链接 |
+| 19 | `copyLink` | 复制链接 | 视频 / 音频 |
+| 20 | `copyLinkToHighlight` | 复制指向突出显示的链接 | 选中文本 |
+| 21 | `openLinkInNewWindow` | 在新窗口打开链接 | 链接 |
+| 22 | `print` | 打印 | 页面 / 选中文本 |
+| 23 | `inspectElement` | 检查元素 | 所有场景 |
+| 24 | `moreTools` | 更多工具（子菜单） | 大部分场景 |
+| 25 | `magnifyImage` | 放大图像 | 图片（moreTools 子项） |
+| 26 | `share` | 共享 | 大部分场景（moreTools 子项） |
+| 27 | `spellCheck` | 拼写检查（子菜单） | 可编辑区域（取决于 WebView2 版本） |
+| 28 | `extension` | 扩展（子菜单） | 取决于已安装扩展 |
 
 :::warning
 Name 列表取决于 WebView2 Runtime 版本和右键上下文，部分项仅在特定场景下可用（如 `copy` 仅在选中文本时存在）。如果指定的 Name 在当前右键上下文中不存在，`jade_menu_item_create` 将返回 `0`。[context-menu](/v2api/context-menu-api) 事件的 `default_menu_names` 字段会返回当前右键上下文中实际可用的完整列表。
