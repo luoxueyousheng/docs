@@ -14,6 +14,11 @@ const sidebars = {
     },
     {
       type: 'doc',
+      id: 'system-api',
+      label: '系统集成Api',
+    },
+    {
+      type: 'doc',
       id: 'tools-api',
       label: '工具Api',
     },
@@ -38,9 +43,29 @@ const sidebars = {
       items: ['japk', 'jadepack', 'japk-load-memory'],
     },
     {
+      type: 'doc',
+      label: '本地协议服务',
+      id: 'local-server-api',
+    },
+    {
       type: 'category',
-      label: '插件',
-      items: ['plugin-system-api', 'tray-api', 'notification', 'dialog-api'],
+      label: '右键菜单',
+      items: ['context-menu-api', 'context-menu-items'],
+    },
+    {
+      type: 'doc',
+      id: 'tray-api',
+      label: '托盘Api',
+    },
+    {
+      type: 'doc',
+      id: 'notification',
+      label: '通知Api',
+    },
+    {
+      type: 'doc',
+      id: 'dialog-api',
+      label: '对话框Api',
     },
     {
       type: 'category',

@@ -1,11 +1,11 @@
 ---
 title: 系统集成 API
-sidebar_position: 14
+sidebar_position: 2
 ---
 
 # 系统集成 API
 
-本页收录插件分类中偏**系统集成 / 扩展能力**的接口，适合在应用进入深度桌面集成阶段使用。
+与操作系统交互的全局能力，不绑定特定窗口。包括协议注册、全局热键、剪贴板、鼠标位置、打印等。
 
 若你只关心基础工具能力（版本、路径、语言、显示器、配置读写），请看 [工具 API](/v2api/tools-api)。
 
@@ -13,7 +13,7 @@ sidebar_position: 14
 
 ## 协议与文件关联
 
-<h3 id="url-scheme">自定义 URL 协议（`register_url_scheme` / `unregister_url_scheme`）</h3>
+### 自定义 URL 协议（`register_url_scheme` / `unregister_url_scheme`）
 
 **用途**：在系统里登记**自定义 URL 协议**（例如 `myapp://open/...`），使用户在浏览器或其它应用里点开这类链接时，能启动你的 exe 并把 URL 传进来。卸载或关闭功能时可 `unregister` 取消登记。
 
@@ -26,7 +26,7 @@ int32_t unregister_url_scheme(const char* scheme);
 
 ---
 
-<h3 id="file-association">文件类型关联（`register_file_association` / `unregister_file_association`）</h3>
+### 文件类型关联（`register_file_association` / `unregister_file_association`）
 
 **用途**：让用户**双击某种扩展名**（如 `.mydata`）时，用当前应用打开。`friendly_name` 会出现在「打开方式」里给人看的名字。
 
@@ -41,7 +41,7 @@ int32_t unregister_file_association(const char* extension);
 
 ## 全局输入
 
-<h3 id="global-hotkey-api">全局热键（`register_global_hotkey` / `unregister_global_hotkey`）</h3>
+### 全局热键（`register_global_hotkey` / `unregister_global_hotkey`）
 
 **用途**：注册**全局快捷键**（焦点不在你的窗口上也能响应），例如全局呼出主窗口、静音。按下后库会发事件 **`global-hotkey`**（负载为 JSON，含热键 id 与键值），你在 `jade_on` 里处理即可。
 
@@ -61,3 +61,97 @@ int32_t unregister_global_hotkey(uint32_t hotkey_id);
 | `0` | 注册失败；若当前发行版里该功能尚未接好，可能一直为 `0`（以实际 DLL 为准）。 |
 
 事件字段说明见 [事件类型](/v2api/event-types#global-hotkey)。
+
+---
+
+## 鼠标位置
+
+### 获取鼠标位置（`get_cursor_position`）
+
+:::warning
+v2.2 开始支持。
+:::
+
+获取当前鼠标屏幕坐标（全局，不绑定窗口）。
+
+```c
+int32_t get_cursor_position(char* buffer, int buffer_size);
+```
+
+- **参数**：`buffer` `char*` - 输出缓冲区；`buffer_size` `int` - 缓冲区大小
+- **返回值**：`1` = 成功，buffer 写入 JSON `{"x":0,"y":0}`；`0` = 失败
+
+:::warning
+仅 Windows 平台可用。
+:::
+
+---
+
+## 剪贴板
+
+:::warning
+v2.2 开始支持。
+:::
+
+依赖新增 `arboard` crate。
+
+### 读取剪贴板文本（`clipboard_read_text`）
+
+:::warning
+v2.2 开始支持。
+:::
+
+```c
+int32_t clipboard_read_text(char* buffer, int buffer_size);
+```
+
+- **参数**：`buffer` `char*` - 输出缓冲区；`buffer_size` `int` - 缓冲区大小
+- **返回值**：`1` = 成功，`0` = 失败
+
+---
+
+### 写入剪贴板文本（`clipboard_write_text`）
+
+:::warning
+v2.2 开始支持。
+:::
+
+```c
+int32_t clipboard_write_text(const char* text);
+```
+
+- **参数**：`text` `string` - 要写入的文本
+- **返回值**：`1` = 成功，`0` = 失败
+
+---
+
+## 打印
+
+:::warning
+v2.2 开始支持。
+:::
+
+### 获取打印机列表（`jade_get_printer_list`）
+
+:::warning
+v2.2 开始支持。
+:::
+
+获取系统打印机列表，返回 JSON 数组字符串。
+
+```c
+int32_t jade_get_printer_list(char* buffer, int buffer_size);
+```
+
+- **参数**：`buffer` `char*` - 输出缓冲区；`buffer_size` `int` - 缓冲区大小（字节）
+- **返回值**：`>0` = 打印机数量，buffer 中为 JSON 数组；`0` = 失败或无打印机
+
+输出示例：
+
+```json
+["Microsoft Print to PDF","HP LaserJet Pro MFP M428fdw","Fax"]
+```
+
+:::warning
+仅 Windows 平台可用。
+:::

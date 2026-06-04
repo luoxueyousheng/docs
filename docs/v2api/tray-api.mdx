@@ -97,6 +97,26 @@ int32_t tray_set_icon_from_file(uint32_t tray_id, const char* icon_path_utf8);
 
 ---
 
+## 从二进制数据设置托盘图标（`set_tray_icon_from_data`）
+
+:::warning
+v2.2 开始支持。
+:::
+
+支持传递二进制数据（如 ICO/PNG 文件的字节内容）作为托盘图标，无需写入临时文件。
+
+```c
+int32_t set_tray_icon_from_data(uint32_t tray_id, const uint8_t* icon_data, uint32_t data_len);
+```
+
+- **参数**：
+  - `tray_id` `uint32_t` - 托盘图标 ID
+  - `icon_data` `const uint8_t*` - 图标二进制数据指针
+  - `data_len` `uint32_t` - 数据长度（字节）
+- **返回值**：`1` = 成功，`0` = 失败
+
+---
+
 ## 设置托盘菜单（`tray_set_menu_items`）
 
 **用途**：**整表替换**右键菜单内容。传 0 行表示清空菜单。
