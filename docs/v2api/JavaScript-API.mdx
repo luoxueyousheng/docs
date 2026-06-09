@@ -30,6 +30,49 @@ await jade.invoke('命令名', 传给宿主的数据, { timeout: 5000 });
 
 ---
 
+### 批量调用宿主方法（`jade.invokeBatch`）
+
+**用途**：批量发送多个 invoke 命令，统一等待全部完成。
+
+```typescript
+invokeBatch(commands: Array<{
+  command: string;
+  payload?: any;
+  options?: { timeout?: number };
+}>): Promise<any[]>
+```
+
+**参数**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| commands | Array | 是 | 命令对象数组，每个元素同 `invoke` 的参数结构 |
+
+**返回值**
+
+Promise，resolve 为结果数组，顺序与传入的 commands 一一对应。
+
+**示例**
+
+```javascript
+const [path, version] = await jade.invokeBatch([
+  { command: 'get_init_path' },
+  { command: 'get_version' },
+]);
+console.log(path, version);
+
+// 带参数
+const results = await jade.invokeBatch([
+  { command: 'get_init_path' },
+  { command: 'open_module', payload: { name: 'settings' } },
+  { command: 'slow_cmd', options: { timeout: 10000 } },
+]);
+```
+
+> 注意：invokeBatch 内部逐个调用 invoke，并非单次网络请求。任一命令失败则整个 batch 失败。
+
+---
+
 ### 订阅宿主消息（`jade.on`）
 
 **用途**：监听宿主 **`send_ipc_message`** 推过来的消息，或库内约定的通知（事件名与负载格式见 [事件类型](/v2api/event-types)）。
