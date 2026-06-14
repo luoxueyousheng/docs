@@ -693,6 +693,7 @@
         }
 
         function showDetail(tagName) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             const release = releasesData.releases.find(r => r.tag_name === tagName);
             if (!release) return;
 
