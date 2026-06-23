@@ -1,0 +1,610 @@
+// 自定义顶部导航（替换 lobehub 扁平 Tabs）：
+//   - 普通项（首页 / 文档指南 / API）为胶囊式链接，按当前路由高亮；
+//   - 「SDKs」做成 lobehub.com 那种「悬浮下拉 mega 卡片」：悬停展开，多列 + 图标 + 标题 + 描述。
+// 由 Header slot 以相对路径引用（不走 dumi/theme 别名，也不依赖 slot 覆盖注册，HMR 即生效）。
+// 路由/激活用 dumi 主包核心导出（Link / useLocation，主题自带 Navbar 也这么用），安全。
+import { createStyles } from 'antd-style';
+import { Link, useFullSidebarData, useLocation } from 'dumi';
+import { BookOpen, ChevronRight, Code2, Download } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { memo, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+// @ts-ignore 主题 store，深层路径无类型声明
+import { useSiteStore } from 'dumi-theme-lobehub/dist/store/useSiteStore';
+
+type SdkItem = { key: string; title: string; link: string; desc: string };
+
+// 图标：能用真实品牌 logo 的用真实 logo（彩色 SVG，存于 public/sdk/，devicon 来源）；
+// 易语言 / 火山无公开 logo，用品牌色「字徽」（比抽象线条统一、清晰）。
+const SDK_ICON: Record<string, { type: 'img'; src: string } | { type: 'char'; char: string; color: string }> = {
+  web: { type: 'img', src: '/sdklogo/javascript.svg' },
+  py: { type: 'img', src: '/sdklogo/python.svg' },
+  py2: { type: 'img', src: '/sdklogo/python.svg' },
+  ey: { type: 'char', char: '易', color: '#2b7de9' },
+  vol: { type: 'char', char: '火', color: '#e8533f' },
+};
+
+const SDK_GROUPS: { title: string; items: SdkItem[] }[] = [
+  {
+    title: '前端 & Python',
+    items: [
+      { key: 'web', title: 'Web SDK', link: '/web-sdk', desc: '前端 / JavaScript 集成' },
+      { key: 'py', title: 'Python SDK', link: '/python-sdk', desc: 'Python 桌面应用开发' },
+      { key: 'py2', title: 'Python SDK 2', link: '/python-sdk2', desc: '基于 ctypes 的新版绑定' },
+    ],
+  },
+  {
+    title: '更多语言',
+    items: [
+      { key: 'ey', title: '易语言 SDK', link: '/easy-language-sdk', desc: '易语言模块封装' },
+      { key: 'vol', title: '火山 SDK', link: '/voldp-sdk', desc: '火山窗口 SDK 适配' },
+    ],
+  },
+];
+
+const SDK_LINKS = ['/sdk', ...SDK_GROUPS.flatMap((g) => g.items.map((i) => i.link))];
+
+// 「文档」下拉的两张大卡片（仿 lobehub.com 顶部导航左侧大卡片）：顶部色块 + 图标 + 页数角标，下方标题/描述。
+const DOCS_SECTIONS = [
+  {
+    title: '文档指南',
+    link: '/docs/spec',
+    desc: '入门教程、核心设计原理与程序发行行为。',
+    icon: <BookOpen size={18} />,
+    grad: 'linear-gradient(135deg, rgba(0,126,229,0.22), rgba(0,126,229,0.04))',
+    iconBg: '#007ee5',
+  },
+  {
+    title: 'API',
+    link: '/docs/api',
+    desc: '窗口、WebView、IPC、原生 UI 等完整 C API 参考。',
+    icon: <Code2 size={18} />,
+    grad: 'linear-gradient(135deg, rgba(124,77,255,0.22), rgba(0,200,170,0.10))',
+    iconBg: 'linear-gradient(135deg, #7c4dff, #00c8aa)',
+  },
+];
+
+const useStyles = createStyles(({ css, token, cx }) => ({
+  nav: css`
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  `,
+  item: css`
+    cursor: pointer;
+    user-select: none;
+
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+
+    height: 36px; /* 与右侧动作按钮（GitHub 等 36px）等高 */
+    padding: 0 14px;
+    border: none;
+    border-radius: 9999px;
+
+    font-size: 14px;
+    line-height: 1;
+    color: ${token.colorTextSecondary};
+    white-space: nowrap;
+    text-decoration: none;
+
+    background: transparent;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+
+    &:hover {
+      color: ${token.colorText};
+      background: ${token.colorFillTertiary};
+    }
+  `,
+  active: css`
+    color: ${token.colorText};
+    background: ${token.colorFillSecondary};
+  `,
+  chevron: css`
+    width: 14px;
+    height: 14px;
+    opacity: 0.55;
+    transition: transform 0.2s ease;
+  `,
+  chevronOpen: css`
+    transform: rotate(180deg);
+  `,
+  // 共享下拉「定位层」：portal 到 body、fixed 定位；left/top 由 motion 动画（用非 transform 属性，
+  //   避免成为 backdrop 根而掐断子级玻璃层的背景模糊）。
+  ddPositioner: css`
+    position: fixed;
+    z-index: 1100;
+  `,
+  // 玻璃「面板层」：背景与标题栏胶囊一致（colorBgContainer 72% + saturate180% blur16）。
+  //   关键：背景模糊只会被「祖先」的 transform/filter 破坏；面板自身做 layout 形变（transform）不影响自己的 backdrop。
+  //   故定位层只动 left/top（非 transform），面板层可安心用 motion layout 做尺寸形变。
+  panel: css`
+    position: relative;
+    overflow: hidden;
+
+    border: 1px solid ${token.colorBorderSecondary};
+    border-radius: 18px;
+
+    background: color-mix(in srgb, ${token.colorBgContainer} 72%, transparent);
+    box-shadow:
+      0 12px 40px -8px rgba(0, 0, 0, 0.18),
+      0 2px 8px -2px rgba(0, 0, 0, 0.1);
+
+    backdrop-filter: saturate(180%) blur(16px);
+    -webkit-backdrop-filter: saturate(180%) blur(16px);
+  `,
+  card: css`
+    overflow: hidden;
+    width: max-content;
+    max-width: 560px;
+  `,
+  cols: css`
+    display: flex;
+    gap: 28px;
+    padding: 20px 22px;
+  `,
+  col: css`
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 200px;
+  `,
+  colTitle: css`
+    margin: 0 0 6px;
+    padding-inline-start: 10px;
+
+    font-size: 12px;
+    font-weight: 500;
+    color: ${token.colorTextTertiary};
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  `,
+  menuItem: css`
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+
+    padding: 8px 10px;
+    border-radius: 10px;
+
+    color: inherit;
+    text-decoration: none;
+
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background: ${token.colorFillTertiary};
+    }
+  `,
+  // 真实 logo 容器：中性浅底，img 居中（logo 自带配色）
+  icon: css`
+    overflow: hidden;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+
+    background: ${token.colorFillSecondary};
+
+    img {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+    }
+  `,
+  // 字徽（易语言 / 火山）：品牌色底 + 白字
+  iconChar: css`
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+  `,
+  mTitle: css`
+    display: block;
+
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: ${token.colorText};
+  `,
+  mDesc: css`
+    display: block;
+
+    margin-top: 3px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: ${token.colorTextSecondary};
+  `,
+  // 底部「SDK 下载中心」高亮卡片条（仿 lobehub.com 下拉底部那条）：整条可点，hover 浅底 + 箭头微移。
+  footer: css`
+    padding: 8px 10px;
+    border-top: 1px solid ${token.colorBorderSecondary};
+  `,
+  downloadCard: css`
+    display: flex;
+    gap: 12px;
+    align-items: center;
+
+    padding: 10px 12px;
+    border-radius: 12px;
+
+    color: inherit;
+    text-decoration: none;
+
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background: ${token.colorFillTertiary};
+    }
+    &:hover .jade-dl-arrow {
+      color: ${token.colorText};
+      transform: translateX(3px);
+    }
+  `,
+  // 图标徽标：品牌渐变底 + 白色下载图标（与卡片其余图标体量一致）
+  downloadIcon: css`
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+
+    color: #fff;
+    background: linear-gradient(135deg, #2b9bff, #007ee5);
+  `,
+  downloadBody: css`
+    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+  `,
+  downloadTitle: css`
+    display: block;
+
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: ${token.colorText};
+  `,
+  downloadDesc: css`
+    display: block;
+
+    margin-top: 2px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: ${token.colorTextSecondary};
+  `,
+  downloadArrow: css`
+    flex-shrink: 0;
+    color: ${token.colorTextTertiary};
+    transition: transform 0.15s ease, color 0.15s ease;
+  `,
+  // 「文档」下拉：大卡片网格（参考图左侧 Marketplace 卡片）
+  docCard: css`
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+  `,
+  docBig: css`
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    width: 232px;
+    border: 1px solid ${token.colorBorderSecondary};
+    border-radius: 14px;
+
+    color: inherit;
+    text-decoration: none;
+
+    background: ${token.colorBgContainer};
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+
+    &:hover {
+      border-color: ${token.colorBorder};
+      box-shadow: ${token.boxShadowTertiary};
+      transform: translateY(-2px);
+    }
+    &:hover .jade-doc-arrow {
+      opacity: 1;
+      transform: translateX(2px);
+    }
+  `,
+  docMedia: css`
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    height: 78px;
+    padding: 14px;
+  `,
+  docMediaIcon: css`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+
+    color: #fff;
+  `,
+  docCount: css`
+    font-size: 12px;
+    font-weight: 600;
+    color: ${token.colorTextSecondary};
+    font-variant-numeric: tabular-nums;
+  `,
+  docBody: css`
+    padding: 12px 14px 14px;
+  `,
+  docCardTitle: css`
+    display: flex;
+    gap: 4px;
+    align-items: center;
+
+    font-size: 15px;
+    font-weight: 600;
+    color: ${token.colorText};
+  `,
+  docArrow: css`
+    flex-shrink: 0;
+    opacity: 0;
+    color: ${token.colorTextTertiary};
+    transition: transform 0.18s ease, opacity 0.18s ease;
+  `,
+  docCardDesc: css`
+    margin-top: 4px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: ${token.colorTextSecondary};
+  `,
+}));
+
+export default memo(function JadeNavbar() {
+  const { styles, cx } = useStyles();
+  const nav = useSiteStore((s: any) => s.navData) || [];
+  const { pathname } = useLocation();
+  const fullSidebar = useFullSidebarData();
+  // 共享下拉：active=当前展开的菜单；coords=面板 fixed 定位（落在触发器所在胶囊下方、并相对触发器居中）。
+  const [active, setActive] = useState<'docs' | 'sdk' | null>(null);
+  const [coords, setCoords] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
+  const [mounted, setMounted] = useState(false);
+  const closeTimer = useRef<any>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const centerXRef = useRef(0); // 当前激活触发器的水平中心（用于把面板居中其下）
+  const widthCache = useRef<Record<'docs' | 'sdk', number>>({ docs: 510, sdk: 474 }); // 面板宽度缓存（实测自愈）
+  useEffect(() => setMounted(true), []);
+
+  const matches = (link: string) => {
+    if (link === '/') return pathname === '/';
+    return pathname === link || pathname.startsWith(link + '/');
+  };
+  const sdkActive = SDK_LINKS.some((l) => matches(l));
+
+  // 「文档」项链接到 /docs/spec，但需在整个文档主路由（含 /docs/api 子分区）下都高亮。
+  const itemActive = (link: string) =>
+    link?.startsWith('/docs') ? pathname === '/docs' || pathname.startsWith('/docs/') : matches(link);
+
+  // 某文档分区（/docs/spec、/docs/api）下的文档篇数 —— 作为大卡片右上角角标。
+  const countOf = (prefix: string) => {
+    const entry: any = (fullSidebar as any)?.[prefix];
+    const groups = Array.isArray(entry) ? entry : [];
+    return groups.reduce((n: number, g: any) => n + (g?.children?.length || 0), 0);
+  };
+
+  const isSdk = (item: any) => item.title === 'SDKs' || item.link === '/sdk';
+  const isDocs = (item: any) => String(item.link || '').startsWith('/docs');
+  const menuOf = (item: any): 'docs' | 'sdk' | null => (isSdk(item) ? 'sdk' : isDocs(item) ? 'docs' : null);
+
+  // 悬停某个带下拉的触发器：测量其所在胶囊底边 → 面板定位到「胶囊下方 12px」、并相对触发器水平居中。
+  // 切换菜单时 active/coords 变化驱动面板滑动 + 内容交叉淡入（见下方共享面板）。
+  const openMenu = (key: 'docs' | 'sdk', el: HTMLElement) => {
+    clearTimeout(closeTimer.current);
+    const cap = (el.closest('.jade-capsule-header') as HTMLElement) || el;
+    const tr = el.getBoundingClientRect();
+    const cr = cap.getBoundingClientRect();
+    const centerX = tr.left + tr.width / 2;
+    centerXRef.current = centerX;
+    setCoords({ left: Math.round(centerX - widthCache.current[key] / 2), top: Math.round(cr.bottom + 12) });
+    setActive(key);
+  };
+  const scheduleClose = () => {
+    clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => setActive(null), 140);
+  };
+
+  // 面板挂载/切换后实测宽度，精确居中（缓存自愈，应对内容变化）。openMenu 已用缓存宽度先行估算，
+  // 故此处通常仅微调、不产生可见跳动。
+  useEffect(() => {
+    if (!active || !panelRef.current) return;
+    const w = panelRef.current.offsetWidth;
+    if (!w) return;
+    widthCache.current[active] = w;
+    const target = Math.round(centerXRef.current - w / 2);
+    setCoords((c) => (Math.abs(c.left - target) > 1 ? { ...c, left: target } : c));
+  }, [active]);
+
+  // 触发项右侧的下拉箭头（SDKs / 文档共用）
+  const chevron = (o: boolean) => (
+    <svg
+      className={cx(styles.chevron, o && styles.chevronOpen)}
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2.2"
+      viewBox="0 0 24 24"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+
+  const docsCard = (
+    <div className={styles.docCard}>
+      {DOCS_SECTIONS.map((s) => {
+        const n = countOf(s.link);
+        return (
+          <Link key={s.link} className={styles.docBig} to={s.link}>
+            <div className={styles.docMedia} style={{ background: s.grad }}>
+              <span className={styles.docMediaIcon} style={{ background: s.iconBg }}>
+                {s.icon}
+              </span>
+              {n > 0 && <span className={styles.docCount}>{n} 篇</span>}
+            </div>
+            <div className={styles.docBody}>
+              <span className={styles.docCardTitle}>
+                {s.title}
+                <ChevronRight className={cx(styles.docArrow, 'jade-doc-arrow')} size={15} />
+              </span>
+              <span className={styles.docCardDesc}>{s.desc}</span>
+            </div>
+          </Link>
+        );
+      })}
+    </div>
+  );
+
+  const megaCard = (
+    <div className={styles.card}>
+      <div className={styles.cols}>
+        {SDK_GROUPS.map((g) => (
+          <div key={g.title} className={styles.col}>
+            <p className={styles.colTitle}>{g.title}</p>
+            {g.items.map((it) => {
+              const ic = SDK_ICON[it.key];
+              return (
+                <Link key={it.link} className={styles.menuItem} to={it.link}>
+                  {ic.type === 'img' ? (
+                    <span className={styles.icon}>
+                      <img alt="" src={ic.src} />
+                    </span>
+                  ) : (
+                    <span className={styles.iconChar} style={{ background: ic.color }}>
+                      {ic.char}
+                    </span>
+                  )}
+                  <span>
+                    <span className={styles.mTitle}>{it.title}</span>
+                    <span className={styles.mDesc}>{it.desc}</span>
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+      <div className={styles.footer}>
+        <Link className={styles.downloadCard} to="/download">
+          <span className={styles.downloadIcon}>
+            <Download size={18} strokeWidth={2.2} />
+          </span>
+          <span className={styles.downloadBody}>
+            <span className={styles.downloadTitle}>SDK 下载中心</span>
+            <span className={styles.downloadDesc}>获取各端 SDK 安装包与历史版本</span>
+          </span>
+          <ChevronRight className={cx(styles.downloadArrow, 'jade-dl-arrow')} size={18} />
+        </Link>
+      </div>
+    </div>
+  );
+
+  return (
+    <nav className={styles.nav}>
+      {nav.map((item: any) => {
+        const key = String(item.activePath || item.link);
+        const menu = menuOf(item);
+        if (menu) {
+          // 带下拉的触发器（文档 / SDKs）：悬停打开共享面板；点击仍按链接跳转。
+          const itemActiveNow = menu === 'sdk' ? sdkActive : itemActive(item.link);
+          return (
+            <Link
+              key={key}
+              className={cx(styles.item, itemActiveNow && styles.active)}
+              onMouseEnter={(e) => openMenu(menu, e.currentTarget as HTMLElement)}
+              onMouseLeave={scheduleClose}
+              to={item.link || (menu === 'sdk' ? '/sdk' : '/docs/spec')}
+            >
+              {item.title}
+              {chevron(active === menu)}
+            </Link>
+          );
+        }
+        return (
+          <Link key={key} className={cx(styles.item, itemActive(item.link) && styles.active)} to={item.link}>
+            {item.title}
+          </Link>
+        );
+      })}
+
+      {/* 共享下拉面板：portal 到 body、fixed 定位。切换菜单时整张面板滑动到新触发器下方（动画 left/top），
+          尺寸用 motion layout 形变，内容用 AnimatePresence 交叉淡入淡出。 */}
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {active && (
+              <motion.div
+                key="jade-nav-dropdown"
+                animate={{ opacity: 1, scale: 1, left: coords.left, top: coords.top }}
+                className={styles.ddPositioner}
+                exit={{ opacity: 0, scale: 0.95 }}
+                // iOS 风：从触发器正下方（top center）轻微缩放 + 淡入弹出；切换时整体平滑滑动到新触发器下。
+                initial={{ opacity: 0, scale: 0.95, left: coords.left, top: coords.top }}
+                onMouseEnter={() => clearTimeout(closeTimer.current)}
+                onMouseLeave={scheduleClose}
+                style={{ transformOrigin: 'top center' }}
+                transition={{
+                  default: { type: 'spring', stiffness: 300, damping: 24 }, // scale：轻微回弹（iOS 手感）
+                  left: { type: 'spring', stiffness: 340, damping: 30 }, // 切换滑动
+                  top: { type: 'spring', stiffness: 340, damping: 30 },
+                  opacity: { duration: 0.16, ease: 'easeOut' },
+                }}
+              >
+                <motion.div
+                  className={styles.panel}
+                  layout="size"
+                  ref={panelRef}
+                  transition={{ type: 'spring', stiffness: 340, damping: 30 }}
+                >
+                  <AnimatePresence initial={false} mode="popLayout">
+                    <motion.div
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      initial={{ opacity: 0 }}
+                      key={active}
+                      onClick={() => setActive(null)}
+                      transition={{ duration: 0.16 }}
+                    >
+                      {active === 'docs' ? docsCard : megaCard}
+                    </motion.div>
+                  </AnimatePresence>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body,
+        )}
+    </nav>
+  );
+});

@@ -1,39 +1,28 @@
-# 阶段1: 构建
-FROM oven/bun:1.3.5 AS builder
-
+# 阶段1：构建 dumi 静态产物（dist）
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# 复制依赖文件
-COPY package.json bun.lock ./
-COPY patches ./patches
-COPY modules ./modules
-
-# 安装依赖（包含 patch-package）
-RUN bun install
-
-# 复制源代码（包含预生成的 changelog 和 contributors）
+# 复制全部源码（含 CI 预生成的 public/releases/data.json）。
+# 先 COPY 再 npm ci：确保 postinstall 的 `dumi setup` 能读到 .dumirc / 主题 / 文档，正常生成 .dumi/tmp。
 COPY . .
 
-# 构建静态文件
-RUN bun run build
+# 安装依赖（含 esbuild 等 postinstall、dumi setup）
+RUN npm ci
 
-# 阶段2: 生产环境
+# 构建到 dist。用 `npx dumi build` 跳过 package.json 的 prebuild 钩子：
+#   发行快照已由部署工作流在构建机上先行生成（带 GITHUB_TOKEN）并随源码 COPY 进来，
+#   故镜像构建内不再直连 GitHub。
+RUN npx dumi build
+
+# 阶段2：生产环境（nginx 提供静态文件）
 FROM nginx:alpine
 
-# 删除默认配置
-RUN rm -rf /etc/nginx/conf.d/default.conf
-
-# 复制自定义 nginx 配置
+RUN rm -f /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# 从构建阶段复制静态文件并设置权限
-COPY --from=builder /app/build /usr/share/nginx/html
-
-# 确保 nginx 用户有读取权限
+COPY --from=builder /app/dist /usr/share/nginx/html
 RUN chown -R nginx:nginx /usr/share/nginx/html && \
     chmod -R 755 /usr/share/nginx/html
 
-# 暴露端口
 EXPOSE 80
-
 CMD ["nginx", "-g", "daemon off;"]

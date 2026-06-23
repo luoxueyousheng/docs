@@ -1,52 +1,52 @@
-# 使用 Docker 部署到个人服务器（Webhook 方式）
-name: Build and Deploy Docker Image
+# 用 Docker 部署到个人服务器（Webhook 方式）—— 移植自旧站，替换旧站部署。
+# 流程：构建机生成发行快照 → 构建并推送镜像到 Docker Hub → curl 触发服务器 webhook 拉取重启。
+# 用与旧站「相同的镜像名 + 相同的 webhook」，服务器拉取后即用新站替换旧站。
+#
+# 需要在本仓库 Settings → Secrets 配置（与旧站同名）：
+#   DOCKERHUB_USERNAME / DOCKERHUB_TOKEN / WEBHOOK_URL / WEBHOOK_TOKEN
+# 替换旧站后，记得停用旧仓库的 deploy-docker 工作流，避免两边都往同一镜像/服务器推。
+name: 构建并部署到服务器（Docker）
 
 on:
   push:
     branches: ["main"]
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 env:
   IMAGE_NAME: yiminger/jadeview_docs
 
 concurrency:
-  group: "docker-deploy"
+  group: docker-deploy
   cancel-in-progress: false
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          fetch-depth: 0
+          node-version: 20
 
-      - name: Setup Bun (for pre-build steps)
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Update changelog
-        run: bun run update-changelog
-
-      - name: Generate contributors data
+      # 构建机（海外、可达 GitHub）先生成发行快照，带 token 提限额；
+      # 镜像构建内用 `npx dumi build` 不再直连 GitHub（见 Dockerfile 说明）。
+      # 脚本仅用 Node 内置模块，无需安装依赖。
+      - name: 生成发行快照
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node scripts/generate-contributors.mjs
+        run: node scripts/update-changelog.mjs
 
-      - name: Login to Docker Hub
+      - name: 登录 Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+      - name: 构建并推送镜像
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
@@ -54,7 +54,7 @@ jobs:
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
 
-      - name: Trigger server webhook
+      - name: 触发服务器 webhook 拉取部署
         run: |
           curl -X POST "${{ secrets.WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \

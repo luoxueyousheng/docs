@@ -1,14 +1,13 @@
-version: '3.8'
-
+# 服务器端编排：站点容器 + webhook 接收容器。
+# 用法（在本 deploy 目录里）：cp .env.example .env，填好 .env，再 docker compose up -d
+# 真实密钥放 .env（已在 .gitignore 排除，不要提交）。
 services:
   docs:
-    image: yiminger/jadeview_docs:latest
+    image: ${IMAGE_NAME:-yiminger/jadeview_docs:latest}
     container_name: docs-site
     restart: unless-stopped
     ports:
-      - "8088:80"
-    labels:
-      createdBy: "1Panel"
+      - "${SITE_PORT:-8088}:80"
 
   webhook:
     image: python:3.11-slim
@@ -18,14 +17,13 @@ services:
       - "9000:9000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /www/wwwroot/opt/jadeview/deploy/webhook-server.py:/app/webhook-server.py:ro
+      - ./webhook-server.py:/app/webhook-server.py:ro
     environment:
-      WEBHOOK_TOKEN: "your-webhook-secret-token"
-      DOCKERHUB_USER: "yiminger"
-      DOCKERHUB_TOKEN: "your-dockerhub-token"
-      IMAGE_NAME: "yiminger/jadeview_docs:latest"
-      CONTAINER_NAME: "docs-site"
+      WEBHOOK_TOKEN: ${WEBHOOK_TOKEN}
+      DOCKERHUB_USER: ${DOCKERHUB_USER}
+      DOCKERHUB_TOKEN: ${DOCKERHUB_TOKEN}
+      IMAGE_NAME: ${IMAGE_NAME:-yiminger/jadeview_docs:latest}
+      CONTAINER_NAME: docs-site
+      SITE_PORT: ${SITE_PORT:-8088}
     working_dir: /app
     command: bash -c "pip install --quiet -i https://pypi.tuna.tsinghua.edu.cn/simple fastapi uvicorn docker && python webhook-server.py"
-    labels:
-      createdBy: "1Panel"
