@@ -154,6 +154,26 @@ footer::before {
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
+/* 手机端页底（≤575.98px）：lobehub 默认把列改成单列竖排堆叠（display:block + 每列 margin 40px），
+   4 列堆成 4 行 → 底栏过高。改成「2 列网格」（4 列变 2×2），整体高度近乎减半。
+   选择器特异性须压过 lobehub 的 .lobe-xxxx .rc-footer-columns (0,2,0)：
+   用 footer .rc-footer .rc-footer-columns (0,2,1) 决定性胜出（不依赖样式注入顺序）。 */
+@media (max-width: 575.98px) {
+  footer .rc-footer .rc-footer-columns {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 28px 12px !important;
+    align-items: start !important;
+    padding-inline: 16px !important;
+  }
+  footer .rc-footer .rc-footer-column {
+    display: block !important;
+    width: auto !important;
+    margin-block-end: 0 !important;
+    text-align: center !important;
+  }
+}
 `,
     `
 /* 浅色模式：页面背景纯白。
@@ -305,7 +325,7 @@ html[data-prefers-color='light'] .ant-draggable-panel-fixed {
     ],
     // 底栏版权行（lobehub 以 dangerouslySetInnerHTML 渲染，可放链接）：备案号 + 云服务来源
     footer:
-      'JadeView · <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">蜀ICP备2022000695号-9</a> · 由 <a href="https://www.dkdun.cn/" target="_blank" rel="noreferrer">dk盾</a> 提供云计算服务',
+      'JadeView · <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">蜀ICP备2022000695号-9</a> · 由 <a href="https://www.dkdun.cn/" target="_blank" rel="noreferrer">林枫云</a> 提供云计算服务',
     footerConfig: {
       columns: [
         {
