@@ -284,6 +284,41 @@ html[data-prefers-color='light'] .ant-draggable-panel-fixed {
   overflow: visible !important;
 }
 `,
+    `
+/* 标题栏右侧动作（lobehub 自带组件，无法改源码 → 全局 CSS 命中）：配合通透玻璃胶囊统一为
+   「高对比图标/文字 + 磨砂底牌」。深色纯白、浅色纯黑。 */
+/* 主题切换图标（monitor / sun / moon）：纯白 */
+.jade-capsule-header .lobe-dropdown-menu-trigger,
+.jade-capsule-header .lobe-dropdown-menu-trigger svg {
+  color: #fff !important;
+}
+/* GitHub「27 ⭐」按钮：半透明磨砂底 + 背景模糊 + 白字白图标 */
+.jade-capsule-header a.ant-btn {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: transparent !important;
+  backdrop-filter: blur(8px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(150%) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12) inset !important;
+}
+.jade-capsule-header a.ant-btn:hover {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.22) !important;
+}
+/* 浅色模式：纯黑图标/字 + 深色磨砂底 */
+html[data-prefers-color='light'] .jade-capsule-header .lobe-dropdown-menu-trigger,
+html[data-prefers-color='light'] .jade-capsule-header .lobe-dropdown-menu-trigger svg {
+  color: #000 !important;
+}
+html[data-prefers-color='light'] .jade-capsule-header a.ant-btn {
+  color: #000 !important;
+  background: rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08) inset !important;
+}
+html[data-prefers-color='light'] .jade-capsule-header a.ant-btn:hover {
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+`,
   ],
   // 仅中文
   locales: [{ id: 'zh-CN', name: '中文' }],

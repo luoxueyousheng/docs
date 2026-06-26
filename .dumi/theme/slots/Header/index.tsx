@@ -22,8 +22,9 @@
 import { useResponsive, useTheme } from 'antd-style';
 import isEqual from 'fast-deep-equal';
 import { AnimatePresence, motion } from 'motion/react';
-import { memo, useEffect, useState, type CSSProperties } from 'react';
+import { memo, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { floatItemNoBlur, floatStyle } from '../../components/floatIn';
+import { useLiquidGlass, GLASS_PARAMS, GLASS_BG_OPACITY, GLASS_SATURATION } from '../../components/JadeGlass';
 // @ts-ignore 主题 store / selectors，深层路径无类型声明
 import { siteSelectors, useSiteStore } from 'dumi-theme-lobehub/dist/store';
 import Navbar from '../../components/JadeNavbar';
@@ -41,6 +42,26 @@ import ThemeSwitch from 'dumi-theme-lobehub/dist/slots/Header/ThemeSwitch';
 // 形态内重排（Logo 文字 / 导航间距）与跨形态交叉淡入共用的 iOS 手感 spring。
 const reflow = { type: 'spring', stiffness: 300, damping: 30 } as const;
 const swap = { type: 'spring', stiffness: 280, damping: 30 } as const;
+
+// 手机端单个胶囊药丸：各自持有一份独立的液态玻璃滤镜（尺寸不同 → 位移贴图需各自生成）。
+// decorate(supported, filterId) 由 Header 传入（闭包里取主题色 / 滚动态），按是否支持选玻璃或回退磨砂。
+const GlassPill = memo(function GlassPill({
+  baseStyle,
+  decorate,
+  children,
+}: {
+  baseStyle: CSSProperties;
+  decorate: (supported: boolean, filterId: string) => CSSProperties;
+  children: ReactNode;
+}) {
+  const glass = useLiquidGlass(GLASS_PARAMS);
+  return (
+    <div className="jade-mpill" ref={glass.ref} style={{ ...baseStyle, ...decorate(glass.supported, glass.filterId) }}>
+      {glass.svg}
+      {children}
+    </div>
+  );
+});
 
 export default memo(function Header() {
   const hasHeader = useSiteStore((s: any) => Boolean(s.routeMeta.frontmatter));
@@ -62,43 +83,67 @@ export default memo(function Header() {
     return () => clearTimeout(t);
   }, []);
 
+  // 桌面单胶囊的液态玻璃滤镜（hook 必须在任何提前 return 之前无条件调用）。
+  const capsuleGlass = useLiquidGlass(GLASS_PARAMS);
+
   if (!hasHeader) return null;
 
   const showBrand = tablet; // ≥768 才显示「JadeView」文字（窄桌面收起，给横排导航腾空间）
   const logoSrc = (config && (config as any).logo) || '/favicon.png';
   const brand = (config && (config as any).name) || 'JadeView';
 
+  const dark = theme.isDarkMode ?? (theme.appearance ? theme.appearance === 'dark' : true);
+  // 回退态（Safari/FF/不支持位移滤镜）仍用较实的磨砂底保证可读；玻璃态用极薄霜底让背后画面折射透出。
   const glassBg = `color-mix(in srgb, ${theme.colorBgContainer} 72%, transparent)`;
+  // reactbits backgroundOpacity=0.1：霜底极薄，否则盖住背景、折射不可见。
+  const frostBg = `color-mix(in srgb, ${theme.colorBgContainer} ${Math.round(GLASS_BG_OPACITY * 100)}%, transparent)`;
   const scrolledShadow =
     '0 0 32px -8px rgba(0, 0, 0, 8%), 0 0 16px -4px rgba(0, 0, 0, 10%), 0 0 0 1px var(--ant-color-fill-tertiary) inset';
   const blur = 'saturate(180%) blur(16px)';
+  // 玻璃边缘「镜环」内阴影（让胶囊读起来像一块真实玻璃，而非平涂半透明）。
+  const rings = dark
+    ? '0 0 2px 1px rgba(255, 255, 255, 0.16) inset, 0 0 18px 7px rgba(255, 255, 255, 0.05) inset'
+    : '0 1px 0 0 rgba(255, 255, 255, 0.7) inset, 0 0 2px 1px rgba(0, 0, 0, 0.12) inset, 0 0 12px 4px rgba(0, 0, 0, 0.04) inset';
+  const edgeRing = dark ? '0 0 0 1px rgba(255, 255, 255, 0.1)' : '0 0 0 1px rgba(0, 0, 0, 0.07)';
 
-  // 桌面单胶囊视觉（圆角 / 内缩 / 磨砂）；顶部无描边无阴影，滚动后出现。定位/居中在 JSX 里补。
+  // 玻璃/磨砂二选一的「装饰层」样式（背景 + backdrop-filter + 阴影）。布局尺寸不在此、在各自 baseStyle。
+  //  · 支持位移滤镜：backdrop-filter = url(#位移) + saturate（不叠背景 blur，保留清晰折射）；薄霜底 + 镜环内阴影。
+  //  · 不支持：维持原来的磨砂胶囊外观。
+  const decorate = (supported: boolean, filterId: string): CSSProperties =>
+    supported
+      ? {
+          background: frostBg,
+          backdropFilter: `url(#${filterId}) saturate(${GLASS_SATURATION})`,
+          WebkitBackdropFilter: blur,
+          boxShadow: [rings, edgeRing, scrolled ? scrolledShadow : ''].filter(Boolean).join(', '),
+        }
+      : {
+          background: glassBg,
+          backdropFilter: blur,
+          WebkitBackdropFilter: blur,
+          boxShadow: scrolled ? scrolledShadow : 'none',
+        };
+
+  // 桌面单胶囊视觉（圆角 / 内缩 / 磨砂或玻璃）；顶部无描边无阴影，滚动后出现。定位/居中在 JSX 里补。
   const capsuleVisual: CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     height: '100%',
     paddingInline: 10,
     borderRadius: 9999,
-    background: glassBg,
-    backdropFilter: blur,
-    WebkitBackdropFilter: blur,
-    boxShadow: scrolled ? scrolledShadow : 'none',
     transition: 'box-shadow 0.2s ease, background 0.2s ease',
+    ...decorate(capsuleGlass.supported, capsuleGlass.filterId),
   };
 
-  // 手机端单个胶囊（左/右各一）：高度 50，左右内边距 7 使 36px 圆形按钮与圆头同心；顶部无阴影、滚动后出现。
-  const pill: CSSProperties = {
+  // 手机端单个胶囊药丸的「布局」部分（高度 50，左右内边距 7 使 36px 圆形按钮与圆头同心）；
+  // 玻璃/磨砂装饰由 GlassPill 内按各自 supported/filterId 套用。
+  const pillBase: CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     gap: 8,
     height: 50,
     paddingInline: 7,
     borderRadius: 9999,
-    background: glassBg,
-    backdropFilter: blur,
-    WebkitBackdropFilter: blur,
-    boxShadow: scrolled ? scrolledShadow : 'none',
     transition: 'box-shadow 0.2s ease, background 0.2s ease',
   };
 
@@ -132,7 +177,7 @@ export default memo(function Header() {
             style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}
             {...mobileMotion}
           >
-            <div className="jade-mpill" style={pill}>
+            <GlassPill baseStyle={pillBase} decorate={decorate}>
               <Burger />
               <a href="/" style={{ display: 'inline-flex', alignItems: 'center', paddingInline: 2 }}>
                 <img
@@ -141,11 +186,11 @@ export default memo(function Header() {
                   style={{ display: 'block', width: 36, height: 36, borderRadius: 10 }}
                 />
               </a>
-            </div>
+            </GlassPill>
             <div style={{ flex: 1 }} />
-            <div className="jade-mpill" style={pill}>
+            <GlassPill baseStyle={pillBase} decorate={decorate}>
               <MobileSearch />
-            </div>
+            </GlassPill>
           </motion.section>
         ) : (
           // 桌面 / 窄桌面：单胶囊横排。宽度按内容自适应（width:max-content）→ Logo 文字收起时胶囊整体跟着变窄；
@@ -153,6 +198,7 @@ export default memo(function Header() {
           // 自身带模糊与飘入/缩放 transform。
           <motion.section
             key="desktop"
+            ref={capsuleGlass.ref}
             style={{
               position: 'absolute',
               insetBlock: 0,
@@ -165,6 +211,7 @@ export default memo(function Header() {
             }}
             {...desktopMotion}
           >
+            {capsuleGlass.svg}
             <a
               href="/"
               style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', flex: '0 0 auto', zIndex: 10 }}
@@ -184,7 +231,7 @@ export default memo(function Header() {
                   whiteSpace: 'nowrap',
                   fontSize: 18,
                   fontWeight: 600,
-                  color: theme.colorText,
+                  color: dark ? '#fff' : '#000',
                 }}
                 transition={reflow}
               >

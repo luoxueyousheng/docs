@@ -64,7 +64,10 @@ const DOCS_SECTIONS = [
   },
 ];
 
-const useStyles = createStyles(({ css, token, cx }) => ({
+const useStyles = createStyles(({ css, token, cx, isDarkMode }) => {
+  // 玻璃胶囊很通透，导航文字必须高对比：深色纯白、浅色纯黑，避免与背后折射画面糊在一起。
+  const fg = isDarkMode ? '#fff' : '#000';
+  return {
   nav: css`
     display: flex;
     align-items: center;
@@ -84,8 +87,9 @@ const useStyles = createStyles(({ css, token, cx }) => ({
     border-radius: 9999px;
 
     font-size: 14px;
+    font-weight: 500;
     line-height: 1;
-    color: ${token.colorTextSecondary};
+    color: ${fg};
     white-space: nowrap;
     text-decoration: none;
 
@@ -95,8 +99,8 @@ const useStyles = createStyles(({ css, token, cx }) => ({
       color 0.2s ease;
 
     &:hover {
-      color: ${token.colorText};
-      background: ${token.colorFillTertiary};
+      color: ${fg};
+      background: ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'};
     }
 
     /* 窄桌面（576–767，>575 仍是横排导航但空间吃紧）：收紧内边距，配合 Header 的「图标 Logo + 小间距」
@@ -106,9 +110,16 @@ const useStyles = createStyles(({ css, token, cx }) => ({
       padding: 0 9px;
     }
   `,
+  // 激活项：磨砂底牌——半透明白/黑底 + 背景模糊，让当前页在通透玻璃上清晰凸出。
+  //（backdrop-filter 若被胶囊自身 transform 掐断，半透明底色仍保证可读。）
   active: css`
-    color: ${token.colorText};
-    background: ${token.colorFillSecondary};
+    color: ${fg};
+    background: ${isDarkMode ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.1)'};
+    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+    box-shadow: ${isDarkMode
+      ? '0 0 0 1px rgba(255, 255, 255, 0.12) inset'
+      : '0 0 0 1px rgba(0, 0, 0, 0.08) inset'};
   `,
   chevron: css`
     width: 14px;
@@ -387,7 +398,8 @@ const useStyles = createStyles(({ css, token, cx }) => ({
     line-height: 1.5;
     color: ${token.colorTextSecondary};
   `,
-}));
+  };
+});
 
 export default memo(function JadeNavbar() {
   const { styles, cx } = useStyles();
