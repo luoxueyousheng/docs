@@ -114,10 +114,13 @@ export default memo(function Header() {
     '0 0 32px -8px rgba(0, 0, 0, 8%), 0 0 16px -4px rgba(0, 0, 0, 10%), 0 0 0 1px var(--ant-color-fill-tertiary) inset';
   const blur = 'saturate(180%) blur(16px)';
   // 玻璃边缘「镜环」内阴影（让胶囊读起来像一块真实玻璃，而非平涂半透明）。
+  // 只保留「一道极细高光内缘 + 1px 外缘」：早先还叠了一圈大扩散的内发光晕（dark 0 0 18px 7px /
+  // light 0 0 12px 4px），在纯色背景上会糊成一条「厚厚的边框」（用户反馈）——下拉面板没有这层内发光、看着干净，
+  // 故移除内发光、并把高光内缘收到 0 spread，与下拉面板的细边一致。
   const rings = dark
-    ? '0 0 2px 1px rgba(255, 255, 255, 0.16) inset, 0 0 18px 7px rgba(255, 255, 255, 0.05) inset'
-    : '0 1px 0 0 rgba(255, 255, 255, 0.7) inset, 0 0 2px 1px rgba(0, 0, 0, 0.12) inset, 0 0 12px 4px rgba(0, 0, 0, 0.04) inset';
-  const edgeRing = dark ? '0 0 0 1px rgba(255, 255, 255, 0.1)' : '0 0 0 1px rgba(0, 0, 0, 0.07)';
+    ? '0 0 2px 0 rgba(255, 255, 255, 0.14) inset'
+    : '0 1px 0 0 rgba(255, 255, 255, 0.65) inset, 0 0 2px 0 rgba(0, 0, 0, 0.1) inset';
+  const edgeRing = dark ? '0 0 0 1px rgba(255, 255, 255, 0.08)' : '0 0 0 1px rgba(0, 0, 0, 0.07)';
 
   // 玻璃/磨砂二选一的「装饰层」样式（背景 + backdrop-filter + 阴影）。布局尺寸不在此、在各自 baseStyle。
   //  · 支持位移滤镜：backdrop-filter = url(#位移) + saturate（不叠背景 blur，保留清晰折射）；薄霜底 + 镜环内阴影。
