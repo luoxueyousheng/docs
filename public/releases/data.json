@@ -1,6 +1,15 @@
 {
-  "updated_at": "2026-06-27T19:14:46.938Z",
+  "updated_at": "2026-06-28T19:13:13.646Z",
   "releases": [
+    {
+      "tag_name": "v2.3.0-beta.6",
+      "name": "v2.3.0-beta.6 (Build 26F11)",
+      "published_at": "2026-06-28T14:02:21Z",
+      "prerelease": true,
+      "html_url": "https://github.com/JadeViewDocs/JadeView/releases/tag/v2.3.0-beta.6",
+      "gitee_url": "https://gitee.com/ilinxuan/JadeView_library/releases/tag/v2.3.0-beta.6",
+      "body": "- **Linux 标题栏覆盖层**：`title-overlay` 边框样式在 Linux 上提供 最小化/最大化/关闭 三按钮（与 Windows 一致）；点击复用 `titlebar-button`。应用页面零代码。\n- **不进任务栏 / 不抢焦点（跨平台）**：新增 `set_window_skip_taskbar(window_id, skip)`、`set_window_no_activate(window_id, no_activate)`；`WebViewWindowOptions` 末尾**追加** `skip_taskbar`、`no_activate` 两字段。\n- **窗口层级** **`set_window_level(window_id, level)`**：`topmost | normal | bottom | desktop`。topmost/normal/bottom 跨平台（tao `set_always_on_top`/`set_always_on_bottom`）；\n- **开机自启（跨平台）**：`set_login_autostart(enable, args)`、`get_login_autostart()`。Windows 写 `HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run`，Linux 写 `~/.config/autostart/<app>.desktop`（`dirs` 跨平台取配置目录）；自启标识取 `JadeView_init` 传入的 `app_name`（缺省回退可执行文件名）。\n- **图标提取** **`get_file_icon(path, size, window_id, ttl_seconds, url_buffer, buffer_size)`**：取任意路径（exe / lnk / 普通文件 / 文件夹）的系统图标，缩放为指定尺寸 PNG，注册成 `jade://` 安全资源并写出 URL。Windows 用 `SHGetFileInfo` 取 HICON，复用既有 GDI+ 图标转码管线（抽出 `hicon_to_image`）；Linux 用 gio 查询 + gtk `IconTheme`（`icon_manager_lx`，经 GTK 主线程取图，须从 worker 线程调用）。\n\n> API 详解见 [`docs/v2.3.6-窗口与系统集成-API.md`](../v2.3.6-窗口与系统集成-API.md)。\n\n\n- 修复覆盖层标题栏（`title-overlay`）样式变更后，按钮悬浮/焦点背景色滞后约 1\\~2 秒才生效的问题：图标色立即更新，但悬浮/按下背景仅由 hover 事件绘制，导致改样式后背景要等下一次鼠标移入/移出才刷新；现记录当前悬浮/按下态，在样式变更时立即用新数据重绘背景。\n\n\n- Linux 发行包新增 arm64（aarch64）架构：由 GitHub 原生 arm runner 构建，产出 `JadeView_linux_arm64_*.tar.gz`（x64 产物不变）。\\n\\n---\\n本版本的文档参考在 beta 目录中\n"
+    },
     {
       "tag_name": "v2.3.0-beta.5",
       "name": "v2.3.0-beta.5 (Build 26F09)",
