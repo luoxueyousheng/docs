@@ -195,7 +195,7 @@ window.set_window_frame_style(
 
 ### `set_titlebar_overlay_style()`
 
-自定义 title-overlay 样式窗口的标题栏按钮覆盖层外观（Windows 专属）。
+自定义 title-overlay 样式窗口的标题栏按钮覆盖层外观（运行时定制目前仅 Windows 生效；Linux 显示内置默认样式的覆盖层）。
 
 仅对 `frame_style="title-overlay"` 的窗口有效。
 

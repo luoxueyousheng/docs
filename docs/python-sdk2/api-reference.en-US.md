@@ -195,7 +195,7 @@ window.set_window_frame_style(
 
 ### `set_titlebar_overlay_style()`
 
-Customizes the appearance of the titlebar button overlay for windows using the title-overlay style (Windows only).
+Customizes the appearance of the titlebar button overlay for windows using the title-overlay style (runtime customization currently takes effect on Windows only; Linux shows the overlay with the built-in default style).
 
 Only effective for windows with `frame_style="title-overlay"`.
 

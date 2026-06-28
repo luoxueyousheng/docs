@@ -10,14 +10,14 @@ group:
 
 JadeView 2.0 提供两种自定义标题栏的方式：
 
-1. **`title-overlay`**：使用内置标题栏按钮覆盖层（Windows 专属，每个按钮宽度 45 像素，高度默认 32 像素）
+1. **`title-overlay`**：使用内置标题栏按钮覆盖层（Windows 与 Linux 均支持，Linux 自 v2.3.0-beta.6 起；每个按钮宽度 45 像素，高度默认 32 像素）
 2. **`no-titlebar`**：完全自定义绘制标题栏和按钮
 
 ---
 
 ## 方法一：使用 title-overlay（推荐）
 
-`title-overlay` 是 Windows 专属的边框样式，提供系统级标题栏按钮（最小化/最大化/关闭），每个按钮宽度 45 像素、高度默认 32 像素，无需自己实现。
+`title-overlay` 是提供系统级标题栏按钮（最小化/最大化/关闭）的边框样式，每个按钮宽度 45 像素、高度默认 32 像素，无需自己实现。**Windows 与 Linux 均支持**（Linux 自 v2.3.0-beta.6 起）。
 
 ### C 代码示例
 
@@ -304,7 +304,7 @@ int app_ready_callback(uint32_t window_id, const char* event_type,
 
 | 特性 | `title-overlay` | `no-titlebar` |
 |------|-----------------|---------------|
-| **适用平台** | 仅 Windows | 全平台 |
+| **适用平台** | Windows 与 Linux | 全平台 |
 | **标题栏按钮** | 内置（系统样式） | 需自己实现 |
 | **开发难度** | 简单 | 中等 |
 | **样式自定义** | 可部分自定义 | 完全自定义 |
@@ -333,5 +333,5 @@ int app_ready_callback(uint32_t window_id, const char* event_type,
 
 1. **交互元素**：标题栏内的按钮、链接、输入框必须设置 `no-drag`，否则无法点击
 2. **双击行为**：双击可拖拽区域会触发最大化/还原（系统行为）
-3. **`title-overlay`**：Windows 专属，无需自己实现标题栏按钮
+3. **`title-overlay`**：Windows 与 Linux 均支持，无需自己实现标题栏按钮
 4. **`no-titlebar` + `create_borderless_webview_window`**：可获取 HWND 用于 Win32 API

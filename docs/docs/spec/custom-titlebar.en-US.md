@@ -10,14 +10,14 @@ group:
 
 JadeView 2.0 offers two ways to customize the title bar:
 
-1. **`title-overlay`**: Use the built-in title bar button overlay (Windows-only; each button is 45 pixels wide and 32 pixels tall by default)
+1. **`title-overlay`**: Use the built-in title bar button overlay (supported on both Windows and Linux, Linux since v2.3.0-beta.6; each button is 45 pixels wide and 32 pixels tall by default)
 2. **`no-titlebar`**: Fully custom-draw the title bar and buttons
 
 ---
 
 ## Option 1: Using title-overlay (Recommended)
 
-`title-overlay` is a Windows-only frame style that provides system-level title bar buttons (minimize/maximize/close), each 45 pixels wide and 32 pixels tall by default, with no implementation needed on your part.
+`title-overlay` is a frame style that provides system-level title bar buttons (minimize/maximize/close), each 45 pixels wide and 32 pixels tall by default, with no implementation needed on your part. **Supported on both Windows and Linux** (Linux since v2.3.0-beta.6).
 
 ### C Code Example
 
@@ -304,7 +304,7 @@ int app_ready_callback(uint32_t window_id, const char* event_type,
 
 | Feature | `title-overlay` | `no-titlebar` |
 |------|-----------------|---------------|
-| **Supported platforms** | Windows only | All platforms |
+| **Supported platforms** | Windows and Linux | All platforms |
 | **Title bar buttons** | Built-in (system style) | Implement yourself |
 | **Development difficulty** | Easy | Medium |
 | **Style customization** | Partially customizable | Fully customizable |
@@ -333,5 +333,5 @@ Both approaches can use `-webkit-app-region` to implement dragging:
 
 1. **Interactive elements**: Buttons, links, and input fields within the title bar must be set to `no-drag`, otherwise they cannot be clicked
 2. **Double-click behavior**: Double-clicking a draggable region triggers maximize/restore (system behavior)
-3. **`title-overlay`**: Windows-only; no need to implement the title bar buttons yourself
+3. **`title-overlay`**: supported on both Windows and Linux; no need to implement the title bar buttons yourself
 4. **`no-titlebar` + `create_borderless_webview_window`**: Lets you obtain the HWND for use with the Win32 API

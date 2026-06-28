@@ -121,7 +121,7 @@ The two approaches can coexist on the same page without interfering with each ot
 
 ## Built-in Title Bar Button Overlay (`title-overlay`)
 
-**Purpose**: A Windows-exclusive style that provides a **bordered + no-title-bar + built-in title bar buttons in the top-right corner** effect, without having to implement window control button functionality yourself. Each button is 45 pixels wide and 32 pixels high by default.
+**Purpose**: A style that provides a **bordered + no-title-bar + built-in title bar buttons in the top-right corner** effect, without having to implement window control button functionality yourself. Each button is 45 pixels wide and 32 pixels high by default. **Supported on both Windows and Linux** (Linux since v2.3.0-beta.6).
 
 ### Features
 
@@ -166,7 +166,7 @@ set_titlebar_overlay_style(
 ```
 
 :::info
-The `title-overlay` style is only supported on the Windows platform. On other platforms it falls back to the `no-titlebar` style.
+The `title-overlay` style is supported on **both Windows and Linux** (Linux since v2.3.0-beta.6). Note: runtime style customization via `set_titlebar_overlay_style` currently takes effect on Windows only; Linux uses the built-in default style (icon `#1E1E1E`, hover background `#DCDCDCBF`, height `32`).
 :::
 
 ---

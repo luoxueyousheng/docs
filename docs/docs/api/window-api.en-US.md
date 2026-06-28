@@ -42,7 +42,7 @@ uint32_t create_webview_window(
   - `width` `int32_t` - Initial width (pixels)
   - `height` `int32_t` - Initial height (pixels)
   - `resizable` `int32_t` - Whether the user can resize the window by dragging its edges with the mouse
-  - `frame_style` `string` - Whether to use a system border + title bar, border only without title bar, fully frameless, or frameless + a built-in title bar button overlay (`normal` / `no-titlebar` / `borderless` / `title-overlay`). `title-overlay` is Windows-only; it provides a border + no title bar + built-in title bar buttons in the top-right corner, so you don't have to implement window control button functionality yourself
+  - `frame_style` `string` - Whether to use a system border + title bar, border only without title bar, fully frameless, or frameless + a built-in title bar button overlay (`normal` / `no-titlebar` / `borderless` / `title-overlay`). `title-overlay` provides a border + no title bar + built-in title bar buttons in the top-right corner, so you don't have to implement window control button functionality yourself (supported on both Windows and Linux; Linux gained this overlay in v2.3.0-beta.6)
   - `transparent` `int32_t` - Whether to use a transparent background (depends on the WebView and system capabilities)
   - `background_color` `string` - Window background color string (e.g. hexadecimal with a `#`)
   - `always_on_top` `int32_t` - Whether to keep the window always on top
@@ -539,9 +539,9 @@ int32_t set_window_frame_style(uint32_t window_id, const char* frame_style);
 
 ---
 
-### Customize the Title Bar Overlay Style (Windows only)
+### Customize the Title Bar Overlay Style (`set_titlebar_overlay_style`)
 
-Customizes the appearance of the title bar button overlay for `title-overlay` style windows.
+Customizes the appearance (height / icon color / hover background) of the title bar button overlay for `title-overlay` style windows.
 
 ```c
 int32_t set_titlebar_overlay_style(
@@ -561,6 +561,10 @@ int32_t set_titlebar_overlay_style(
 
 :::info
 The close button's hover background color is fixed to red (`#E81123`) and its icon is fixed to white, unaffected by this API.
+:::
+
+:::warning{title=Platform Differences}
+Runtime style customization via this function **currently takes effect on Windows only**. On Linux the `title-overlay` overlay still renders, but uses the built-in default style (icon `#1E1E1E`, hover background `#DCDCDCBF`, height `32`) and is not yet customizable via this function.
 :::
 
 ---

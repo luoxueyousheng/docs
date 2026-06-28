@@ -205,7 +205,7 @@ from jadeview import window
 # 切换为无标题栏
 window.set_window_frame_style(win_id, "no-titlebar")
 
-# 切换为 title-overlay（Windows 专属，标题栏按钮覆盖在内容上）
+# 切换为 title-overlay（Windows 与 Linux 均支持，标题栏按钮覆盖在内容上）
 window.set_window_frame_style(win_id, "title-overlay")
 
 # 自定义 overlay 按钮样式

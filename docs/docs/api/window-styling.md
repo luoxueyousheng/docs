@@ -121,7 +121,7 @@ v2.3 开始支持。
 
 ## 内置标题栏按钮覆盖层（`title-overlay`）
 
-**用途**：Windows 专属样式，提供**有边框+无标题栏+右上角内置标题栏按钮**的效果，无需自行实现窗口控制按钮功能。每个按钮宽度 45 像素，高度默认 32 像素。
+**用途**：提供**有边框+无标题栏+右上角内置标题栏按钮**的效果，无需自行实现窗口控制按钮功能。每个按钮宽度 45 像素，高度默认 32 像素。**Windows 与 Linux 均支持**（Linux 自 v2.3.0-beta.6 起）。
 
 ### 特点
 
@@ -166,7 +166,7 @@ set_titlebar_overlay_style(
 ```
 
 :::info
-`title-overlay` 样式仅 Windows 平台支持。在其他平台上会回退到 `no-titlebar` 样式。
+`title-overlay` 样式在 **Windows 与 Linux** 均支持（Linux 自 v2.3.0-beta.6 起）。注：`set_titlebar_overlay_style` 的运行时样式定制目前仅 Windows 生效，Linux 使用内置默认样式（图标 `#1E1E1E`、悬浮背景 `#DCDCDCBF`、高度 `32`）。
 :::
 
 ---

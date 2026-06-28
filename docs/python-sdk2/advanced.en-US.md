@@ -205,7 +205,7 @@ from jadeview import window
 # Switch to no titlebar
 window.set_window_frame_style(win_id, "no-titlebar")
 
-# Switch to title-overlay (Windows-only, titlebar buttons overlaid on the content)
+# Switch to title-overlay (Windows and Linux, titlebar buttons overlaid on the content)
 window.set_window_frame_style(win_id, "title-overlay")
 
 # Customize the overlay button style

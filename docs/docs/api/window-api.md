@@ -42,7 +42,7 @@ uint32_t create_webview_window(
   - `width` `int32_t` - 初始宽度（像素）
   - `height` `int32_t` - 初始高度（像素）
   - `resizable` `int32_t` - 用户能不能用鼠标拖边缘改大小
-  - `frame_style` `string` - 要系统边框+标题栏、只要边框不要标题栏、完全无边框、还是无边框+内置标题栏按钮覆盖层（`normal` / `no-titlebar` / `borderless` / `title-overlay`）。`title-overlay` 为 Windows 专属，提供有边框+无标题栏+右上角内置标题栏按钮，无需自行实现窗口控制按钮功能
+  - `frame_style` `string` - 要系统边框+标题栏、只要边框不要标题栏、完全无边框、还是无边框+内置标题栏按钮覆盖层（`normal` / `no-titlebar` / `borderless` / `title-overlay`）。`title-overlay` 提供有边框+无标题栏+右上角内置标题栏按钮，无需自行实现窗口控制按钮功能（Windows 与 Linux 均支持；Linux 自 v2.3.0-beta.6 起提供该覆盖层）
   - `transparent` `int32_t` - 是否透明背景（和 WebView、系统能力有关）
   - `background_color` `string` - 窗口背景色字符串（如带 `#` 的十六进制）
   - `always_on_top` `int32_t` - 是否总在最前
@@ -539,9 +539,9 @@ int32_t set_window_frame_style(uint32_t window_id, const char* frame_style);
 
 ---
 
-### 自定义标题栏覆盖层样式（Windows 专属）
+### 自定义标题栏覆盖层样式（`set_titlebar_overlay_style`）
 
-自定义 `title-overlay` 样式窗口的标题栏按钮覆盖层外观。
+自定义 `title-overlay` 样式窗口的标题栏按钮覆盖层外观（高度 / 图标颜色 / 悬浮背景色）。
 
 ```c
 int32_t set_titlebar_overlay_style(
@@ -561,6 +561,10 @@ int32_t set_titlebar_overlay_style(
 
 :::info
 关闭按钮悬浮背景色固定为红色（`#E81123`），图标固定为白色，不受此 API 影响。
+:::
+
+:::warning{title=平台差异}
+本函数的运行时样式定制**目前仅 Windows 生效**。Linux 上 `title-overlay` 覆盖层会正常显示，但使用内置默认样式（图标 `#1E1E1E`、悬浮背景 `#DCDCDCBF`、高度 `32`），暂不可经此函数定制。
 :::
 
 ---

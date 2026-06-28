@@ -153,7 +153,7 @@ The context menu APIs (`jade_menu_item_create`, etc.) have been moved to the sep
 | `title` | The text on the window's title bar. |
 | `width` / `height` | The initial width and height (pixels). |
 | `resizable` | Whether the user can drag the edges with the mouse to resize it. |
-| `frame_style` | Whether to have a system frame + title bar, only a frame without a title bar, completely borderless, or borderless + a built-in title bar button overlay (`normal` / `no-titlebar` / `borderless` / `title-overlay`). `title-overlay` is Windows-only, providing a frame + no title bar + built-in title bar buttons in the top-right corner (each button is 45 pixels wide, and the height defaults to 32 pixels), with no need to implement the window control button functionality yourself. |
+| `frame_style` | Whether to have a system frame + title bar, only a frame without a title bar, completely borderless, or borderless + a built-in title bar button overlay (`normal` / `no-titlebar` / `borderless` / `title-overlay`). `title-overlay` provides a frame + no title bar + built-in title bar buttons in the top-right corner (each button is 45 pixels wide, and the height defaults to 32 pixels), with no need to implement the window control button functionality yourself (supported on both Windows and Linux, Linux since v2.3.0-beta.6). |
 | `transparent` | Whether to have a transparent background (depends on WebView and system capabilities). |
 | `background_color` | The window background color string (such as hexadecimal with a `#`). |
 | `always_on_top` | Whether it always stays in front. |
