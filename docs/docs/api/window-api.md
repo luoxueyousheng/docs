@@ -62,6 +62,8 @@ uint32_t create_webview_window(
   - `use_page_icon` `int32_t` - 是否用网页 favicon 当初步窗口图标（Windows/Linux 均支持；从 exe 提取图标仅 Windows）
   - `content_protection` `int32_t` - 是否开启防录屏/截屏类保护（**仅 Windows 生效**；Linux/X11 无系统级等价，设置不报错但无实际保护效果）
   - `auto_save_state` `int32_t` - 非 `0`：在**数据目录**下的 `window_state.yaml` 里按 **`window_id`** 记录窗口**最后一次有效的物理左上角坐标**；下次用同一 `window_id` 创建时，若该位置仍落在某块屏的工作区内，则**恢复位置**（**宽高、是否最大化仍以本次创建参数为准**）。移动停止约 **450ms** 后防抖落盘；关闭时也会再存一次
+  - `skip_taskbar` `int32_t` - 是否不进任务栏 / Alt-Tab（`0` = 否，`1` = 是）。**v2.3.0-beta.6 新增**，追加在结构体末尾以保持字段顺序兼容（运行时改用 `set_window_skip_taskbar`，见下文「窗口标志与层级」）
+  - `no_activate` `int32_t` - 是否不抢焦点：点击 / 显示窗口都不激活（`0` = 否，`1` = 是）。**v2.3.0-beta.6 新增**，追加在结构体末尾以保持字段顺序兼容（运行时改用 `set_window_no_activate`，见下文「窗口标志与层级」）
 
 - `webview_settings` `WebViewSettings*` (可选) - 网页行为配置，可传 `NULL` 使用默认值
 
@@ -264,6 +266,73 @@ int32_t set_window_ignore_cursor_events(uint32_t window_id, int ignore);
 
 - **参数**：`window_id`、`ignore`（`1` = 忽略鼠标事件/穿透，`0` = 正常）
 - **返回值**：`1` = 成功，`0` = 失败
+
+---
+
+## 窗口标志与层级
+
+:::warning
+v2.3.0-beta.6 开始支持，全部跨平台（Windows / Linux）。
+:::
+
+适用于侧边 Dock、悬浮面板、桌面挂件、启动器等场景：让窗口不出现在任务栏 / Alt-Tab、常驻时不抢焦点，或把窗口压到桌面壁纸层。
+
+### 不进任务栏 / Alt-Tab（`set_window_skip_taskbar`）
+
+让窗口从任务栏和 Alt-Tab 切换列表中隐藏，常用于悬浮工具窗、挂件。也可在创建时用 `WebViewWindowOptions.skip_taskbar` 直接置位。
+
+```c
+int32_t set_window_skip_taskbar(uint32_t window_id, int32_t skip);
+```
+
+- **参数**：`window_id`；`skip`（`1` = 不进任务栏 / Alt-Tab，`0` = 恢复）
+- **返回值**：`1` = 成功，`0` = 失败
+
+:::info{title=平台实现}
+Windows：加 `WS_EX_TOOLWINDOW` 并去 `WS_EX_APPWINDOW`；Linux：GTK `skip-taskbar-hint`。
+:::
+
+---
+
+### 不抢焦点（`set_window_no_activate`）
+
+让窗口在点击 / 显示时都不获得激活焦点，适合常驻的悬浮面板（点它不打断你在别处的输入）。也可在创建时用 `WebViewWindowOptions.no_activate` 直接置位。
+
+```c
+int32_t set_window_no_activate(uint32_t window_id, int32_t no_activate);
+```
+
+- **参数**：`window_id`；`no_activate`（`1` = 不抢焦点，`0` = 恢复）
+- **返回值**：`1` = 成功，`0` = 失败
+
+:::info{title=平台实现}
+Windows：`WS_EX_NOACTIVATE`（`SetWindowLongPtr`）；Linux：GTK `accept-focus=false`。
+:::
+
+---
+
+### 设置窗口层级（`set_window_level`）
+
+一次性设定窗口处于哪个层级，比单纯的「置顶」更灵活——可把窗口压到所有窗口下方，甚至贴到桌面壁纸层做挂件。
+
+```c
+// level: "topmost" | "normal" | "bottom" | "desktop"
+int32_t set_window_level(uint32_t window_id, const char* level);
+```
+
+- **参数**：`window_id`；`level` `string` - 层级字符串，取值见下表
+- **返回值**：`1` = 成功，`0` = 失败
+
+| level | 行为 | 实现 |
+|-------|------|------|
+| `topmost` | 置顶，盖在普通窗口之上 | `set_always_on_top(true)`（跨平台） |
+| `normal` | 普通层，取消置顶 / 置底 | 取消 always-on-top / always-on-bottom |
+| `bottom` | 压在其它窗口下方 | `set_always_on_bottom(true)`（跨平台） |
+| `desktop` | 贴桌面壁纸层（最小化所有窗口才见，类挂件） | 先 `bottom`；Windows 寄生 `Progman` / `WorkerW`，Linux 设 GTK `WindowTypeHint::Desktop` |
+
+:::warning{title=平台差异}
+`topmost` / `normal` / `bottom` 跨平台稳定；`desktop`（壁纸层）为 best-effort，与窗口管理器行为相关，建议真机验证。寄生失败时至少退化为 `bottom`（仍在所有窗口下方）。
+:::
 
 ---
 

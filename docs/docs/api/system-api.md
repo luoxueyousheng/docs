@@ -167,6 +167,86 @@ Windows（`EnumPrintersW`）与 Linux（CUPS `lpstat -e`）均可用。Linux 需
 
 ---
 
+## 开机自启
+
+:::warning
+v2.3.0-beta.6 开始支持。
+:::
+
+设置 / 查询应用是否随系统登录自动启动，跨平台（Windows / Linux）。自启的**标识名**取 `JadeView_init` 传入的 `app_name`（缺省回退到可执行文件名）；自启**命令**为当前可执行文件路径（`current_exe`）加上你传入的 `args`。
+
+### 启用 / 取消开机自启（`set_login_autostart`）
+
+```c
+// enable: 1=启用，0=取消；args: 追加到可执行路径后的启动参数（NULL / 空 = 无）
+int32_t set_login_autostart(int32_t enable, const char* args);
+```
+
+- **参数**：
+  - `enable` `int32_t` - `1` = 启用开机自启，`0` = 取消
+  - `args` `string` - 自启时追加到可执行路径后的启动参数（如 `"--minimized"`）；传 `NULL` 或空字符串表示无参数
+- **返回值**：`1` = 成功，`0` = 失败（无权限 / IO 错误）。取消时若自启项本就不存在，也视为成功
+
+### 查询是否已设置开机自启（`get_login_autostart`）
+
+```c
+int32_t get_login_autostart(void);
+```
+
+- **返回值**：`1` = 已设置开机自启，`0` = 未设置
+
+:::info{title=平台实现}
+| 平台 | 机制 |
+|------|------|
+| Windows | 写注册表 `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`，值名 = app_name，值 = `"<exe>" <args>` |
+| Linux | XDG autostart：在 `<config>/autostart/<app_name>.desktop` 写入 `.desktop` 文件（`dirs` 取 `XDG_CONFIG_HOME`，回退 `~/.config`） |
+:::
+
+---
+
+## 文件图标
+
+### 提取文件 / 程序图标（`get_file_icon`）
+
+:::warning
+v2.3.0-beta.6 开始支持。
+:::
+
+取任意路径（`.exe` / `.lnk` / 普通文件 / 文件夹）的**系统关联图标**，缩放为指定尺寸的 PNG，注册成 `jade://` 安全资源并把可访问 URL 写入你的缓冲区——前端直接拿这个 URL 当 `<img src>` 即可显示。常用于文件管理器、启动器、最近文件列表等需要展示系统图标的界面。
+
+```c
+// size: 目标边长（16/32/48/64/128/256，<=0 取 48）
+// window_id: 资源归属窗口（0 = 全局）
+// ttl_seconds: 资源过期秒（0 = 默认，0xFFFFFFFF = 永不过期）
+// url_buffer / buffer_size: 输出 URL 缓冲（与 register_resource 同格式）
+int32_t get_file_icon(const char* path, int32_t size, uint32_t window_id,
+                      uint32_t ttl_seconds, char* url_buffer, size_t buffer_size);
+```
+
+| 参数 | 说明 |
+|------|------|
+| `path` | 目标路径：`.exe` / `.lnk` / 普通文件 / 文件夹，取其系统关联图标 |
+| `size` | 目标边长像素（建议 16 / 32 / 48 / 64 / 128 / 256）；`<=0` 取默认 48 |
+| `window_id` | 资源归属窗口，`0` = 全局 |
+| `ttl_seconds` | 资源过期秒数，`0` = 默认，`0xFFFFFFFF` = 永不过期 |
+| `url_buffer` / `buffer_size` | 输出 URL 的缓冲区及其大小（字节） |
+
+- **返回值**：`1` = 成功，`url_buffer` 写入形如 `/---jade---resource--?token=...` 的 URL；`0` = 失败
+- 内部流程：取图标 → Lanczos3 缩放 → PNG 写入 `%TEMP%/JadeView_icon_cache/`（按 路径 + 尺寸 去重）→ 注册为 `jade://` 资源 → 写出 URL
+
+:::info{title=平台实现}
+| 平台 | 实现 |
+|------|------|
+| Windows | `SHGetFileInfo` 取 HICON → GDI+ 转 PNG → `image` 缩放编码 |
+| Linux | `gio` 查询文件关联图标 → GTK `IconTheme` 取 `Pixbuf`（未命中回退 `text-x-generic`）→ 编码 PNG |
+:::
+
+:::warning{title=Linux 线程约束}
+GTK `IconTheme` / `Pixbuf` 有主线程亲和性，内部经 `glib::idle_add_once` 投递到 GTK 主循环执行、调用线程阻塞取回。因此 **Linux 上须从 worker 线程调用 `get_file_icon`，且要求消息循环（`run_message_loop`）正在运行、有默认显示（X11 / Wayland）**；勿在 GTK 主线程同步调用，否则会死锁。Windows 无此限制。
+:::
+
+---
+
 ## 网络时间（NTP）
 
 ### 获取网络时间戳（`jade_ntp_now`）

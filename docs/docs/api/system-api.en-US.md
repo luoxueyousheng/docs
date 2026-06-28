@@ -167,6 +167,86 @@ Available on both Windows (`EnumPrintersW`) and Linux (CUPS `lpstat -e`). Linux 
 
 ---
 
+## Login Autostart
+
+:::warning
+Supported since v2.3.0-beta.6.
+:::
+
+Set / query whether the app starts automatically on system login, cross-platform (Windows / Linux). The autostart **identifier name** is taken from the `app_name` passed to `JadeView_init` (falling back to the executable file name if absent); the autostart **command** is the current executable path (`current_exe`) plus the `args` you pass in.
+
+### Enable / Disable Login Autostart (`set_login_autostart`)
+
+```c
+// enable: 1=enable, 0=disable; args: launch arguments appended after the exe path (NULL / empty = none)
+int32_t set_login_autostart(int32_t enable, const char* args);
+```
+
+- **Parameters**:
+  - `enable` `int32_t` - `1` = enable autostart, `0` = disable
+  - `args` `string` - Launch arguments appended after the executable path on autostart (e.g. `"--minimized"`); pass `NULL` or an empty string for no arguments
+- **Return value**: `1` = success, `0` = failure (no permission / IO error). When disabling, if the autostart entry does not exist in the first place, it is also treated as success
+
+### Query Whether Login Autostart Is Set (`get_login_autostart`)
+
+```c
+int32_t get_login_autostart(void);
+```
+
+- **Return value**: `1` = autostart is set, `0` = not set
+
+:::info{title=Platform Implementation}
+| Platform | Mechanism |
+|------|------|
+| Windows | Writes the registry key `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, value name = app_name, value = `"<exe>" <args>` |
+| Linux | XDG autostart: writes a `.desktop` file at `<config>/autostart/<app_name>.desktop` (`dirs` resolves `XDG_CONFIG_HOME`, falling back to `~/.config`) |
+:::
+
+---
+
+## File Icon
+
+### Extract a File / Program Icon (`get_file_icon`)
+
+:::warning
+Supported since v2.3.0-beta.6.
+:::
+
+Gets the **system-associated icon** for any path (`.exe` / `.lnk` / a regular file / a folder), scales it to a PNG of the requested size, registers it as a `jade://` secure resource, and writes the accessible URL into your buffer — the frontend can use that URL directly as `<img src>`. Commonly used for file managers, launchers, recent-file lists, and other UIs that need to show system icons.
+
+```c
+// size: target edge length (16/32/48/64/128/256, <=0 uses 48)
+// window_id: window the resource belongs to (0 = global)
+// ttl_seconds: resource expiry in seconds (0 = default, 0xFFFFFFFF = never expires)
+// url_buffer / buffer_size: output URL buffer (same format as register_resource)
+int32_t get_file_icon(const char* path, int32_t size, uint32_t window_id,
+                      uint32_t ttl_seconds, char* url_buffer, size_t buffer_size);
+```
+
+| Parameter | Description |
+|------|------|
+| `path` | Target path: `.exe` / `.lnk` / a regular file / a folder; its system-associated icon is taken |
+| `size` | Target edge length in pixels (16 / 32 / 48 / 64 / 128 / 256 recommended); `<=0` uses the default 48 |
+| `window_id` | Window the resource belongs to, `0` = global |
+| `ttl_seconds` | Resource expiry in seconds, `0` = default, `0xFFFFFFFF` = never expires |
+| `url_buffer` / `buffer_size` | The output URL buffer and its size (bytes) |
+
+- **Return value**: `1` = success, `url_buffer` is written with a URL like `/---jade---resource--?token=...`; `0` = failure
+- Internal flow: extract icon → Lanczos3 scaling → write PNG to `%TEMP%/JadeView_icon_cache/` (deduplicated by path + size) → register as a `jade://` resource → write out the URL
+
+:::info{title=Platform Implementation}
+| Platform | Implementation |
+|------|------|
+| Windows | `SHGetFileInfo` to get the HICON → GDI+ to PNG → `image` scaling and encoding |
+| Linux | `gio` queries the file-associated icon → GTK `IconTheme` gets a `Pixbuf` (falls back to `text-x-generic` on a miss) → encodes PNG |
+:::
+
+:::warning{title=Linux Threading Constraint}
+GTK `IconTheme` / `Pixbuf` have main-thread affinity; internally the work is dispatched to the GTK main loop via `glib::idle_add_once` while the calling thread blocks for the result. Therefore **on Linux you must call `get_file_icon` from a worker thread, and the message loop (`run_message_loop`) must be running with a default display (X11 / Wayland)**; do not call it synchronously on the GTK main thread, or it will deadlock. Windows has no such constraint.
+:::
+
+---
+
 ## Network Time (NTP)
 
 ### Get Network Timestamp (`jade_ntp_now`)

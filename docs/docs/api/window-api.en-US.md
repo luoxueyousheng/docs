@@ -62,6 +62,8 @@ uint32_t create_webview_window(
   - `use_page_icon` `int32_t` - Whether to use the web page's favicon as the initial window icon (supported on both Windows and Linux; extracting the icon from the exe is Windows only)
   - `content_protection` `int32_t` - Whether to enable screen-recording/screenshot protection (**Windows only**; Linux/X11 has no system-level equivalent — the setting does not error but provides no actual protection)
   - `auto_save_state` `int32_t` - Non-`0`: records the window's **last valid physical top-left coordinates** by **`window_id`** in `window_state.yaml` under the **data directory**; the next time a window is created with the same `window_id`, if that position still falls within the work area of some monitor, the **position is restored** (**width, height, and maximized state still follow the parameters of this creation call**). The state is debounced and written to disk roughly **450ms** after the window stops moving, and is saved once more on close
+  - `skip_taskbar` `int32_t` - Whether to keep the window out of the taskbar / Alt-Tab (`0` = no, `1` = yes). **Added in v2.3.0-beta.6**; appended at the end of the struct to keep field order compatible (use `set_window_skip_taskbar` at runtime, see "Window Flags & Level" below)
+  - `no_activate` `int32_t` - Whether to avoid stealing focus: neither clicking nor showing the window activates it (`0` = no, `1` = yes). **Added in v2.3.0-beta.6**; appended at the end of the struct to keep field order compatible (use `set_window_no_activate` at runtime, see "Window Flags & Level" below)
 
 - `webview_settings` `WebViewSettings*` (optional) - Web page behavior configuration; pass `NULL` to use defaults
 
@@ -264,6 +266,73 @@ int32_t set_window_ignore_cursor_events(uint32_t window_id, int ignore);
 
 - **Parameters**: `window_id`, `ignore` (`1` = ignore mouse events / pass-through, `0` = normal)
 - **Return value**: `1` = success, `0` = failure
+
+---
+
+## Window Flags & Level
+
+:::warning
+Supported starting from v2.3.0-beta.6, all cross-platform (Windows / Linux).
+:::
+
+For scenarios such as side docks, floating panels, desktop widgets, and launchers: keep the window out of the taskbar / Alt-Tab, avoid stealing focus while it stays resident, or push the window down to the desktop wallpaper layer.
+
+### Skip the Taskbar / Alt-Tab (`set_window_skip_taskbar`)
+
+Hides the window from the taskbar and the Alt-Tab switcher; commonly used for floating tool windows and widgets. You can also set it at creation time via `WebViewWindowOptions.skip_taskbar`.
+
+```c
+int32_t set_window_skip_taskbar(uint32_t window_id, int32_t skip);
+```
+
+- **Parameters**: `window_id`; `skip` (`1` = skip the taskbar / Alt-Tab, `0` = restore)
+- **Return value**: `1` = success, `0` = failure
+
+:::info{title=Platform Implementation}
+Windows: adds `WS_EX_TOOLWINDOW` and removes `WS_EX_APPWINDOW`; Linux: GTK `skip-taskbar-hint`.
+:::
+
+---
+
+### Do Not Steal Focus (`set_window_no_activate`)
+
+Keeps the window from gaining activation focus when clicked or shown, suitable for resident floating panels (clicking it won't interrupt your typing elsewhere). You can also set it at creation time via `WebViewWindowOptions.no_activate`.
+
+```c
+int32_t set_window_no_activate(uint32_t window_id, int32_t no_activate);
+```
+
+- **Parameters**: `window_id`; `no_activate` (`1` = do not steal focus, `0` = restore)
+- **Return value**: `1` = success, `0` = failure
+
+:::info{title=Platform Implementation}
+Windows: `WS_EX_NOACTIVATE` (`SetWindowLongPtr`); Linux: GTK `accept-focus=false`.
+:::
+
+---
+
+### Set the Window Level (`set_window_level`)
+
+Sets which layer the window sits on in one call — more flexible than plain "always on top": you can push the window below all others, or even pin it to the desktop wallpaper layer as a widget.
+
+```c
+// level: "topmost" | "normal" | "bottom" | "desktop"
+int32_t set_window_level(uint32_t window_id, const char* level);
+```
+
+- **Parameters**: `window_id`; `level` `string` - the level string; see the table below
+- **Return value**: `1` = success, `0` = failure
+
+| level | Behavior | Implementation |
+|-------|------|------|
+| `topmost` | On top, above normal windows | `set_always_on_top(true)` (cross-platform) |
+| `normal` | Normal layer; cancels topmost / bottom | Clears always-on-top / always-on-bottom |
+| `bottom` | Below other windows | `set_always_on_bottom(true)` (cross-platform) |
+| `desktop` | Pinned to the desktop wallpaper layer (only visible after minimizing all windows; widget-like) | First `bottom`; on Windows parents to `Progman` / `WorkerW`, on Linux sets GTK `WindowTypeHint::Desktop` |
+
+:::warning{title=Platform Differences}
+`topmost` / `normal` / `bottom` are stable cross-platform; `desktop` (wallpaper layer) is best-effort, depends on window manager behavior, and is recommended to be verified on a real machine. If parenting fails, it at least degrades to `bottom` (still below all windows).
+:::
 
 ---
 
