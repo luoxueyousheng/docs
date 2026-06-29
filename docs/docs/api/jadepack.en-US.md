@@ -34,7 +34,7 @@ JadePack is a monthly subscription product. After downloading and installing, fo
 
 ### Obfuscated Package (No Signature Required)
 
-Even without a signature, JadePack applies XOR obfuscation protection to the packaged content, producing a **non-plaintext** obfuscated package. This is suitable for basic protection scenarios and requires no public key when loading.
+Even without a signature, JadePack applies a 3-layer reversible transform (XOR + byte permutation + bit rotation) to the packaged content, producing a **non-plaintext** obfuscated package. This is suitable for basic protection scenarios and requires no public key when loading.
 
 | Feature | Description |
 |------|------|

@@ -31,7 +31,7 @@ typedef const char *(*IpcCallback)(uint32_t window_id, const char *event_data);
 | Parameter | Description |
 |------|------|
 | `window_id` | **The window associated with the event or request**. For most window events this is the current window id; global events unrelated to any window (such as `app-ready`, `second-instance`, `global-hotkey`, and tray-related events) are mostly **`0`** — refer to the individual sections in [Event Types](/en-US/docs/api/event-types). |
-| `event_data` | A **read-only** **UTF-8** string, **null-terminated (`\0`)**. The content is mostly **JSON text**; a few are plain text (such as `success` when `app-ready` succeeds). It is **only guaranteed valid during this callback's execution**; do not keep the raw pointer after the callback returns. Copy it yourself if you need to retain it. |
+| `event_data` | A **read-only** **UTF-8** string, **null-terminated (`\0`)**. The content is mostly **JSON text**; a few are plain text (such as the error description when `app-ready` fails, or the `crash` error code). It is **only guaranteed valid during this callback's execution**; do not keep the raw pointer after the callback returns. Copy it yourself if you need to retain it. |
 
 #### Return value (`const char *`)
 
@@ -52,7 +52,7 @@ Do not **block for a long time** or do heavy work inside the callback, to avoid 
 
 <h3 id="jade-on">Subscribe to events (`jade_on`)</h3>
 
-**Purpose**: Register a callback by **event name string**; the library calls your `IpcCallback` **synchronously** when the corresponding event occurs.
+**Purpose**: Register a callback by **event name string**; the library calls your `IpcCallback` when the event occurs. **There are two dispatch-thread classes**: **interception events** (`window-closing`, `webview-will-navigate`, `webview-new-window`, `webview-download-started`, and the `enter`/`drop` of `drag-drop`) are called **inline synchronously on the GUI thread**, where the library reads the return value immediately to decide allow/block, so return as quickly as possible; **all other notification events** are dispatched **asynchronously** by a worker thread pool.
 
 ```c
 uint32_t jade_on(const char *event_name, IpcCallback callback);
@@ -87,7 +87,7 @@ For an `IpcCallback` registered via **`jade_on`**, the return value only has sem
 
 For the complete list and explanation, see [Event Types · IpcCallback return values](/en-US/docs/api/event-types#ipc-callback-returns).
 
-**About `app-ready`**: Besides the text **`success`**, it may also have **`window_id == 0`** with `event_data` being a **JSON error** or **plain-text crash info**; for parsing, see [Event Types](/en-US/docs/api/event-types). The 2.0 new event names such as `second-instance`, `global-hotkey`, `tray-menu-command`, and `tray-event` are on the same page.
+**About `app-ready`**: **Decide success solely by `window_id == 1`** — on success `event_data` is the JSON `{"ok":true,"message":"success"}`; `window_id == 0` means failure, with `event_data` being a **plain-text** error description (a runtime crash goes through the separate `crash` event, not this one). For parsing, see [Event Types](/en-US/docs/api/event-types). The 2.0 new event names such as `second-instance`, `global-hotkey`, `tray-menu-command`, and `tray-event` are on the same page.
 
 ---
 

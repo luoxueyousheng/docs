@@ -36,7 +36,7 @@ Displays an open file dialog, used to select one or more files.
 - `buttonLabel` — Custom label for the confirm button
 - `filters` — Array of file filters, in the format `[{ name: string, extensions: string[] }]`
 - `properties` — Array of strings; see the available values below
-- `blocking` — Whether to block the process, defaults to `true`
+- `blocking` — Whether to disable the parent window while the dialog is open, defaults to `true` (does not affect JS: the invoke always returns immediately and the result comes back asynchronously via the Promise)
 
 **Return value** — `Promise<Object>`:
 
@@ -72,7 +72,7 @@ Displays a save file dialog.
 - `defaultPath` — Default save path
 - `buttonLabel` — Custom label for the confirm button
 - `filters` — Array of file filters
-- `blocking` — Whether to block the process, defaults to `true`
+- `blocking` — Whether to disable the parent window while the dialog is open, defaults to `true` (does not affect JS: the invoke always returns immediately and the result comes back asynchronously via the Promise)
 
 **Return value** — `Promise<Object>`:
 
@@ -103,15 +103,15 @@ Displays a message box, used for information prompts, warnings, or user confirma
 - `title` — Message box title
 - `message` — Message box content
 - `detail` — Detailed information
-- `buttons` — Array of button text, e.g. `['OK', 'Cancel']`
+- `buttons` — Array of button text, e.g. `['OK', 'Cancel']`. **Note**: the underlying layer currently supports only "OK" or "OK + Cancel" — if the array contains a cancel keyword (the Chinese 「取消」 or the English `cancel`) it shows "OK + Cancel", otherwise it shows "OK" only; custom text and any third-or-later button have no effect
 - `defaultId` — Index of the button selected by default (0-based)
 - `cancelId` — Index of the cancel button
 - `type` — Icon type; see the available values below
-- `blocking` — Whether to block the process, defaults to `true`
+- `blocking` — Whether to disable the parent window while the dialog is open, defaults to `true` (does not affect JS: the invoke always returns immediately and the result comes back asynchronously via the Promise)
 
 **Return value** — `Promise<Object>`:
 
-- `response` — Index of the button the user clicked
+- `response` — The button the user clicked: `0` = OK, `1` = Cancel, `-1` = closed/error (due to the `buttons` limitation above, an index of `2` or greater never appears)
 
 **Example**:
 
@@ -169,8 +169,8 @@ await jade.dialog.showErrorBox('Operation Failed', 'Unable to connect to the ser
 | `'openFile'` | Allow selecting files (default) |
 | `'openDirectory'` | Allow selecting folders |
 | `'multiSelections'` | Allow multiple selection |
-| `'showHiddenFiles'` | Show hidden files |
-| `'promptToCreate'` | Prompt to create the file if it does not exist (Windows only) |
+| `'showHiddenFiles'` | Show hidden files **(not implemented yet, ignored)** |
+| `'promptToCreate'` | Prompt to create the file if it does not exist **(not implemented yet, ignored)** |
 
 ---
 
@@ -242,7 +242,7 @@ jade.on('dialog-open-file-completed', (result) => {
 
 ## Notes
 
-1. **Blocking option**: When `blocking: true`, the dialog blocks the process; when `blocking: false`, it is shown asynchronously and does not block.
+1. **Blocking option**: `blocking` only controls whether the parent window is disabled while the dialog is open; it does **not** block JS — the frontend invoke always returns immediately, and the result comes back asynchronously via the Promise (and the corresponding completed event).
 2. **Filter format**: The `extensions` array does not include the dot, e.g. `png` rather than `.png`.
 3. **Path format**: Windows paths use backslashes `\\` or forward slashes `/`.
 4. **properties combinations**: `openFile` and `openDirectory` can be used together; `multiSelections` can be combined with any property.
@@ -260,4 +260,4 @@ Make sure the `jade.on` listener is registered before the dialog is shown.
 Make sure the `extensions` array does not contain dots (e.g. `png` rather than `.png`).
 
 ### Returns undefined
-Make sure the `blocking` option is set correctly, and check the console for errors.
+These methods return a Promise — use `await` or `.then` to get the result, and check the console for errors.

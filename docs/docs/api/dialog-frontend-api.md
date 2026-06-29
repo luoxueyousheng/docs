@@ -36,7 +36,7 @@ group:
 - `buttonLabel` — 确认按钮的自定义标签
 - `filters` — 文件过滤器数组，格式 `[{ name: string, extensions: string[] }]`
 - `properties` — 字符串数组，可选值见下方
-- `blocking` — 是否阻塞进程，默认 `true`
+- `blocking` — 对话框期间是否禁用父窗口，默认 `true`（不影响 JS：invoke 总是立即返回，结果经 Promise 异步回传）
 
 **返回值** — `Promise<Object>`:
 
@@ -72,7 +72,7 @@ if (!result.canceled) {
 - `defaultPath` — 默认保存路径
 - `buttonLabel` — 确认按钮的自定义标签
 - `filters` — 文件过滤器数组
-- `blocking` — 是否阻塞进程，默认 `true`
+- `blocking` — 对话框期间是否禁用父窗口，默认 `true`（不影响 JS：invoke 总是立即返回，结果经 Promise 异步回传）
 
 **返回值** — `Promise<Object>`:
 
@@ -103,15 +103,15 @@ if (!result.canceled) {
 - `title` — 消息框标题
 - `message` — 消息框内容
 - `detail` — 详细信息
-- `buttons` — 按钮文本数组，如 `['确定', '取消']`
+- `buttons` — 按钮文本数组，如 `['确定', '取消']`。**注意**：底层当前只支持「确定」或「确定 + 取消」两种形态——数组中包含「取消」（或英文 `cancel`）才显示「确定 + 取消」，否则只显示「确定」；自定义文字与第 3 个及以后的按钮均不生效
 - `defaultId` — 默认选中的按钮索引（0-based）
 - `cancelId` — 取消按钮的索引
 - `type` — 图标类型，可选值见下方
-- `blocking` — 是否阻塞进程，默认 `true`
+- `blocking` — 对话框期间是否禁用父窗口，默认 `true`（不影响 JS：invoke 总是立即返回，结果经 Promise 异步回传）
 
 **返回值** — `Promise<Object>`:
 
-- `response` — 用户点击的按钮索引
+- `response` — 用户点击的按钮：`0` = 确定，`1` = 取消，`-1` = 关闭/异常（受上面 `buttons` 限制，不会出现 `2` 及更大的索引）
 
 **示例**：
 
@@ -169,8 +169,8 @@ await jade.dialog.showErrorBox('操作失败', '无法连接到服务器');
 | `'openFile'` | 允许选择文件（默认） |
 | `'openDirectory'` | 允许选择文件夹 |
 | `'multiSelections'` | 允许多选 |
-| `'showHiddenFiles'` | 显示隐藏文件 |
-| `'promptToCreate'` | 文件不存在时提示创建（仅 Windows） |
+| `'showHiddenFiles'` | 显示隐藏文件 **（当前未实现，忽略）** |
+| `'promptToCreate'` | 文件不存在时提示创建 **（当前未实现，忽略）** |
 
 ---
 
@@ -242,7 +242,7 @@ jade.on('dialog-open-file-completed', (result) => {
 
 ## 注意事项
 
-1. **阻塞选项**：`blocking: true` 时对话框阻塞进程；`blocking: false` 时异步显示，不阻塞。
+1. **阻塞选项**：`blocking` 只决定对话框弹出期间是否禁用父窗口；它**不会**阻塞 JS——前端 invoke 总是立即返回，结果通过 Promise（及对应完成事件）异步回传。
 2. **过滤器格式**：`extensions` 数组不包含点号，如 `png` 而不是 `.png`。
 3. **路径格式**：Windows 路径使用反斜杠 `\\` 或正斜杠 `/`。
 4. **properties 组合**：`openFile` 和 `openDirectory` 可同时使用；`multiSelections` 可与任意属性组合。
@@ -260,4 +260,4 @@ jade.on('dialog-open-file-completed', (result) => {
 确保 `extensions` 数组中不含点号（如 `png` 而非 `.png`）。
 
 ### 返回 undefined
-确保 `blocking` 选项设置正确，并检查控制台是否有错误。
+方法返回的是 Promise，需 `await` 或 `.then` 获取结果；并检查控制台是否有错误。

@@ -39,12 +39,12 @@ The recommended file organization for SDK documentation is as follows:
 ```
 docs/
   your-sdk-name/
-    index.mdx          # Home page
-    quickstart.mdx     # Quick start
-    api-reference.mdx  # API reference
-    advanced.mdx       # Advanced usage
-    examples.mdx       # Sample code
-    faq.mdx            # FAQ
+    index.md          # Home page
+    quickstart.md     # Quick start
+    api-reference.md  # API reference
+    advanced.md       # Advanced usage
+    examples.md       # Sample code
+    faq.md            # FAQ
 ```
 
 ## Documentation Writing Guidelines
@@ -221,7 +221,7 @@ Code examples should:
 
 ### Reference Resources
 
-- [Docusaurus Documentation](https://docusaurus.io/docs)
+- [dumi Documentation](https://d.umijs.org/)
 - [Markdown Guide](https://www.markdownguide.org/)
 - [Google Technical Writing Guide](https://developers.google.com/tech-writing)
 - [Microsoft Documentation Style Guide](https://docs.microsoft.com/en-us/style-guide/welcome/)

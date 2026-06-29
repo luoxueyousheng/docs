@@ -45,11 +45,14 @@ int32_t JadeView_init(
 
 #### `app-ready` 里你会收到什么
 
+成功与失败的 `event_data` **格式不同**（成功是 JSON、失败是纯文本），**判定成功只看 `window_id == 1`**，不要靠解析 `event_data`：
+
 | 情况 | `window_id` | `event_data` 大致长什么样 |
 |------|-------------|---------------------------|
-| 正常启动完成 | `1` | 文本 `success` |
-| `app_name` / `app_signature` 校验失败 | `0` | JSON：`{"ok":false,"code":"...","message":"..."}` |
-| GUI 线程崩溃 | `0` | 一段纯文字错误说明 |
+| 正常启动完成 | `1` | JSON：`{"ok":true,"message":"success"}` |
+| `app_name` / `app_signature` 校验失败 | `0` | 纯文本 `"<code>: <message>"`（`code` 为 `missing_app_name` / `missing_app_signature` / `app_signature_too_short`） |
+
+> 程序运行期间的崩溃**不走 `app-ready`**，而是通过独立的 [`crash`](/docs/api/event-types#crash) 事件上报。
 
 请在 **`JadeView_init` 之前** 就 `jade_on("app-ready", ...)`，否则会漏掉第一条通知。
 
@@ -57,7 +60,7 @@ int32_t JadeView_init(
 
 ### 运行消息循环（`run_message_loop`）
 
-**用途**：在「exe 自己跑消息循环」的旧集成方式里可能用到。常见 **DLL 嵌入**场景下，循环已在 `JadeView_init` 里起的线程中跑，**一般不用调**。
+**用途**：在「exe 自己跑消息循环」的旧集成方式里可能用到。**它会阻塞当前线程，直到应用关停（如调用 `jadeview_exit`）才返回**。常见 **DLL 嵌入**场景下，循环已在 `JadeView_init` 里起的线程中跑，此函数为**可选、一般不用调**（与快速上手一致）。
 
 ```c
 int32_t run_message_loop(void);
@@ -153,7 +156,7 @@ int32_t jadeview_exit(void);
 | `title` | 窗口标题栏上的文字。 |
 | `width` / `height` | 初始宽高（像素）。 |
 | `resizable` | 用户能不能用鼠标拖边缘改大小。 |
-| `frame_style` | 要系统边框+标题栏、只要边框不要标题栏、完全无边框、还是无边框+内置标题栏按钮覆盖层（`normal` / `no-titlebar` / `borderless` / `title-overlay`）。`title-overlay` 提供有边框+无标题栏+右上角内置标题栏按钮（每个按钮宽度 45 像素，高度默认 32 像素），无需自行实现窗口控制按钮功能（Windows 与 Linux 均支持，Linux 自 v2.3.0-beta.6 起）。 |
+| `frame_style` | 要系统边框+标题栏、只要边框不要标题栏、完全无边框、还是无边框+内置标题栏按钮覆盖层（`normal` / `no-titlebar` / `borderless` / `title-overlay`）。`title-overlay` 提供有边框+无标题栏+右上角内置标题栏按钮（每个按钮宽度 46 像素，高度默认 32 像素），无需自行实现窗口控制按钮功能（Windows 与 Linux 均支持，Linux 自 v2.3.0-beta.6 起）。 |
 | `transparent` | 是否透明背景（和 WebView、系统能力有关）。 |
 | `background_color` | 窗口背景色字符串（如带 `#` 的十六进制）。 |
 | `always_on_top` | 是否总在最前。 |
@@ -168,6 +171,8 @@ int32_t jadeview_exit(void);
 | `use_page_icon` | 是否用网页 favicon 当初步窗口图标。 |
 | `content_protection` | 是否开启防录屏/截屏类保护。 |
 | `auto_save_state` | 非 `0`：在**数据目录**下的 `window_state.yaml` 里按 **`window_id`** 记录窗口**最后一次有效的物理左上角坐标**；下次用同一 `window_id` 创建时，若该位置仍落在某块屏的工作区内，则**恢复位置**（**宽高、是否最大化仍以本次创建参数为准**）。移动停止约 **450ms** 后防抖落盘；关闭时也会再存一次。 |
+| `skip_taskbar` | 非 `0`：窗口**不进任务栏 / Alt-Tab**。追加在结构体末尾以保持字段顺序兼容。 |
+| `no_activate` | 非 `0`：**不抢焦点**，点击或显示窗口时不激活它。追加在结构体末尾以保持兼容。 |
 
 :::warning
 2.0 已删掉旧版的 `remove_titlebar`、`borderless`、`no_center` 等字段，必须用 `frame_style` 和 `x/y=-1` 居中，否则结构体对不上会**静默错位**。
@@ -183,11 +188,12 @@ int32_t jadeview_exit(void);
 |------|----------|
 | `autoplay` | 媒体能不能自动播放。 |
 | `background_throttling` | 窗口在后台时是否降低定时器/动画频率省资源。 |
-| `disable_right_click` | 是否禁用网页右键菜单。 |
+| `allow_right_click` | 是否允许网页右键菜单。`0` = 禁用，`1` = 允许。 |
 | `ua` | 自定义 User-Agent。 |
 | `preload_js` | 页面加载前要注入的一段 JS。 |
 | `allow_fullscreen` | 网页里全屏 API 是否允许。 |
 | `postmessage_whitelist` | **页面 `postMessage` 是否转发给主进程**的白名单，值为**一条 UTF-8 字符串**（通常接近页面的 `origin`，如 `https://example.com`）。库在匹配时：`event.origin` **等于**该字符串，或 **`origin` 以该字符串为后缀**，则通过。若指针为 **`NULL`/未设置**：当前实现下**不会放行任何来源**（即收不到 `postmessage-received`）。**通过 `set_protocol_service_path` 加载的内置静态页**在实现里会**跳过白名单**、始终可收。 |
+| `cors_whitelist` | CORS 跨域来源白名单，**逗号分隔**多个域名；用于放行页面对这些来源的跨域请求。 |
 | `autofill` | 是否启用账号/密码自动填充。`0` = 禁用，`1` = 启用。*(2.2 新增)* |
 | `general_autofill_enabled` | 是否启用通用表单自动填充（姓名/地址/电话等）。`0` = 禁用，`1` = 启用。*(2.2 新增)* |
 | `incognito` | 是否以无痕/隐私浏览模式运行。`0` = 正常模式，`1` = 无痕模式。开启后页面渲染会变慢。*(2.2 新增)* |

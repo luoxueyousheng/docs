@@ -105,6 +105,10 @@ group:
 
 可通过 WebView API 或文件系统 API 实现自动化清理。
 
+JadeView 还提供程序化入口 **`clear_data_directory(confirm_token)`**：当 `confirm_token` 等于 `"I_UNDERSTAND_CLEAR_DATA"` 时，会**清空整个数据目录**（即 `JadeView_init` 传入的 `data_directory`），返回 `1` 表示成功、`0` 表示失败或确认令牌不符。
+
+> ⚠️ 注意区分：该接口清空的是**整个数据目录**（包含上文「禁止删除的核心持久化数据」），属于"重置/卸载"级别操作，**不等同于**本文所述仅清理 EBWebView 临时缓存子目录的做法。若只想优化空间、保留登录态与配置，请按第 3 节手动/选择性清理缓存子目录，切勿使用 `clear_data_directory`。
+
 ## 8. 注意事项
 
 1. **清理时机**：建议在应用启动前或后台空闲时进行清理

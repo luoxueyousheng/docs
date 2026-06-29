@@ -28,7 +28,7 @@ await jade.invoke('commandName', { /* data sent to the main process */ }, { time
 ```
 
 - The second argument can be a string, an object, etc.; the main process usually receives it as JSON text.
-- **The third argument is optional**: `timeout` controls how long to wait at most; if omitted, the default timeout is used.
+- **The third argument is optional**: `timeout` controls how long to wait at most (in milliseconds); if omitted or non-positive, the default of **300000ms (5 minutes)** is used.
 - Internally it is a **two-stage async** flow: more stable for large results or slow tasks; the old **`invokeAsync` has been removed**, so use only **`invoke`**.
 
 ---
@@ -91,6 +91,28 @@ const off = jade.on('eventName', function (payload) {
 - **First parameter**: a string, matching the `message_type` of `send_ipc_message` on the C side or the event name in the documentation.
 - **Second parameter**: a callback whose argument is the parsed data (commonly an object).
 - **Return value**: an **unsubscribe function**; once called, this listener no longer receives messages.
+
+---
+
+### System Dialogs (`jade.dialog`)
+
+**Purpose**: The frontend invokes native system dialogs via **`window.jade.dialog`**; all methods return a **Promise**.
+
+| Method | Description |
+|------|------|
+| `showOpenDialog(options)` | Opens an "open file / select directory" dialog; the Promise resolves to the selection result. |
+| `showSaveDialog(options)` | Opens a "save file" dialog; the Promise resolves to the save result. |
+| `showMessageBox(options)` | Shows a message box (info / confirmation, etc.); the Promise resolves to the user's action result. |
+| `showErrorBox(title, content)` | Shows an error box; the Promise resolves after it is closed (no return value). |
+
+```javascript
+const result = await jade.dialog.showOpenDialog({ /* options */ });
+await jade.dialog.showSaveDialog({ /* options */ });
+await jade.dialog.showMessageBox({ /* options */ });
+await jade.dialog.showErrorBox('Error', 'Failed to read the file');
+```
+
+> The `options` fields are similar to Electron's `dialog` API; pass them as needed.
 
 ---
 

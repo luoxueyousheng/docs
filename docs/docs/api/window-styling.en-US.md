@@ -47,7 +47,7 @@ In addition to the CSS `-webkit-app-region: drag`, v2.3 adds a new dragging mech
 The biggest difference from `-webkit-app-region`: **right-clicking does not bring up the system title bar menu** (Restore / Move / Size / Minimize / Maximize / Close). Because with this approach the drag region is always a regular page region (the client area), only a **left mouse button press** initiates a programmatic window move; a right-click landing on the drag region is just a regular page right-click and does not go through the system title bar.
 
 :::info
-No C FFI or frontend JS initialization is needed; it is automatically injected at runtime, so just add the attribute in your HTML and it works. Platform: Windows.
+No C FFI or frontend JS initialization is needed; it is automatically injected at runtime, so just add the attribute in your HTML and it works. Platform: Windows / Linux (Linux behavior should be verified on a real machine).
 :::
 
 ### Attributes
@@ -119,61 +119,9 @@ The two approaches can coexist on the same page without interfering with each ot
 
 ---
 
-## Built-in Title Bar Button Overlay (`title-overlay`)
-
-**Purpose**: A style that provides a **bordered + no-title-bar + built-in title bar buttons in the top-right corner** effect, without having to implement window control button functionality yourself. Each button is 45 pixels wide and 32 pixels high by default. **Supported on both Windows and Linux** (Linux since v2.3.0-beta.6).
-
-### Features
-
-- The window has a border but no system title bar
-- Minimize, maximize, and close buttons are automatically drawn in the top-right corner
-- Uses Windows 10/11-style Segoe MDL2 Assets icons
-- Button backgrounds are transparent and show a background color on hover
-- The close button shows a red background + white icon on hover
-- Completely no frontend implementation of button interaction logic is required
-
-### Usage
-
-Set `frame_style` to `title-overlay` when creating the window:
-
-```c
-WebViewWindowOptions options = {0};
-options.title = "My App";
-options.width = 800;
-options.height = 600;
-options.frame_style = "title-overlay";
-// ... other options
-```
-
-Or switch dynamically at runtime:
-
-```c
-set_window_frame_style(window_id, "title-overlay");
-```
-
-### Custom Styling
-
-You can customize the button appearance via `set_titlebar_overlay_style`:
-
-```c
-// Customize button height and colors
-set_titlebar_overlay_style(
-    window_id,
-    32,          // Button height (pixels)
-    "#FFFFFF",   // Icon color (white)
-    "#333333"    // Hover background color (dark gray)
-);
-```
-
-:::info
-The `title-overlay` style is supported on **both Windows and Linux** (Linux since v2.3.0-beta.6). Note: runtime style customization via `set_titlebar_overlay_style` currently takes effect on Windows only; Linux uses the built-in default style (icon `#1E1E1E`, hover background `#DCDCDCBF`, height `32`).
-:::
-
----
-
 ## Context Menu Control (`jade-allow-contextmenu`)
 
-**Purpose**: Controls per-element whether the context menu is allowed to pop up. When `WebViewSettings.disable_right_click` globally disables right-clicking, this attribute can individually allow it for specific elements.
+**Purpose**: Controls per-element whether the context menu is allowed to pop up. When `WebViewSettings.allow_right_click` is set to `0` (right-clicking globally disabled), this attribute can individually allow it for specific elements.
 
 ### Basic Usage
 
@@ -188,8 +136,9 @@ The `title-overlay` style is supported on **both Windows and Linux** (Linux sinc
 ### Notes
 
 - **Priority**: When the element also has the `disabled` attribute set, `jade-allow-contextmenu` does not take effect
-- **Global setting**: When `disable_right_click=0` in `WebViewSettings` (not globally disabled), this attribute is ignored and the context menu can pop up anywhere on the page
+- **Global setting**: When `allow_right_click=1` in `WebViewSettings` (not globally disabled, i.e. right-clicking allowed by default), this attribute is ignored and the context menu can pop up anywhere on the page
 - **Default behavior**: Elements without this attribute do not allow the context menu to pop up by default
+- **Scope**: This attribute only takes effect on the element actually hit by the right-click itself; it does not cover its child elements (unlike `jade-region-drag`'s "container + descendants" semantics)
 
 ### Dynamic Control
 
@@ -211,5 +160,5 @@ el.removeAttribute('jade-allow-contextmenu');      // Disallow
 ### Context Menu Not Popping Up
 
 - Check whether the element has the `disabled` attribute set
-- Confirm that `WebViewSettings.disable_right_click` is `1` (right-clicking globally disabled), otherwise `jade-allow-contextmenu` is meaningless
+- Confirm that `WebViewSettings.allow_right_click` is `0` (right-clicking globally disabled), otherwise `jade-allow-contextmenu` is meaningless
 - Make sure the `jade-allow-contextmenu` attribute has been correctly added to the target element

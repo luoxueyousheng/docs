@@ -105,6 +105,10 @@ Although the Default directory must not be deleted as a whole, some of its subdi
 
 Automated cleanup can be implemented through the WebView API or the file system API.
 
+JadeView also provides the programmatic entry point **`clear_data_directory(confirm_token)`**: when `confirm_token` equals `"I_UNDERSTAND_CLEAR_DATA"`, it **clears the entire data directory** (i.e. the `data_directory` passed to `JadeView_init`), returning `1` on success and `0` on failure or when the confirmation token does not match.
+
+> ⚠️ Note the distinction: this API clears the **entire data directory** (including the "core persistent data that must not be deleted" listed above) and is a "reset/uninstall"-level operation. It is **not** the same as the EBWebView temporary-cache subdirectory cleanup described in this document. If you only want to reclaim space while preserving login state and configuration, follow Section 3 to manually/selectively clean the cache subdirectories and do not use `clear_data_directory`.
+
 ## 8. Notes
 
 1. **Cleanup timing**: It is recommended to perform cleanup before application startup or when the background is idle

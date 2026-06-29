@@ -39,7 +39,7 @@ JAPK is JadeView's dedicated format for packaging frontend resources, bundling H
 | Method | Content Protection | Use Case |
 |------|---------|---------|
 | `@electron/asar` (free) | Plaintext, no protection | Development and debugging, internal tools |
-| JadePack obfuscated package | XOR obfuscation, non-plaintext | Distribution with basic protection |
+| JadePack obfuscated package | 3-layer reversible transform (XOR + byte permutation + bit rotation), non-plaintext | Distribution with basic protection |
 | JadePack signed package | Ed25519 signature + AES-256-GCM encryption | Production environments, commercial distribution |
 
 For detailed information, see [JAPK Resource Package Format](/en-US/docs/api/japk).
@@ -52,7 +52,7 @@ Frontend resources (JS/CSS/HTML) are plaintext by default, so distributing a JAP
 
 ### Obfuscation Protection
 
-Even without signing, JadePack applies XOR obfuscation protection to the packaged content, producing a non-plaintext obfuscated package. No public key is required when loading, making it suitable for basic protection scenarios.
+Even without signing, JadePack applies a 3-layer reversible transform (XOR + byte permutation + bit rotation) to the packaged content, producing a non-plaintext obfuscated package. No public key is required when loading, making it suitable for basic protection scenarios.
 
 ### Signing and Encryption
 
@@ -90,7 +90,7 @@ int rc = JadeView_load_from_bytes(japk_data, data_size);
 
 // 4. Get the protocol URL and create a window
 char url_buffer[256];
-set_protocol_service_path("", url_buffer, sizeof(url_buffer));
+set_protocol_service_path("", url_buffer, sizeof(url_buffer), 0);  // 4th arg hot_reload: 0 = disabled, 1 = enabled
 create_webview_window(url_buffer, 0, &options, NULL);
 ```
 

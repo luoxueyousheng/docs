@@ -39,12 +39,12 @@ SDK 文档的文件组织建议如下：
 ```
 docs/
   your-sdk-name/
-    index.mdx          # 主页
-    quickstart.mdx     # 快速开始
-    api-reference.mdx  # API 参考
-    advanced.mdx       # 高级用法
-    examples.mdx       # 示例代码
-    faq.mdx            # 常见问题
+    index.md          # 主页
+    quickstart.md     # 快速开始
+    api-reference.md  # API 参考
+    advanced.md       # 高级用法
+    examples.md       # 示例代码
+    faq.md            # 常见问题
 ```
 
 ## 文档编写规范
@@ -221,7 +221,7 @@ main();
 
 ### 参考资源
 
-- [Docusaurus 文档](https://docusaurus.io/docs)
+- [dumi 文档](https://d.umijs.org/)
 - [Markdown 指南](https://www.markdownguide.org/)
 - [Google 技术写作指南](https://developers.google.com/tech-writing)
 - [Microsoft 文档风格指南](https://docs.microsoft.com/en-us/style-guide/welcome/)

@@ -131,9 +131,13 @@ typedef struct FileDialogParams {
 - `openFile` - Allow selecting files
 - `openDirectory` - Allow selecting folders
 - `multiSelections` - Allow selecting multiple files/folders
-- `showHiddenFiles` - Show hidden files
-- `createDirectory` - Allow creating new folders
-- `treatPackageAsDirectory` - Treat packages as directories (macOS)
+- `showHiddenFiles` - Show hidden files **(not implemented yet, ignored)**
+- `createDirectory` - Allow creating new folders **(not implemented yet, ignored)**
+- `treatPackageAsDirectory` - Treat packages as directories (macOS) **(not implemented yet, ignored)**
+
+:::warning{title="Actually effective range"}
+The properties that are actually parsed today: **Windows** only `openFile` / `openDirectory` / `multiSelections`; **Linux** only `openDirectory` / `multiSelections`. Any other property is ignored.
+:::
 
 ### properties Parameter Example
 
@@ -166,7 +170,7 @@ Returns a UTF-8 encoded JSON string, which must be released by calling `jade_tex
 ```json
 {
   "canceled": false,
-  "file_paths": ["D:/Documents/image.jpg"]
+  "filePaths": ["D:/Documents/image.jpg"]
 }
 ```
 
@@ -175,7 +179,7 @@ Returns a UTF-8 encoded JSON string, which must be released by calling `jade_tex
 ```json
 {
   "canceled": false,
-  "file_paths": ["D:/a.jpg", "D:/b.png"]
+  "filePaths": ["D:/a.jpg", "D:/b.png"]
 }
 ```
 
@@ -184,7 +188,7 @@ Returns a UTF-8 encoded JSON string, which must be released by calling `jade_tex
 ```json
 {
   "canceled": true,
-  "file_paths": []
+  "filePaths": []
 }
 ```
 
@@ -213,7 +217,7 @@ Returns a UTF-8 encoded JSON string, which must be released by calling `jade_tex
 ```json
 {
   "canceled": false,
-  "file_path": "D:/Documents/output.txt"
+  "filePath": "D:/Documents/output.txt"
 }
 ```
 
@@ -222,7 +226,7 @@ Returns a UTF-8 encoded JSON string, which must be released by calling `jade_tex
 ```json
 {
   "canceled": true,
-  "file_path": null
+  "filePath": null
 }
 ```
 
@@ -253,7 +257,7 @@ char* jade_dialog_show_message_box(const MessageBoxParams* params);
 - `title` `string` - Text for the dialog title bar
 - `message` `string` - The main message text, displayed at the top of the dialog
 - `detail` `string` (optional) - Supplementary description text, displayed below the main message; can span multiple lines
-- `buttons` `string` - Button list, with multiple button names separated by `\|`, such as `"OK\|Cancel"`
+- `buttons` `string` - Button list, separated by `\|`. **Note**: both platforms currently support only two shapes — "OK" or "OK + Cancel". If the button string contains a cancel keyword (Windows matches the Chinese 「取消」, Linux also matches the English `cancel`), it shows "OK + Cancel"; otherwise it shows "OK" only. Custom button text (other than for recognizing cancel) and any third-or-later button have no effect
 - `default_id` `int32_t` - Index of the button focused by default, starting from 0
 - `cancel_id` `int32_t` - Index of the button triggered when pressing Esc or clicking the close button, starting from 0
 - `type_` `string` - Dialog type, which controls the icon style
@@ -278,7 +282,7 @@ Returns a UTF-8 encoded JSON string, which must be released by calling `jade_tex
 }
 ```
 
-The value of the `response` field is the index of the button the user clicked, starting from 0.
+The `response` field is the button the user clicked: `0` = OK, `1` = Cancel, `-1` = closed/error. Due to the `buttons` limitation above, an index of `2` or greater never appears.
 
 ---
 

@@ -14,6 +14,8 @@ group:
 
 **当前 `execute_javascript` 功能存在较多实现问题，暂不推荐使用**。由于技术限制，直接执行 JavaScript 可能导致不可预期的行为，包括性能问题、安全风险和稳定性问题。
 
+> 机制说明：`execute_javascript(window_id, script)` 调用后会**立即返回一个请求 id**（`int32_t`），脚本的执行结果并不在该函数的返回值中，而是通过 **`javascript-result` 事件异步回传**（事件 `event_data` 中包含对应的请求 id 与执行结果）。
+
 ### 1.2 推荐替代方案
 
 **强烈建议使用以下替代方案**：

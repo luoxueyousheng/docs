@@ -11,93 +11,46 @@ group:
 
 ## 支持的平台和架构
 
-- **平台**: Windows
+- **平台**: Windows、Linux
 
-- **架构**:  
+- **架构**:
 
-  - x86 (32位)
+  - Windows: x86 (32位)、x64 (64位)、arm64 (ARM 64位)
 
-  - x64 (64位)
+  - Linux: x64 (x86_64)、arm64 (aarch64)
 
-  - arm64 (ARM 64位)
-
-- **链接方式**:  
-
-  - dynamic (动态链接)
-
-  - static (静态链接)
+> 每个平台/架构的产物同时包含动态库与静态库（由 crate-type `cdylib` + `staticlib` 生成），无需单独区分链接方式。
 
 ## 文件说明
 
-### DLL 文件
+每个发行版本会附带各平台/架构的库文件与 C 头文件（`JadeView.h`），并按平台打包为压缩包。
 
-- `JadeView_x86_dynamic.dll` - 32位动态链接DLL
+### Windows 产物
 
-- `JadeView_x86_static.dll` - 32位静态链接DLL
+- `JadeView_x86.dll` / `JadeView_x86.lib` - 32位 动态库 / 静态库
+- `JadeView_x64.dll` / `JadeView_x64.lib` - 64位 动态库 / 静态库
+- `JadeView_arm64.dll` / `JadeView_arm64.lib` - ARM64 动态库 / 静态库
 
-- `JadeView_x64_dynamic.dll` - 64位动态链接DLL
+### Linux 产物
 
-- `JadeView_x64_static.dll` - 64位静态链接DLL
+- `libJadeView.so` - 共享库（动态链接）
+- `libJadeView.a` - 静态库
 
-- `JadeView_arm64_dynamic.dll` - ARM64位动态链接DLL
+### 头文件
 
-- `JadeView_arm64_static.dll` - ARM64位静态链接DLL
+- `JadeView.h` - C API 头文件（各平台通用，随各压缩包一并提供）
 
-### PDB 文件
+### 压缩包
 
-- `JadeView_x86_dynamic.pdb` - 32位动态链接调试符号
+Windows 打包为 `.zip`，Linux 打包为 `.tar.gz`，命名格式为 `JadeView_{win|linux}_{平台}_v{版本}.{编译号}.{zip|tar.gz}`：
 
-- `JadeView_x86_static.pdb` - 32位静态链接调试符号
+- `JadeView_win_x86_v2.3.0-beta.5.26F01.zip` - Windows 32位
+- `JadeView_win_x64_v2.3.0-beta.5.26F01.zip` - Windows 64位
+- `JadeView_win_arm64_v2.3.0-beta.5.26F01.zip` - Windows ARM64
+- `JadeView_linux_x64_v2.3.0-beta.5.26F01.tar.gz` - Linux x86_64
+- `JadeView_linux_arm64_v2.3.0-beta.5.26F01.tar.gz` - Linux arm64
 
-- `JadeView_x64_dynamic.pdb` - 64位动态链接调试符号
-
-- `JadeView_x64_static.pdb` - 64位静态链接调试符号
-
-- `JadeView_arm64_dynamic.pdb` - ARM64位动态链接调试符号
-
-- `JadeView_arm64_static.pdb` - ARM64位静态链接调试符号
-
-### 导出文件
-
-- `JadeView.dll_x86_dynamic.exp` - 32位动态链接导出文件
-
-- `JadeView.dll_x86_static.exp` - 32位静态链接导出文件
-
-- `JadeView.dll_x64_dynamic.exp` - 64位动态链接导出文件
-
-- `JadeView.dll_x64_static.exp` - 64位静态链接导出文件
-
-- `JadeView.dll_arm64_dynamic.exp` - ARM64位动态链接导出文件
-
-- `JadeView.dll_arm64_static.exp` - ARM64位静态链接导出文件
-
-### 库文件
-
-- `JadeView.dll_x86_dynamic.lib` - 32位动态链接库文件
-
-- `JadeView.dll_x86_static.lib` - 32位静态链接库文件
-
-- `JadeView.dll_x64_dynamic.lib` - 64位动态链接库文件
-
-- `JadeView.dll_x64_static.lib` - 64位静态链接库文件
-
-- `JadeView.dll_arm64_dynamic.lib` - ARM64位动态链接库文件
-
-- `JadeView.dll_arm64_static.lib` - ARM64位静态链接库文件
-
-### ZIP 包
-
-- `JadeView_win_x86_dynamic_v0.1.2.zip` - 32位动态链接版本打包
-
-- `JadeView_win_x86_static_v0.1.2.zip` - 32位静态链接版本打包
-
-- `JadeView_win_x64_dynamic_v0.1.2.zip` - 64位动态链接版本打包
-
-- `JadeView_win_x64_static_v0.1.2.zip` - 64位静态链接版本打包
-
-- `JadeView_win_arm64_dynamic_v0.1.2.zip` - ARM64位动态链接版本打包
-
-- `JadeView_win_arm64_static_v0.1.2.zip` - ARM64位静态链接版本打包
+> 编译号（如 `26F01`）由 CI 自动生成，格式为 `YY + 月字母(A–L) + 当月序号`。
 
 ## 程序发行行为
 

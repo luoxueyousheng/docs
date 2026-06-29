@@ -21,7 +21,9 @@ int32_t set_window_theme(uint32_t window_id, const char* theme);
 int32_t get_window_theme(uint32_t window_id);
 ```
 
-`theme`: `"Light"`, `"Dark"`, `"System"`, or `NULL` (the library provides a default).
+`theme`: `"Light"`, `"Dark"`, `"System"`. **When `theme` is `NULL`, nothing is done and it returns `0` directly.**
+
+**`get_window_theme` return value**: `1` = Dark, `0` = Light; `"System"` is resolved to `1` / `0` according to the system's actual light/dark state; with no theme / unknown it always returns `0`.
 
 :::info{title=Platform Support}
 Available on both Windows and Linux. `"System"` (follow system) is read on Linux via the **XDG Desktop Portal** `org.freedesktop.appearance`, falling back to `gsettings`.
@@ -32,7 +34,7 @@ Windows' **immersive dark native title bar** has no Linux equivalent—on Linux 
 
 ## Setting the Window Background Material (`set_window_backdrop`)
 
-**Purpose**: On **Windows 11**, apply a system-provided **background material** (such as Mica or Acrylic) to a window, matching the kind of effects found under "Personalization" in the system settings. Common values for `backdrop_type`: **`mica`**, **`micaAlt`**, **`acrylic`** (lower camel case, consistent with the system DWM API).
+**Purpose**: On **Windows 11**, apply a system-provided **background material** (such as Mica or Acrylic) to a window, matching the kind of effects found under "Personalization" in the system settings. Common values for `backdrop_type`: **`mica`**, **`micaAlt`**, **`acrylic`**, plus **`default`** (a solid color that does not depend on the Win11 DWM material API). Values are **case-insensitive** (e.g. `Mica`, `MICA` both work).
 
 ```c
 int32_t set_window_backdrop(uint32_t window_id, const char* backdrop_type);

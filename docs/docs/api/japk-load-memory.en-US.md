@@ -97,7 +97,7 @@ int JadeView_is_loaded(void);
 
 ### JadeView_get_app_signature
 
-Returns the `app_signature` string of the currently loaded package.
+Returns the `app_signature` set during `JadeView_init` (regardless of whether a package is loaded or its package type).
 
 ```c
 char* JadeView_get_app_signature(void);
@@ -188,7 +188,7 @@ Triggered when loading fails; the callback receives a plain-text error message, 
 ### C
 
 ```c
-#include "jadeview.h"
+#include "JadeView.h"
 
 void load_from_memory_example() {
     // 1. Initialize
@@ -213,8 +213,8 @@ void load_from_memory_example() {
 
     // 4. Get the protocol URL (pass an empty string for memory loading)
     char url_buffer[256];
-    set_protocol_service_path("", url_buffer, sizeof(url_buffer));
-    // url_buffer content looks like: https://myapp.local/
+    set_protocol_service_path("", url_buffer, sizeof(url_buffer), 0);  // 4th param hot_reload; pass 0 for memory loading
+    // url_buffer content looks like: JADE://{app_signature}/ (app_signature is the 5th JadeView_init arg, lowercased)
 
     // 5. Create a window using that URL
     WebViewWindowOptions options = {
@@ -270,11 +270,11 @@ if rc != 0:
     raise RuntimeError(f"JadeView_load_from_bytes failed: {rc}")
 
 # 4. Get the protocol URL (pass an empty string for memory loading)
-dll.set_protocol_service_path.argtypes = [c_char_p, c_char_p, c_size_t]
+dll.set_protocol_service_path.argtypes = [c_char_p, c_char_p, c_size_t, c_int]
 dll.set_protocol_service_path.restype = c_int
 
 url_buffer = ctypes.create_string_buffer(256)
-dll.set_protocol_service_path(b"", url_buffer, 256)
+dll.set_protocol_service_path(b"", url_buffer, 256, 0)  # 4th param hot_reload; pass 0 for memory loading
 print(f"Protocol URL: {url_buffer.value.decode()}")
 
 # 5. Create a window using that URL
@@ -311,7 +311,7 @@ Caller                          JadeView DLL
   │  ◄── japk-load-success ────────┤ Asynchronous event
   │                                 │
   ├─ set_protocol_service_path("")─►│ Get protocol URL
-  │  ◄── url_buffer ───────────────┤ jade://myapp.local/
+  │  ◄── url_buffer ───────────────┤ JADE://{app_signature}/
   │                                 │
   ├─ create_webview_window(url) ───►│ Create window
   │                                 │

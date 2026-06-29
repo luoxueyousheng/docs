@@ -154,6 +154,7 @@ int32_t jade_get_printer_list(char* buffer, int buffer_size);
 
 - **Parameters**: `buffer` `char*` - output buffer; `buffer_size` `int` - buffer size (bytes)
 - **Return value**: `>0` = number of printers, the buffer contains a JSON array; `0` = failure or no printers
+- **When the buffer is too small**: it **truncates the written output and still returns the printer count** (no error); the JSON may be cut off, so reserve enough space or retry based on the returned count
 
 Output example:
 
@@ -163,6 +164,23 @@ Output example:
 
 :::info{title=Platform Support}
 Available on both Windows (`EnumPrintersW`) and Linux (CUPS `lpstat -e`). Linux requires the CUPS client installed (`cups-client`, which provides `lp`/`lpstat`); returns `0` when not installed.
+:::
+
+---
+
+### Print a File (`jade_print_dialog`)
+
+Print a file on disk directly using the **system-associated program** (without going through the WebView); suitable for printing existing files such as PDFs and images.
+
+```c
+int32_t jade_print_dialog(const char* file_path);
+```
+
+- **Parameter**: `file_path` `string` - the absolute path of the file to print; `NULL` or an empty string returns `0` immediately
+- **Return value**: `1` = successfully submitted to the system for printing; `0` = failure (empty path / system call failed)
+
+:::info{title=Platform Support}
+Windows uses the `"print"` verb of `ShellExecute`, printed by the default program associated with the file; Linux uses the CUPS `lp` command.
 :::
 
 ---

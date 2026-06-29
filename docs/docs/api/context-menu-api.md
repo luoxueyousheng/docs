@@ -53,6 +53,10 @@ v2.2 开始支持。
 | `has_selection` / `selection_text` | 选中文本信息 |
 | `default_menu_names` *(2.2 新增)* | WebView2 默认菜单项列表，每项含 `name`、`label`、`kind`（见 [菜单项类型与原生菜单项](/docs/api/context-menu-items)） |
 
+:::info{title=平台字段差异}
+上面示例为 **Windows（WebView2）** 的完整字段。**Linux（WebKitGTK）** 的 `context-menu` 负载**不包含** `is_main_frame`、`frame_url`、`link_text`、`selection_text` 这四个字段，其余字段一致。
+:::
+
 ### 菜单项点击事件（`menu-item-clicked`）
 
 自定义菜单项被点击时触发，`event_data` 为创建时传入的 `item_id`（字符串）。

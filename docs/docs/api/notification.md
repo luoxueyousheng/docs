@@ -10,7 +10,7 @@ group:
 
 ## 显示系统通知（`show_notification`）
 
-**用途**：在 Windows 上弹出一条**系统通知**（操作中心 / 右下角那种），带标题、正文、可选图标和按钮。适合提醒用户任务完成、需要确认等。
+**用途**：在 **Windows / Linux** 上弹出一条**系统通知**（Windows 是操作中心 / 右下角那种；Linux 走 freedesktop `org.freedesktop.Notifications` / zbus），带标题、正文、可选图标和按钮。适合提醒用户任务完成、需要确认等。
 
 ```c
 int32_t show_notification(const NotificationParams* params);
@@ -23,12 +23,12 @@ int32_t show_notification(const NotificationParams* params);
 | `summary` | **标题**，必填，用户第一眼看到的。 |
 | `body` | 正文说明。 |
 | `icon` | 小图标的**磁盘绝对路径**。 |
-| `timeout` | 停留多久（毫秒）；`<= 0` 用系统默认。 |
+| `timeout` | 停留多久（毫秒）。**Windows 下当前不生效**（toast 停留时长由系统设置决定）；Linux 下 `<= 0` 由通知服务决定。 |
 | `button1` / `button2` | 通知上的按钮文字；用户点击会触发 **`notification-action`** 等（见 [事件类型](/docs/api/event-types#notification-events)）。 |
 | `text3` | 多一行辅助文字。 |
 | `action` | 跟通知动作相关的参数，会进系统回调数据。 |
 
-返回 `1` 表示已去显示，`0` 表示失败或非 Windows。
+返回 `1` 表示已去显示，`0` 表示失败。**Windows 与 Linux 均支持**（Linux 走 freedesktop `org.freedesktop.Notifications` / zbus，成功同样返回 `1`）。
 
 ### 行为说明
 

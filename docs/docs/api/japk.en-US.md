@@ -21,7 +21,7 @@ JAPK is JadeView's proprietary application packaging format. It bundles all of y
 |------|:---:|:---:|:---:|
 | Packaging tool | `@electron/asar` CLI | JadePack desktop client | JadePack desktop client |
 | File format | ASAR (plaintext) | JAPK v2 obfuscated | JAPK v2 signed |
-| Content protection | ❌ None | XOR obfuscation | AES-256-GCM encryption |
+| Content protection | ❌ None | 3-layer reversible transform | AES-256-GCM encryption |
 | Signature verification | ❌ Not supported | ❌ Not supported | ✅ Ed25519 |
 | Tamper resistance | ❌ None | ❌ Weak | ✅ Strong |
 | Source readable | ✅ Directly viewable | ❌ Requires deobfuscation | ❌ Requires decryption + verification |
@@ -38,7 +38,7 @@ JAPK is JadeView's proprietary application packaging format. It bundles all of y
 JadePack is the graphical build tool officially released by JadeView, designed specifically for building and protecting JAPK asset packages:
 
 - **One-click build**: Operate through a graphical interface to easily package a front-end project into a JAPK
-- **Content obfuscation**: Even without signing, file content is protected with XOR obfuscation, so it is not a plaintext package
+- **Content obfuscation**: Even without signing, file content is protected with a 3-layer reversible transform (XOR + byte permutation + bit rotation), so it is not a plaintext package
 - **Signature protection**: Supports signing the JAPK to verify its origin and integrity and prevent tampering
 - **Unpack support**: Supports storing selected files as "unpacked" for convenient native module loading
 
@@ -56,7 +56,7 @@ For production environments, we recommend using JadePack to build signed JAPK pa
 :::info
 **Note:**
 - **Electron ASAR creates plaintext packages**: File content is not encrypted or obfuscated in any way
-- **Unsigned packages created by JadePack are also obfuscated packages**: Even without signing, JadePack protects file content with XOR obfuscation, so it is not a plaintext package
+- **Unsigned packages created by JadePack are also obfuscated packages**: Even without signing, JadePack protects file content with a 3-layer reversible transform (XOR + byte permutation + bit rotation), so it is not a plaintext package
 
 To build a signed and encrypted JAPK package, please use JadePack's graphical build center.
 :::
@@ -68,7 +68,7 @@ Use the `set_protocol_service_path` API to load a JAPK package. For details, see
 ## Example
 
 ```c
-#include "jadeview.h"
+#include "JadeView.h"
 
 // Use a JAPK file
 void load_japk_example() {
@@ -78,7 +78,8 @@ void load_japk_example() {
   int32_t result = set_protocol_service_path(
     japk_path,
     url_buffer,
-    sizeof(url_buffer)
+    sizeof(url_buffer),
+    0  // hot_reload: 0 = disable hot reload
   );
   
   if (result == 1) {
@@ -227,7 +228,7 @@ asar extract app.japk ./extracted
 - Not suitable for production environments or scenarios requiring security protection
 
 **Unsigned JAPK built with JadePack:**
-- Uses XOR obfuscation to protect file content (not plaintext)
+- Uses a 3-layer reversible transform (XOR + byte permutation + bit rotation) to protect file content (not plaintext)
 - Provides basic content protection
 - But does not include signature information, so the origin cannot be verified
 - Suitable for scenarios that need basic protection but not signing

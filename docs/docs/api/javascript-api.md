@@ -28,7 +28,7 @@ await jade.invoke('命令名', 传给主进程的数据, { timeout: 5000 });
 ```
 
 - 第二段可以是字符串、对象等，主进程收到的一般是 JSON 文本。
-- **第三段可选**：`timeout` 控制最多等多久；不写则用默认超时。
+- **第三段可选**：`timeout` 控制最多等多久（毫秒）；不写或非正数则用默认 **300000ms（5 分钟）** 超时。
 - 内部是**两段异步**：大结果或慢任务时更稳；旧版 **`invokeAsync` 已删除**，请只用 **`invoke`**。
 
 ---
@@ -91,6 +91,28 @@ const off = jade.on('事件名', function (payload) {
 - **第一个参数**：字符串，与 C 侧 `send_ipc_message` 的 `message_type` 或文档中的事件名一致。
 - **第二个参数**：回调，参数是解析后的数据（常见为对象）。
 - **返回值**：**取消订阅函数**，调用后不再接收该监听。
+
+---
+
+### 系统对话框（`jade.dialog`）
+
+**用途**：前端通过 **`window.jade.dialog`** 调起原生系统对话框，所有方法均返回 **Promise**。
+
+| 方法 | 说明 |
+|------|------|
+| `showOpenDialog(options)` | 打开「打开文件 / 选择目录」对话框；Promise resolve 为选择结果。 |
+| `showSaveDialog(options)` | 打开「保存文件」对话框；Promise resolve 为保存结果。 |
+| `showMessageBox(options)` | 弹出消息框（信息 / 确认等）；Promise resolve 为用户操作结果。 |
+| `showErrorBox(title, content)` | 弹出错误提示框；关闭后 Promise resolve（无返回值）。 |
+
+```javascript
+const result = await jade.dialog.showOpenDialog({ /* options */ });
+await jade.dialog.showSaveDialog({ /* options */ });
+await jade.dialog.showMessageBox({ /* options */ });
+await jade.dialog.showErrorBox('出错了', '文件读取失败');
+```
+
+> `options` 字段语义类似 Electron 的 `dialog` 接口，按需传入即可。
 
 ---
 

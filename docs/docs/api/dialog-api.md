@@ -131,9 +131,13 @@ typedef struct FileDialogParams {
 - `openFile` - 允许选择文件
 - `openDirectory` - 允许选择文件夹
 - `multiSelections` - 允许选择多个文件/文件夹
-- `showHiddenFiles` - 显示隐藏文件
-- `createDirectory` - 允许创建新文件夹
-- `treatPackageAsDirectory` - 将包当作目录处理（macOS）
+- `showHiddenFiles` - 显示隐藏文件 **（当前未实现，忽略）**
+- `createDirectory` - 允许创建新文件夹 **（当前未实现，忽略）**
+- `treatPackageAsDirectory` - 将包当作目录处理（macOS）**（当前未实现，忽略）**
+
+:::warning{title="实际生效范围"}
+当前真正会被解析的属性：**Windows** 仅 `openFile` / `openDirectory` / `multiSelections`；**Linux** 仅 `openDirectory` / `multiSelections`。其余属性会被忽略。
+:::
 
 ### properties 参数示例
 
@@ -166,7 +170,7 @@ char* jade_dialog_show_open_dialog(const FileDialogParams* params);
 ```json
 {
   "canceled": false,
-  "file_paths": ["D:/Documents/image.jpg"]
+  "filePaths": ["D:/Documents/image.jpg"]
 }
 ```
 
@@ -175,7 +179,7 @@ char* jade_dialog_show_open_dialog(const FileDialogParams* params);
 ```json
 {
   "canceled": false,
-  "file_paths": ["D:/a.jpg", "D:/b.png"]
+  "filePaths": ["D:/a.jpg", "D:/b.png"]
 }
 ```
 
@@ -184,7 +188,7 @@ char* jade_dialog_show_open_dialog(const FileDialogParams* params);
 ```json
 {
   "canceled": true,
-  "file_paths": []
+  "filePaths": []
 }
 ```
 
@@ -213,7 +217,7 @@ char* jade_dialog_show_save_dialog(const FileDialogParams* params);
 ```json
 {
   "canceled": false,
-  "file_path": "D:/Documents/output.txt"
+  "filePath": "D:/Documents/output.txt"
 }
 ```
 
@@ -222,7 +226,7 @@ char* jade_dialog_show_save_dialog(const FileDialogParams* params);
 ```json
 {
   "canceled": true,
-  "file_path": null
+  "filePath": null
 }
 ```
 
@@ -253,7 +257,7 @@ char* jade_dialog_show_message_box(const MessageBoxParams* params);
 - `title` `string` - 对话框标题栏文字
 - `message` `string` - 主提示文字，显示在对话框上方
 - `detail` `string` (可选) - 补充说明文字，显示在主提示下方，可以是多行
-- `buttons` `string` - 按钮列表，用 `\|` 分隔多个按钮名，如 `"确定\|取消"`
+- `buttons` `string` - 按钮列表，用 `\|` 分隔。**注意**：当前两平台实际只支持「确定」或「确定 + 取消」两种形态——按钮串中包含「取消」（Windows 识别中文「取消」，Linux 还识别英文 `cancel`）时显示「确定 + 取消」，否则只显示「确定」。自定义按钮文字（除用于识别取消外）以及第 3 个及以后的按钮均不生效
 - `default_id` `int32_t` - 默认聚焦的按钮索引，从 0 开始
 - `cancel_id` `int32_t` - 按 Esc 键或点击关闭按钮时触发的按钮索引，从 0 开始
 - `type_` `string` - 对话框类型，控制图标风格
@@ -278,7 +282,7 @@ char* jade_dialog_show_message_box(const MessageBoxParams* params);
 }
 ```
 
-`response` 字段的值是用户点击的按钮索引，从 0 开始。
+`response` 字段为用户点击的按钮：`0` = 确定，`1` = 取消，`-1` = 关闭/异常。受上面 `buttons` 限制，不会出现 `2` 及更大的索引。
 
 ---
 

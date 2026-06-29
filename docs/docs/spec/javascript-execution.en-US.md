@@ -14,6 +14,8 @@ group:
 
 **The current `execute_javascript` feature has a number of implementation issues and is not recommended for use at this time.** Due to technical limitations, executing JavaScript directly may lead to unpredictable behavior, including performance issues, security risks, and stability problems.
 
+> How it works: `execute_javascript(window_id, script)` returns a **request id** (`int32_t`) immediately; the script's result is **not** returned by the function itself but is delivered asynchronously via the **`javascript-result` event** (whose `event_data` contains the matching request id and the result).
+
 ### 1.2 Recommended Alternatives
 
 **We strongly recommend the following alternatives:**

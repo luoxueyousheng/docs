@@ -82,7 +82,7 @@ Linux 版 `libJadeView.so` 基于 **tao + wry**，使用 **GTK3 + WebKitGTK 4.1*
 | 渲染引擎 | WebKitGTK 4.1（soup3 版，`libwebkit2gtk-4.1.so.0`）；**不兼容**旧的 4.0（soup2） |
 | 窗口 / 控件 | GTK 3（`libgtk-3-0`） |
 | C 运行时 | glibc（非 musl）。预编译产物的 glibc 下限 = 构建机 glibc 版本 |
-| 架构 | 仅 **x86_64**；arm64 等架构暂未构建 |
+| 架构 | **x86_64** 与 **arm64（aarch64）** 均已构建发布 |
 | 显示后端 | X11（推荐）或 Wayland（GTK3） |
 | 中文显示 | 需安装 CJK 字体（如 `fonts-noto-cjk` / `fonts-wqy-zenhei`），否则中文显示为方块 |
 
@@ -103,7 +103,8 @@ Linux 版 `libJadeView.so` 基于 **tao + wry**，使用 **GTK3 + WebKitGTK 4.1*
 | Ubuntu 20.04 LTS | ❌ | 仅 webkit2gtk-4.0（soup2），无 4.1 |
 | RHEL / CentOS 8 及更早 | ❌ | webkit 过旧 |
 | Alpine 等 musl 系 | ❌ | 需 musl 构建（暂未提供）+ webkit2gtk |
-| 非 x86_64（arm64 等） | ❌（暂） | 未构建对应架构 |
+| arm64（aarch64） | ✅ | 已构建并随版本发布 |
+| 其它架构（如 RISC-V） | ❌（暂） | 仅发布 x86_64 与 arm64 |
 
 > 经验法则：**2022 年及以后发布的主流发行版基本可用**；2020 年前后的旧 LTS 不行。
 

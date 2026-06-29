@@ -45,11 +45,14 @@ int32_t JadeView_init(
 
 #### What you receive in `app-ready`
 
+The `event_data` format **differs** between success and failure (success is JSON, failure is plain text), so **decide success solely by `window_id == 1`** — do not rely on parsing `event_data`:
+
 | Situation | `window_id` | Roughly what `event_data` looks like |
 |------|-------------|---------------------------|
-| Normal startup completed | `1` | Text `success` |
-| `app_name` / `app_signature` validation failed | `0` | JSON: `{"ok":false,"code":"...","message":"..."}` |
-| GUI thread crashed | `0` | A plain-text error description |
+| Normal startup completed | `1` | JSON: `{"ok":true,"message":"success"}` |
+| `app_name` / `app_signature` validation failed | `0` | Plain text `"<code>: <message>"` (`code` is one of `missing_app_name` / `missing_app_signature` / `app_signature_too_short`) |
+
+> A crash during runtime does **not** go through `app-ready`; it is reported via the separate [`crash`](/en-US/docs/api/event-types#crash) event.
 
 Call `jade_on("app-ready", ...)` **before `JadeView_init`**, otherwise you will miss the first notification.
 
@@ -57,7 +60,7 @@ Call `jade_on("app-ready", ...)` **before `JadeView_init`**, otherwise you will 
 
 ### Run the message loop (`run_message_loop`)
 
-**Purpose**: May be used in the legacy integration approach where "the exe runs the message loop itself". In the common **DLL embedding** scenario, the loop already runs in the thread started by `JadeView_init`, so you **generally do not need to call it**.
+**Purpose**: May be used in the legacy integration approach where "the exe runs the message loop itself". **It blocks the current thread and does not return until the app shuts down (e.g. via `jadeview_exit`)**. In the common **DLL embedding** scenario, the loop already runs in the thread started by `JadeView_init`, so this function is **optional and generally not needed** (consistent with the Quick Start).
 
 ```c
 int32_t run_message_loop(void);
@@ -153,7 +156,7 @@ The context menu APIs (`jade_menu_item_create`, etc.) have been moved to the sep
 | `title` | The text on the window's title bar. |
 | `width` / `height` | The initial width and height (pixels). |
 | `resizable` | Whether the user can drag the edges with the mouse to resize it. |
-| `frame_style` | Whether to have a system frame + title bar, only a frame without a title bar, completely borderless, or borderless + a built-in title bar button overlay (`normal` / `no-titlebar` / `borderless` / `title-overlay`). `title-overlay` provides a frame + no title bar + built-in title bar buttons in the top-right corner (each button is 45 pixels wide, and the height defaults to 32 pixels), with no need to implement the window control button functionality yourself (supported on both Windows and Linux, Linux since v2.3.0-beta.6). |
+| `frame_style` | Whether to have a system frame + title bar, only a frame without a title bar, completely borderless, or borderless + a built-in title bar button overlay (`normal` / `no-titlebar` / `borderless` / `title-overlay`). `title-overlay` provides a frame + no title bar + built-in title bar buttons in the top-right corner (each button is 46 pixels wide, and the height defaults to 32 pixels), with no need to implement the window control button functionality yourself (supported on both Windows and Linux, Linux since v2.3.0-beta.6). |
 | `transparent` | Whether to have a transparent background (depends on WebView and system capabilities). |
 | `background_color` | The window background color string (such as hexadecimal with a `#`). |
 | `always_on_top` | Whether it always stays in front. |
@@ -168,6 +171,8 @@ The context menu APIs (`jade_menu_item_create`, etc.) have been moved to the sep
 | `use_page_icon` | Whether to use the web page favicon as the initial window icon. |
 | `content_protection` | Whether to enable anti-recording/anti-screenshot protection. |
 | `auto_save_state` | When non-`0`: records the window's **last valid physical top-left coordinates** by **`window_id`** in `window_state.yaml` under the **data directory**; the next time you create it with the same `window_id`, if that position still falls within the work area of some screen, the **position is restored** (**the width, height, and whether it is maximized still follow this creation's parameters**). It is debounced and flushed to disk about **450ms** after the move stops; it is also saved once more on close. |
+| `skip_taskbar` | When non-`0`: the window **stays out of the taskbar / Alt-Tab**. Appended at the end of the struct to keep field-order compatibility. |
+| `no_activate` | When non-`0`: **does not steal focus** — the window is not activated when clicked or shown. Appended at the end of the struct to keep compatibility. |
 
 :::warning
 2.0 has removed the old fields `remove_titlebar`, `borderless`, `no_center`, etc.; you must use `frame_style` and `x/y=-1` for centering, otherwise the struct will not line up and will **silently misalign**.
@@ -183,11 +188,12 @@ The context menu APIs (`jade_menu_item_create`, etc.) have been moved to the sep
 |------|----------|
 | `autoplay` | Whether media can autoplay. |
 | `background_throttling` | Whether to lower the timer/animation frequency to save resources when the window is in the background. |
-| `disable_right_click` | Whether to disable the web page context menu. |
+| `allow_right_click` | Whether to allow the web page context menu. `0` = disabled, `1` = allowed. |
 | `ua` | A custom User-Agent. |
 | `preload_js` | A piece of JS to inject before the page loads. |
 | `allow_fullscreen` | Whether the fullscreen API in the web page is allowed. |
 | `postmessage_whitelist` | The whitelist for **whether the page's `postMessage` is forwarded to the main process**; the value is **a single UTF-8 string** (usually close to the page's `origin`, such as `https://example.com`). When matching, the library passes if: `event.origin` is **equal to** that string, or the **`origin` has that string as a suffix**. If the pointer is **`NULL`/unset**: under the current implementation, **no source is allowed through** (i.e., `postmessage-received` is not received). **Built-in static pages loaded via `set_protocol_service_path`** will **skip the whitelist** in the implementation and can always receive. |
+| `cors_whitelist` | The CORS cross-origin allowlist; multiple domains are **comma-separated**, used to permit the page's cross-origin requests to those origins. |
 | `autofill` | Whether to enable account/password autofill. `0` = disabled, `1` = enabled. *(Added in 2.2)* |
 | `general_autofill_enabled` | Whether to enable general form autofill (name/address/phone, etc.). `0` = disabled, `1` = enabled. *(Added in 2.2)* |
 | `incognito` | Whether to run in incognito/private browsing mode. `0` = normal mode, `1` = incognito mode. Page rendering becomes slower when enabled. *(Added in 2.2)* |

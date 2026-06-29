@@ -12,6 +12,10 @@ group:
 
 整个进程里**只允许一个托盘**；重复 `tray_create` 只会拿到同一个 `tray_id`。
 
+:::info{title=平台差异}
+"任务栏右下角"是 Windows 的表述；**Linux** 托盘依赖桌面环境的 StatusNotifier / AppIndicator 协议，图标位置与交互由桌面环境决定（部分环境需安装相应扩展才显示）。
+:::
+
 ---
 
 ## 托盘菜单项结构（`TrayMenuItemDesc`）
@@ -31,7 +35,7 @@ typedef struct TrayMenuItemDesc {
 
 | 字段 | 含义 |
 |------|------|
-| `item_type` | `0` 普通项、`1` 子菜单、`2` 分隔线、`3` 分组。 |
+| `item_type` | `0` 普通项、`1` 子菜单、`2` 分隔线、`3` 分组（**目前等同子菜单 SUBMENU**，无分组 / 互斥语义）。 |
 | `key` | **业务主键**，整表唯一，代码里靠它分辨点了哪一项（分隔线也要给个唯一 key）。 |
 | `label` | 用户看到的文字。 |
 | `parent_key` | 挂在哪个子菜单下面：空表示顶层；填某一行的 `key`，那一行必须是子菜单/分组。 |

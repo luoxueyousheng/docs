@@ -15,7 +15,7 @@ This guide helps you get started with JadeView 2.0 and create your first WebView
 Before you begin, make sure you have:
 
 - Windows 10/11
-- The JadeView DLL and header file (`jadeview.dll` and `jadeview.h`), available from GitHub Releases: [https://github.com/JadeViewDocs/JadeView/releases](https://github.com/JadeViewDocs/JadeView/releases)
+- The JadeView DLL and header file (`JadeView_x64.dll` and `JadeView.h`), available from GitHub Releases: [https://github.com/JadeViewDocs/JadeView/releases](https://github.com/JadeViewDocs/JadeView/releases)
 - A basic understanding of C
 
 ### Install WebView2
@@ -33,7 +33,7 @@ JadeView is a Rust-based WebView window library designed for performance, securi
 First, initialize JadeView. This starts the GUI thread and the event loop.
 
 ```c
-#include "jadeview.h"
+#include "JadeView.h"
 
 int main() {
     // Initialize JadeView
@@ -75,12 +75,12 @@ After initialization, register an `app-ready` handler. **Important: windows can 
 ```c
 #include <stdio.h>
 #include <string.h>
-#include "jadeview.h"
+#include "JadeView.h"
 
 // app-ready event callback
 const char* app_ready_callback(uint32_t window_id, const char* event_data) {
     // Check for success
-    if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
+    if (window_id == 1) {  // window_id==1 means success; event_data is JSON, and on failure (window_id==0) it is a plain-text error code
         printf("JadeView is ready, you can now create a window\n");
         
         // Window options
@@ -113,7 +113,7 @@ const char* app_ready_callback(uint32_t window_id, const char* event_data) {
         WebViewSettings settings = {
             .autoplay = 0,
             .background_throttling = 0,
-            .disable_right_click = 0,
+            .allow_right_click = 1,
             .ua = NULL,
             .preload_js = NULL,
             .allow_fullscreen = 0,
@@ -175,11 +175,11 @@ JadeView 2.0 supports the JAPK asset-package format. Here is an example using JA
 ```c
 #include <stdio.h>
 #include <string.h>
-#include "jadeview.h"
+#include "JadeView.h"
 
 // app-ready event callback
 const char* app_ready_callback(uint32_t window_id, const char* event_data) {
-    if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
+    if (window_id == 1) {  // window_id==1 means success; event_data is JSON, and on failure (window_id==0) it is a plain-text error code
         printf("JadeView is ready\n");
         
         // Set the local protocol service path - using a JAPK file
@@ -189,7 +189,8 @@ const char* app_ready_callback(uint32_t window_id, const char* event_data) {
         int32_t protocol_result = set_protocol_service_path(
             japk_path,
             url_buffer,
-            sizeof(url_buffer)
+            sizeof(url_buffer),
+            0  // hot_reload: 0 = disabled, 1 = enabled
         );
         
         if (protocol_result == 1) {
@@ -252,15 +253,15 @@ You can use `jade_on` to register all kinds of events:
 ```c
 #include <stdio.h>
 #include <string.h>
-#include "jadeview.h"
+#include "JadeView.h"
 
-// window-close event callback
+// window-closed event callback
 const char* window_close_callback(uint32_t window_id, const char* event_data) {
     printf("Window %u is about to close\n", window_id);
     return NULL;  // return NULL to allow closing; return an error string to prevent it
 }
 
-// page-loaded event callback
+// webview-did-finish-load event callback
 const char* page_loaded_callback(uint32_t window_id, const char* event_data) {
     printf("Page loaded: %s\n", event_data);
     return NULL;
@@ -268,7 +269,7 @@ const char* page_loaded_callback(uint32_t window_id, const char* event_data) {
 
 // app-ready event callback
 const char* app_ready_callback(uint32_t window_id, const char* event_data) {
-    if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
+    if (window_id == 1) {  // window_id==1 means success; event_data is JSON, and on failure (window_id==0) it is a plain-text error code
         printf("JadeView is ready\n");
         
         // Create the window
@@ -287,8 +288,8 @@ const char* app_ready_callback(uint32_t window_id, const char* event_data) {
         
         if (new_window_id != 0) {
             // Register window-specific events
-            jade_on("window-close", window_close_callback);
-            jade_on("page-loaded", page_loaded_callback);
+            jade_on("window-closed", window_close_callback);
+            jade_on("webview-did-finish-load", page_loaded_callback);
         }
     }
     return NULL;
@@ -319,22 +320,22 @@ int main() {
 
 ## Step 5: Clean up resources
 
-When all windows are closed, listen for the `window-all-closed` event and call `cleanup_all_windows` to release resources.
+When all windows are closed, listen for the `window-all-closed` event and call `jadeview_exit` to release resources.
 
 ```c
 #include <stdio.h>
 #include <string.h>
-#include "jadeview.h"
+#include "JadeView.h"
 
 // window-all-closed event callback
 const char* window_all_closed_callback(uint32_t window_id, const char* event_data) {
     printf("All windows closed, cleaning up resources\n");
-    cleanup_all_windows();
+    jadeview_exit();
     return NULL;
 }
 
 const char* app_ready_callback(uint32_t window_id, const char* event_data) {
-    if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
+    if (window_id == 1) {  // window_id==1 means success; event_data is JSON, and on failure (window_id==0) it is a plain-text error code
         printf("JadeView is ready\n");
         
         WebViewWindowOptions options = {
@@ -384,18 +385,18 @@ Here is a complete example showing the correct window-creation flow:
 ```c
 #include <stdio.h>
 #include <string.h>
-#include "jadeview.h"
+#include "JadeView.h"
 
 // window-all-closed event callback
 const char* window_all_closed_callback(uint32_t window_id, const char* event_data) {
     printf("All windows closed, cleaning up resources\n");
-    cleanup_all_windows();
+    jadeview_exit();
     return NULL;
 }
 
 // app-ready event callback
 const char* app_ready_callback(uint32_t window_id, const char* event_data) {
-    if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
+    if (window_id == 1) {  // window_id==1 means success; event_data is JSON, and on failure (window_id==0) it is a plain-text error code
         printf("JadeView is ready, you can now create a window\n");
         
         // Window options
@@ -468,10 +469,10 @@ int main() {
 ```c
 #include <stdio.h>
 #include <string.h>
-#include "jadeview.h"
+#include "JadeView.h"
 
 const char* app_ready_callback(uint32_t window_id, const char* event_data) {
-    if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
+    if (window_id == 1) {  // window_id==1 means success; event_data is JSON, and on failure (window_id==0) it is a plain-text error code
         printf("Creating a borderless window\n");
         
         // Use create_borderless_webview_window to create a borderless window
@@ -505,10 +506,10 @@ int main() {
 ```c
 #include <stdio.h>
 #include <string.h>
-#include "jadeview.h"
+#include "JadeView.h"
 
 const char* app_ready_callback(uint32_t window_id, const char* event_data) {
-    if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
+    if (window_id == 1) {  // window_id==1 means success; event_data is JSON, and on failure (window_id==0) it is a plain-text error code
         printf("Creating a themed window\n");
         
         WebViewWindowOptions options = {

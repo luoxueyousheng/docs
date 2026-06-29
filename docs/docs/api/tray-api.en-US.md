@@ -12,6 +12,10 @@ group:
 
 The entire process **allows only one tray**; calling `tray_create` again simply returns the same `tray_id`.
 
+:::info{title=Platform Differences}
+"Bottom-right corner of the taskbar" describes Windows; on **Linux** the tray relies on the desktop environment's StatusNotifier / AppIndicator protocol, so the icon's position and interaction are decided by the desktop environment (some environments require a corresponding extension to be installed before it appears).
+:::
+
 ---
 
 ## Tray Menu Item Structure (`TrayMenuItemDesc`)
@@ -31,7 +35,7 @@ typedef struct TrayMenuItemDesc {
 
 | Field | Meaning |
 |------|------|
-| `item_type` | `0` normal item, `1` submenu, `2` separator, `3` group. |
+| `item_type` | `0` normal item, `1` submenu, `2` separator, `3` group (**currently behaves the same as a SUBMENU**, with no grouping / mutual-exclusion semantics). |
 | `key` | **Business primary key**, unique across the whole table; the code uses it to tell which item was clicked (separators also need a unique key). |
 | `label` | The text the user sees. |
 | `parent_key` | Which submenu it hangs under: empty means top level; set it to the `key` of some row, and that row must be a submenu/group. |

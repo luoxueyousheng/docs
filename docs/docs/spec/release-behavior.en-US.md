@@ -11,93 +11,46 @@ Release repository: [JadeViewDocs/JadeView](https://github.com/JadeViewDocs/Jade
 
 ## Supported Platforms and Architectures
 
-- **Platform**: Windows
+- **Platform**: Windows, Linux
 
-- **Architecture**:  
+- **Architecture**:
 
-  - x86 (32-bit)
+  - Windows: x86 (32-bit), x64 (64-bit), arm64 (ARM 64-bit)
 
-  - x64 (64-bit)
+  - Linux: x64 (x86_64), arm64 (aarch64)
 
-  - arm64 (ARM 64-bit)
-
-- **Linking**:  
-
-  - dynamic (dynamic linking)
-
-  - static (static linking)
+> Each platform/architecture build ships both a dynamic and a static library (produced by the `cdylib` + `staticlib` crate types), so there is no separate "linking" distinction.
 
 ## File Descriptions
 
-### DLL Files
+Each release ships the library files and the C header (`JadeView.h`) for every platform/architecture, packaged per platform.
 
-- `JadeView_x86_dynamic.dll` - 32-bit dynamically linked DLL
+### Windows Artifacts
 
-- `JadeView_x86_static.dll` - 32-bit statically linked DLL
+- `JadeView_x86.dll` / `JadeView_x86.lib` - 32-bit dynamic library / static library
+- `JadeView_x64.dll` / `JadeView_x64.lib` - 64-bit dynamic library / static library
+- `JadeView_arm64.dll` / `JadeView_arm64.lib` - ARM64 dynamic library / static library
 
-- `JadeView_x64_dynamic.dll` - 64-bit dynamically linked DLL
+### Linux Artifacts
 
-- `JadeView_x64_static.dll` - 64-bit statically linked DLL
+- `libJadeView.so` - shared library (dynamic linking)
+- `libJadeView.a` - static library
 
-- `JadeView_arm64_dynamic.dll` - ARM64 dynamically linked DLL
+### Header File
 
-- `JadeView_arm64_static.dll` - ARM64 statically linked DLL
+- `JadeView.h` - the C API header (common to all platforms, included in every package)
 
-### PDB Files
+### Packages
 
-- `JadeView_x86_dynamic.pdb` - 32-bit dynamically linked debug symbols
+Windows is packaged as `.zip` and Linux as `.tar.gz`, named `JadeView_{win|linux}_{platform}_v{version}.{buildNo}.{zip|tar.gz}`:
 
-- `JadeView_x86_static.pdb` - 32-bit statically linked debug symbols
+- `JadeView_win_x86_v2.3.0-beta.5.26F01.zip` - Windows 32-bit
+- `JadeView_win_x64_v2.3.0-beta.5.26F01.zip` - Windows 64-bit
+- `JadeView_win_arm64_v2.3.0-beta.5.26F01.zip` - Windows ARM64
+- `JadeView_linux_x64_v2.3.0-beta.5.26F01.tar.gz` - Linux x86_64
+- `JadeView_linux_arm64_v2.3.0-beta.5.26F01.tar.gz` - Linux arm64
 
-- `JadeView_x64_dynamic.pdb` - 64-bit dynamically linked debug symbols
-
-- `JadeView_x64_static.pdb` - 64-bit statically linked debug symbols
-
-- `JadeView_arm64_dynamic.pdb` - ARM64 dynamically linked debug symbols
-
-- `JadeView_arm64_static.pdb` - ARM64 statically linked debug symbols
-
-### Export Files
-
-- `JadeView.dll_x86_dynamic.exp` - 32-bit dynamically linked export file
-
-- `JadeView.dll_x86_static.exp` - 32-bit statically linked export file
-
-- `JadeView.dll_x64_dynamic.exp` - 64-bit dynamically linked export file
-
-- `JadeView.dll_x64_static.exp` - 64-bit statically linked export file
-
-- `JadeView.dll_arm64_dynamic.exp` - ARM64 dynamically linked export file
-
-- `JadeView.dll_arm64_static.exp` - ARM64 statically linked export file
-
-### Library Files
-
-- `JadeView.dll_x86_dynamic.lib` - 32-bit dynamically linked library file
-
-- `JadeView.dll_x86_static.lib` - 32-bit statically linked library file
-
-- `JadeView.dll_x64_dynamic.lib` - 64-bit dynamically linked library file
-
-- `JadeView.dll_x64_static.lib` - 64-bit statically linked library file
-
-- `JadeView.dll_arm64_dynamic.lib` - ARM64 dynamically linked library file
-
-- `JadeView.dll_arm64_static.lib` - ARM64 statically linked library file
-
-### ZIP Packages
-
-- `JadeView_win_x86_dynamic_v0.1.2.zip` - 32-bit dynamically linked build package
-
-- `JadeView_win_x86_static_v0.1.2.zip` - 32-bit statically linked build package
-
-- `JadeView_win_x64_dynamic_v0.1.2.zip` - 64-bit dynamically linked build package
-
-- `JadeView_win_x64_static_v0.1.2.zip` - 64-bit statically linked build package
-
-- `JadeView_win_arm64_dynamic_v0.1.2.zip` - ARM64 dynamically linked build package
-
-- `JadeView_win_arm64_static_v0.1.2.zip` - ARM64 statically linked build package
+> The build number (e.g. `26F01`) is generated automatically by CI, in the format `YY + month letter (A–L) + per-month sequence`.
 
 ## Application Release Behavior
 

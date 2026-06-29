@@ -53,7 +53,7 @@ const data = await jade.invoke('heavy-task', payload, { timeout: 10000 });
 ### 主进程 C 代码
 
 ```c
-#include "jadeview.h"
+#include "JadeView.h"
 
 // IPC 回调：处理渲染进程 jade.invoke('get-config', ...)
 const char* get_config_callback(uint32_t window_id, const char* event_data) {
@@ -66,8 +66,7 @@ const char* get_config_callback(uint32_t window_id, const char* event_data) {
 
 // 在 app-ready 中注册
 const char* app_ready_callback(uint32_t window_id, const char* event_data) {
-    if (window_id == 1 && event_data
-        && strcmp(event_data, "success") == 0) {
+    if (window_id == 1) {  // window_id==1 即成功；event_data 为 JSON，失败时（window_id==0）为纯文本错误码
         // 注册 IPC 处理器
         register_ipc_handler("get-config", get_config_callback);
 
@@ -143,7 +142,7 @@ document.getElementById('btn').onclick = async () => {
 ```c
 #include <stdio.h>
 #include <string.h>
-#include "jadeview.h"
+#include "JadeView.h"
 
 // 处理 get-config
 const char* get_config_callback(uint32_t window_id, const char* event_data) {
@@ -162,8 +161,7 @@ const char* do_action_callback(uint32_t window_id, const char* event_data) {
 }
 
 const char* app_ready_callback(uint32_t window_id, const char* event_data) {
-    if (window_id == 1 && event_data
-        && strcmp(event_data, "success") == 0) {
+    if (window_id == 1) {  // window_id==1 即成功；event_data 为 JSON，失败时（window_id==0）为纯文本错误码
         // 注册 IPC 处理器
         register_ipc_handler("get-config", get_config_callback);
         register_ipc_handler("do-action", do_action_callback);
@@ -214,7 +212,7 @@ int main() {
 
 1. 主进程 `register_ipc_handler` 回调返回值必须用 `jade_text_create` 分配
 2. 渲染进程 `jade.on` 返回取消函数，不需要时调用 `off()` 防止泄漏
-3. 单次传输数据建议控制在约 252MB 以内
+3. Control 通道单条消息建议控制在 64KB 以内（`IPC_INLINE_MAX_BYTES`）；更大的数据应走 Bulk 通道分片传输（默认每片 256KB）
 4. 渲染进程 API 仅在通过 JadeView 协议加载的页面中可用（`set_protocol_service_path` 或 JAPK）
 
 > 详细 API 参考：[前端通信 API](/docs/api/javascript-api) | [IPC 通信 API](/docs/api/ipc-api) | [事件类型](/docs/api/event-types)

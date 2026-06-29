@@ -82,7 +82,7 @@ The Linux build `libJadeView.so` is based on **tao + wry** and renders with **GT
 | Rendering engine | WebKitGTK 4.1 (soup3 build, `libwebkit2gtk-4.1.so.0`); **not compatible** with the older 4.0 (soup2) |
 | Window / widgets | GTK 3 (`libgtk-3-0`) |
 | C runtime | glibc (not musl). The glibc floor of the prebuilt artifacts equals the build machine's glibc version |
-| Architecture | **x86_64** only; arm64 and other architectures are not yet built |
+| Architecture | Both **x86_64** and **arm64 (aarch64)** are built and released |
 | Display backend | X11 (recommended) or Wayland (GTK3) |
 | Chinese display | CJK fonts (such as `fonts-noto-cjk` / `fonts-wqy-zenhei`) must be installed, otherwise Chinese characters render as boxes |
 
@@ -103,7 +103,8 @@ The hard criterion for compatibility is whether the system can provide **WebKitG
 | Ubuntu 20.04 LTS | ❌ | Only webkit2gtk-4.0 (soup2), no 4.1 |
 | RHEL / CentOS 8 and earlier | ❌ | webkit too old |
 | Alpine and other musl-based systems | ❌ | Requires a musl build (not yet provided) + webkit2gtk |
-| Non-x86_64 (arm64, etc.) | ❌ (for now) | Corresponding architecture not built |
+| arm64 (aarch64) | ✅ | Built and shipped with each release |
+| Other architectures (e.g. RISC-V) | ❌ (for now) | Only x86_64 and arm64 are released |
 
 > Rule of thumb: **mainstream distributions released in 2022 or later generally work**; older LTS releases from around 2020 do not.
 

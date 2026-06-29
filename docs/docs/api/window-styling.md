@@ -47,7 +47,7 @@ v2.3 开始支持。
 与 `-webkit-app-region` 最大的区别：**右键不会弹出系统标题栏菜单**（还原/移动/大小/最小化/最大化/关闭）。因为该方式下拖动区始终是普通页面区域（客户区），只有「左键按下」才会发起一次程序化的窗口移动；右键落在拖动区只是普通的页面右键，不经过系统标题栏。
 
 :::info
-无需任何 C FFI 或前端 JS 初始化，运行时已自动注入，HTML 加属性即可用。平台：Windows。
+无需任何 C FFI 或前端 JS 初始化，运行时已自动注入，HTML 加属性即可用。平台：Windows / Linux 均支持（Linux 行为建议真机验证）。
 :::
 
 ### 属性
@@ -119,61 +119,9 @@ v2.3 开始支持。
 
 ---
 
-## 内置标题栏按钮覆盖层（`title-overlay`）
-
-**用途**：提供**有边框+无标题栏+右上角内置标题栏按钮**的效果，无需自行实现窗口控制按钮功能。每个按钮宽度 45 像素，高度默认 32 像素。**Windows 与 Linux 均支持**（Linux 自 v2.3.0-beta.6 起）。
-
-### 特点
-
-- 窗口有边框但无系统标题栏
-- 右上角自动绘制最小化、最大化、关闭按钮
-- 使用 Windows 10/11 风格的 Segoe MDL2 Assets 图标
-- 按钮背景透明，悬浮时显示背景色
-- 关闭按钮悬浮时显示红色背景 + 白色图标
-- 完全无需前端实现按钮交互逻辑
-
-### 使用方式
-
-创建窗口时设置 `frame_style` 为 `title-overlay`：
-
-```c
-WebViewWindowOptions options = {0};
-options.title = "My App";
-options.width = 800;
-options.height = 600;
-options.frame_style = "title-overlay";
-// ... 其他选项
-```
-
-或运行时动态切换：
-
-```c
-set_window_frame_style(window_id, "title-overlay");
-```
-
-### 自定义样式
-
-通过 `set_titlebar_overlay_style` 可自定义按钮外观：
-
-```c
-// 自定义按钮高度和颜色
-set_titlebar_overlay_style(
-    window_id,
-    32,          // 按钮高度（像素）
-    "#FFFFFF",   // 图标颜色（白色）
-    "#333333"    // 悬浮背景色（深灰色）
-);
-```
-
-:::info
-`title-overlay` 样式在 **Windows 与 Linux** 均支持（Linux 自 v2.3.0-beta.6 起）。注：`set_titlebar_overlay_style` 的运行时样式定制目前仅 Windows 生效，Linux 使用内置默认样式（图标 `#1E1E1E`、悬浮背景 `#DCDCDCBF`、高度 `32`）。
-:::
-
----
-
 ## 右键菜单控制（`jade-allow-contextmenu`）
 
-**用途**：按元素粒度控制右键菜单是否允许弹出。当 `WebViewSettings.disable_right_click` 全局禁用右键时，可通过此属性为特定元素单独放行。
+**用途**：按元素粒度控制右键菜单是否允许弹出。当 `WebViewSettings.allow_right_click` 设为 `0`（全局禁用右键）时，可通过此属性为特定元素单独放行。
 
 ### 基本用法
 
@@ -188,8 +136,9 @@ set_titlebar_overlay_style(
 ### 注意事项
 
 - **优先级**：元素同时设置了 `disabled` 属性时，`jade-allow-contextmenu` 不生效
-- **全局设置**：`WebViewSettings` 中 `disable_right_click=0`（不全局禁用）时，此属性被忽略，页面任意处都可弹出右键
+- **全局设置**：`WebViewSettings` 中 `allow_right_click=1`（不全局禁用，即默认允许右键）时，此属性被忽略，页面任意处都可弹出右键
 - **默认行为**：未设置此属性的元素默认不允许弹出右键菜单
+- **作用范围**：该属性只对实际被右键命中的元素本身生效，不覆盖其子元素（与 `jade-region-drag` 的「容器 + 后代」语义不同）
 
 ### 动态控制
 
@@ -211,5 +160,5 @@ el.removeAttribute('jade-allow-contextmenu');      // 禁止
 ### 右键菜单不弹出
 
 - 检查元素是否设置了 `disabled` 属性
-- 确认 `WebViewSettings.disable_right_click` 为 `1`（全局禁用右键），否则 `jade-allow-contextmenu` 无意义
+- 确认 `WebViewSettings.allow_right_click` 为 `0`（全局禁用右键），否则 `jade-allow-contextmenu` 无意义
 - 确保 `jade-allow-contextmenu` 属性已正确添加到目标元素

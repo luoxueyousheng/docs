@@ -37,11 +37,11 @@ int32_t set_protocol_service_path(
 
 须在 **`app-ready` 成功之后**再调。
 
-**与旧版 `create_local_server` 的差异**：过去要在参数里单独传 **`appname`**，用来拼内置主机名（如 `http://jade.{appname}/...`）。**2.0** 改为由 **`JadeView_init` 已登记的 `app_name` / `app_signature`** 推导协议身份，因此 C API **少一个参数**，避免与初始化信息不一致。
+**与旧版 `create_local_server` 的差异**：过去要在参数里单独传 **`appname`**，用来拼内置主机名（如 `http://jade.{appname}/...`）。**2.0** 改为**只用 `JadeView_init` 已登记的 `app_signature`（小写化）**作为协议域，与 `app_name` 无关；因此 C API **少一个参数**，避免与初始化信息不一致。
 
 | 旧 API | 2.0 |
 |--------|-----|
-| `create_local_server(root_path, appname, url_buffer, buffer_size)` | `set_protocol_service_path(root_path, url_buffer, buffer_size)` |
+| `create_local_server(root_path, appname, url_buffer, buffer_size)` | `set_protocol_service_path(root_path, url_buffer, buffer_size, hot_reload)` |
 
 ---
 
@@ -67,7 +67,7 @@ int register_resource(
   unsigned int window_id,
   unsigned int ttl_seconds,
   char* url_buffer,
-  int buffer_size
+  size_t buffer_size
 );
 ```
 
@@ -77,7 +77,7 @@ int register_resource(
 - `window_id` `unsigned int` - 所属窗口ID（`0` = 全局，所有窗口可访问）
 - `ttl_seconds` `unsigned int` - 过期时间秒数（`0` = 默认6秒，`-1` = 永不过期）
 - `url_buffer` `char*` - 输出参数，用于存储生成的 `/---jade---resource--?token=xxx` 路径（NUL 结尾）
-- `buffer_size` `int` - `url_buffer` 的字节容量（含结尾 NUL）
+- `buffer_size` `size_t` - `url_buffer` 的字节容量（含结尾 NUL）
 
 **返回值：**
 
@@ -96,12 +96,12 @@ int register_resource(
 注销已注册的安全资源。
 
 ```c
-int unregister_resource(const char* token_or_path);
+int unregister_resource(const char* token_or_url);
 ```
 
 **参数：**
 
-- `token_or_path` `string` - token 字符串或完整路径 `/---jade---resource--?token=xxx`
+- `token_or_url` `string` - token 字符串或完整路径 `/---jade---resource--?token=xxx`
 
 **返回值：**
 

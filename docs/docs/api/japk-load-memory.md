@@ -97,7 +97,7 @@ int JadeView_is_loaded(void);
 
 ### JadeView_get_app_signature
 
-返回当前加载包的 `app_signature` 字符串。
+返回 `JadeView_init` 时设置的 `app_signature`（与是否已加载、包类型无关）。
 
 ```c
 char* JadeView_get_app_signature(void);
@@ -188,7 +188,7 @@ int JadeView_unload(void);
 ### C 语言
 
 ```c
-#include "jadeview.h"
+#include "JadeView.h"
 
 void load_from_memory_example() {
     // 1. 初始化
@@ -213,8 +213,8 @@ void load_from_memory_example() {
 
     // 4. 获取协议 URL（内存加载时传入空字符串）
     char url_buffer[256];
-    set_protocol_service_path("", url_buffer, sizeof(url_buffer));
-    // url_buffer 内容类似: https://myapp.local/
+    set_protocol_service_path("", url_buffer, sizeof(url_buffer), 0);  // 第 4 参 hot_reload，内存加载传 0
+    // url_buffer 内容类似: JADE://{app_signature}/（app_signature 为 JadeView_init 第 5 参，小写）
 
     // 5. 创建窗口使用该 URL
     WebViewWindowOptions options = {
@@ -270,11 +270,11 @@ if rc != 0:
     raise RuntimeError(f"JadeView_load_from_bytes failed: {rc}")
 
 # 4. 获取协议 URL（内存加载时传入空字符串）
-dll.set_protocol_service_path.argtypes = [c_char_p, c_char_p, c_size_t]
+dll.set_protocol_service_path.argtypes = [c_char_p, c_char_p, c_size_t, c_int]
 dll.set_protocol_service_path.restype = c_int
 
 url_buffer = ctypes.create_string_buffer(256)
-dll.set_protocol_service_path(b"", url_buffer, 256)
+dll.set_protocol_service_path(b"", url_buffer, 256, 0)  # 第 4 参 hot_reload，内存加载传 0
 print(f"协议 URL: {url_buffer.value.decode()}")
 
 # 5. 使用该 URL 创建窗口
@@ -311,7 +311,7 @@ rc = dll.JadeView_load_from_bytes(data_ptr, len(japk_data))
   │  ◄── japk-load-success ────────┤ 异步事件
   │                                 │
   ├─ set_protocol_service_path("")─►│ 获取协议 URL
-  │  ◄── url_buffer ───────────────┤ jade://myapp.local/
+  │  ◄── url_buffer ───────────────┤ JADE://{app_signature}/
   │                                 │
   ├─ create_webview_window(url) ───►│ 创建窗口
   │                                 │

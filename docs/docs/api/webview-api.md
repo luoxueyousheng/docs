@@ -50,8 +50,6 @@ int32_t reload_webview_window(uint32_t window_id);
 
 若需要执行结果，通过事件 `javascript-result` 等取回（见 [事件类型](/docs/api/event-types#javascript-result)）。
 
-返回值只表示「请求有没有提交成功」，不是 JS 的返回值。
-
 ```c
 int32_t execute_javascript(uint32_t window_id, const char* script);
 ```
@@ -60,6 +58,11 @@ int32_t execute_javascript(uint32_t window_id, const char* script);
 
 - `window_id` `uint32_t` - 目标窗口 id
 - `script` `string` - 要执行的 JavaScript 代码
+
+**返回值：**
+
+- `> 0` - 返回的是**请求 id**，并非 JS 的执行结果；真正的 JS 结果需配合 `javascript-result` 事件按该 id 取回
+- `0` - `script` 为 `NULL`（未提交执行）
 
 ---
 
@@ -91,7 +94,7 @@ int32_t clear_browsing_data(uint32_t window_id);
 ```
 
 - **参数**：`window_id` `uint32_t`
-- **返回值**：`1` = 成功，`0` = 失败
+- **返回值**：仅表示请求已提交（异步 fire-and-forget），恒返回 `1`；不代表浏览数据是否真正清除成功
 
 ---
 
@@ -131,14 +134,14 @@ int32_t open_devtools(uint32_t window_id);
 ```
 
 - **参数**：`window_id` `uint32_t`
-- **返回值**：`1` = 成功，`0` = 失败
+- **返回值**：仅表示请求已提交（异步 fire-and-forget），恒返回 `1`；不代表 DevTools 是否真正打开
 
 ---
 
 ### 关闭 DevTools（`close_devtools`）
 
 :::warning
-v2.2 开始支持。Windows 不支持。
+v2.2 开始支持。
 :::
 
 ```c
@@ -146,7 +149,8 @@ int32_t close_devtools(uint32_t window_id);
 ```
 
 - **参数**：`window_id` `uint32_t`
-- **返回值**：`1` = 成功，`0` = 失败
+- **返回值**：仅表示请求已提交（异步 fire-and-forget），恒返回 `1`；不代表 DevTools 是否真正关闭
+- **平台说明**：所有平台都会调用，Windows / WebView2 上为 no-op（不报错、仍返回 `1`）
 
 ---
 
@@ -181,8 +185,7 @@ int32_t jade_print(uint32_t window_id);
 
 **返回值：**
 
-- `1` - 打印对话框已打开
-- `0` - 失败（窗口不存在或不支持打印）
+- 仅表示请求已提交（异步 fire-and-forget），恒返回 `1`；不代表打印对话框真正弹出或打印成功
 
 :::info{title=平台支持}
 Windows（WebView2）与 Linux（WebKitGTK）均可用——底层走 wry 跨平台的 `webview.print()`。

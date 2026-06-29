@@ -8,15 +8,15 @@ group:
 
 # JADE:// Custom Protocol: Loading Local Web Resources
 
-JadeView registers a custom protocol handler via `set_protocol_service_path`, mapping `https://{appname}.local/` to a local directory or JAPK file to enable secure and efficient loading of local resources.
+JadeView registers a custom protocol handler via `set_protocol_service_path`, mapping `JADE://{app_signature}` (the domain is the lowercased `app_signature`) to a local directory or JAPK file to enable secure and efficient loading of local resources.
 
 :::warning{title="Important Notice"}
-`https://{appname}.local/` is JadeView's internal custom protocol route, not a real HTTP server. It does not listen on any port and runs entirely within the application.
+`JADE://{app_signature}` is JadeView's internal custom protocol route, not a real HTTP server. It does not listen on any port and runs entirely within the application.
 :::
 
 ## Prerequisites
 
-- Download `jadeview.dll` and `jadeview.h` from [GitHub Releases](https://github.com/JadeViewDocs/JadeView/releases)
+- Download `JadeView_x64.dll` and `JadeView.h` from [GitHub Releases](https://github.com/JadeViewDocs/JadeView/releases)
 - Basic understanding of the C language
 
 ---
@@ -26,7 +26,7 @@ JadeView registers a custom protocol handler via `set_protocol_service_path`, ma
 ```c
 #include <stdio.h>
 #include <string.h>
-#include "jadeview.h"
+#include "JadeView.h"
 
 // Window control IPC callbacks
 const char* minimize_callback(uint32_t window_id, const char* event_data) {
@@ -45,8 +45,7 @@ const char* close_callback(uint32_t window_id, const char* event_data) {
 }
 
 const char* app_ready_callback(uint32_t window_id, const char* event_data) {
-    if (window_id == 1 && event_data
-        && strcmp(event_data, "success") == 0) {
+    if (window_id == 1) {  // window_id==1 means success; event_data is JSON, and on failure (window_id==0) it is a plain-text error code
         printf("JadeView is ready\n");
 
         // Register window control commands
@@ -54,17 +53,18 @@ const char* app_ready_callback(uint32_t window_id, const char* event_data) {
         register_ipc_handler("toggle-maximize", maximize_callback);
         register_ipc_handler("close-window", close_callback);
 
-        // Set up the local protocol service —— map the ./web directory to https://myapp.local/
+        // Set up the local protocol service —— map the ./web directory to JADE://com.example.myapp
         char url_buffer[256];
         int result = set_protocol_service_path(
             "./web",              // local resource directory
             url_buffer,           // output protocol URL buffer
-            sizeof(url_buffer)    // buffer size
+            sizeof(url_buffer),   // buffer size
+            0                     // hot_reload: 0 = disabled, 1 = enabled
         );
 
         if (result == 1) {
             printf("Protocol URL: %s\n", url_buffer);
-            // url_buffer content looks like: https://myapp.local/
+            // url_buffer content looks like: JADE://com.example.myapp
 
             WebViewWindowOptions options = {
                 .title = "Local Resource Example",
@@ -92,8 +92,8 @@ int main() {
         1,                      // enable_devmod
         NULL,                   // log_path
         NULL,                   // data_directory
-        "My App",               // app_name (also used as the protocol subdomain)
-        "com.example.myapp",    // app_signature
+        "My App",               // app_name (app display name)
+        "com.example.myapp",    // app_signature (lowercased, used as the protocol domain)
         0                       // single_instance
     );
 
@@ -231,9 +231,9 @@ Create a `web` folder and an `index.html` in your project directory:
 
 ### How It Works
 
-1. `set_protocol_service_path("./web", url_buffer, size)` registers the local directory with the protocol route
-2. The returned URL has the format `https://{app_name}.local/`
-3. When the WebView accesses `https://myapp.local/index.html`, JadeView reads directly from `./web/index.html`
+1. `set_protocol_service_path("./web", url_buffer, size, 0)` registers the local directory with the protocol route
+2. The returned URL has the format `JADE://{app_signature}` (lowercased `app_signature`)
+3. When the WebView accesses `JADE://com.example.myapp/index.html`, JadeView reads directly from `./web/index.html`
 4. The entire process involves no network communication and no port listening, and is completed entirely within the application
 
 ### Supported File Types
@@ -258,8 +258,8 @@ In addition to local directories, `set_protocol_service_path` also supports JAPK
 ```c
 // Load a JAPK file
 char url_buffer[256];
-set_protocol_service_path("app.japk", url_buffer, sizeof(url_buffer));
-// url_buffer → https://myapp.local/
+set_protocol_service_path("app.japk", url_buffer, sizeof(url_buffer), 0);
+// url_buffer → JADE://com.example.myapp
 create_webview_window(url_buffer, 0, &options, NULL);
 ```
 
@@ -271,9 +271,9 @@ Communication inside a JAPK also uses `jade.invoke` / `jade.on`, with no additio
 
 ## Notes
 
-1. **Not an HTTP server**: `https://{appname}.local/` does not listen on any port and cannot be accessed by external browsers
+1. **Not an HTTP server**: `JADE://{app_signature}` does not listen on any port and cannot be accessed by external browsers
 2. **`jade.invoke` requires a CORS whitelist** (v2.1+): if the page is not loaded through the protocol service, you must set the allowed origins in `WebViewSettings.cors_whitelist`
-3. **`app_name` determines the subdomain**: the `app_name` parameter of `JadeView_init` is used to generate the domain of the protocol URL
-4. **Page path mapping**: `https://myapp.local/css/style.css` → `./web/css/style.css`
+3. **`app_signature` determines the domain**: the protocol URL domain is taken from the `app_signature` parameter of `JadeView_init` (lowercased), not from `app_name`
+4. **Page path mapping**: `JADE://com.example.myapp/css/style.css` → `./web/css/style.css`
 
 > Detailed API: [Core API - Local Protocol Service](/en-US/docs/api#本地协议服务) | [Frontend Communication API](/en-US/docs/api/javascript-api)

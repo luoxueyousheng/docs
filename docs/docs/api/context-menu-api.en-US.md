@@ -53,6 +53,10 @@ Automatically triggered on right-click (requires `allow_right_click=1`); `event_
 | `has_selection` / `selection_text` | Selected text information |
 | `default_menu_names` *(new in 2.2)* | List of WebView2 default menu items, each containing `name`, `label`, and `kind` (see [Menu Item Types and Native Menu Items](/en-US/docs/api/context-menu-items)) |
 
+:::info{title=Platform Field Differences}
+The example above shows the full set of fields for **Windows (WebView2)**. The **Linux (WebKitGTK)** `context-menu` payload does **not** include the four fields `is_main_frame`, `frame_url`, `link_text`, and `selection_text`; the remaining fields are the same.
+:::
+
 ### Menu Item Clicked Event (`menu-item-clicked`)
 
 Triggered when a custom menu item is clicked; `event_data` is the `item_id` (string) passed in at creation time.

@@ -70,7 +70,7 @@ uint32_t create_webview_window(
   **WebViewSettings options:**
   - `autoplay` `int32_t` - Whether media is allowed to autoplay
   - `background_throttling` `int32_t` - Whether to lower timer/animation frequency to save resources when the window is in the background
-  - `disable_right_click` `int32_t` - Whether to disable the web page's right-click menu
+  - `allow_right_click` `int32_t` - Whether to allow the web page's right-click menu. `0` = disabled, `1` = allowed; unset (or passing `NULL` for the whole `webview_settings`) defaults to allowed
   - `ua` `string` - Custom User-Agent
   - `preload_js` `string` - A snippet of JS to inject before the page loads
   - `allow_fullscreen` `int32_t` - Whether the fullscreen API is allowed within the web page
@@ -555,7 +555,7 @@ int32_t set_titlebar_overlay_style(
 **Parameters:**
 
 - `window_id` `uint32_t` - Target window id
-- `height` `int32_t` - Button height (pixels); pass `0` or a negative number to use the default value 32. Button width is fixed at 45 pixels
+- `height` `int32_t` - Button height (pixels); pass `0` or a negative number to keep the current height unchanged; the overlay's initial default height is 32. Button width is fixed at 46 pixels
 - `icon_color_hex` `string` (optional) - Icon color, in the format `#RRGGBB` (e.g. `"#FFFFFF"`); pass `NULL` to use the default color
 - `hover_bg_hex` `string` (optional) - Hover background color for non-close buttons, in the format `#RRGGBB` or `#RRGGBBAA` (alpha supported, e.g. `"#00000080"`); pass `NULL` to use the default dark gray
 
@@ -597,6 +597,13 @@ int32_t get_window_theme(uint32_t window_id);
 **Parameters:**
 
 - `window_id` `uint32_t` - Target window id
+
+**Return value:**
+
+- `1` - Dark
+- `0` - Light
+
+The `System` theme is resolved to `1` / `0` based on the current system light/dark setting; returns `0` if the window does not exist or the theme is unknown.
 
 ---
 

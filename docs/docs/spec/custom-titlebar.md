@@ -10,24 +10,24 @@ group:
 
 JadeView 2.0 提供两种自定义标题栏的方式：
 
-1. **`title-overlay`**：使用内置标题栏按钮覆盖层（Windows 与 Linux 均支持，Linux 自 v2.3.0-beta.6 起；每个按钮宽度 45 像素，高度默认 32 像素）
+1. **`title-overlay`**：使用内置标题栏按钮覆盖层（Windows 与 Linux 均支持，Linux 自 v2.3.0-beta.6 起；每个按钮宽度 46 像素，高度默认 32 像素）
 2. **`no-titlebar`**：完全自定义绘制标题栏和按钮
 
 ---
 
 ## 方法一：使用 title-overlay（推荐）
 
-`title-overlay` 是提供系统级标题栏按钮（最小化/最大化/关闭）的边框样式，每个按钮宽度 45 像素、高度默认 32 像素，无需自己实现。**Windows 与 Linux 均支持**（Linux 自 v2.3.0-beta.6 起）。
+`title-overlay` 是提供系统级标题栏按钮（最小化/最大化/关闭）的边框样式，每个按钮宽度 46 像素、高度默认 32 像素，无需自己实现。**Windows 与 Linux 均支持**（Linux 自 v2.3.0-beta.6 起）。
 
 ### C 代码示例
 
 ```c
 #include <stdio.h>
 #include <string.h>
-#include "jadeview.h"
+#include "JadeView.h"
 
-int app_ready_callback(uint32_t window_id, const char* event_type, const char* event_data) {
-  if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
+const char* app_ready_callback(uint32_t window_id, const char* event_data) {
+  if (window_id == 1) {  // window_id==1 即成功；event_data 为 JSON，失败时（window_id==0）为纯文本错误码
     // 创建窗口
     WebViewWindowOptions options = {
       .title = "自定义标题栏示例",
@@ -53,7 +53,7 @@ int app_ready_callback(uint32_t window_id, const char* event_type, const char* e
       "#f0f0f0"     // 悬浮背景色
     );
   }
-  return 0;
+  return NULL;
 }
 
 int main() {
@@ -112,29 +112,23 @@ int main() {
 ```c
 #include <stdio.h>
 #include <string.h>
-#include "jadeview.h"
+#include "JadeView.h"
 
-int app_ready_callback(uint32_t window_id, const char* event_type, const char* event_data) {
-  if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
+const char* app_ready_callback(uint32_t window_id, const char* event_data) {
+  if (window_id == 1) {  // window_id==1 即成功；event_data 为 JSON，失败时（window_id==0）为纯文本错误码
     // 创建无边框窗口
-    WebViewWindowOptions options = {
-      .title = "完全自定义标题栏",
-      .width = 800,
-      .height = 600,
-      .resizable = 1,
-      .frame_style = "no-titlebar",  // 无边框无标题栏
-      .theme = "System",
-    };
+    // 注意：create_borderless_webview_window 的签名为 (url, settings)，不接收 WebViewWindowOptions，
+    // 无边框/无标题栏由该函数本身决定，无法也无需通过 options.frame_style 指定。
 
     uint32_t new_window_id = create_borderless_webview_window(
       "https://your-app.local",
-      NULL
+      NULL  // WebViewSettings*，可为 NULL
     );
 
     // 获取 HWND 用于额外的 Win32 操作
     size_t hwnd = get_window_hwnd(new_window_id);
   }
-  return 0;
+  return NULL;
 }
 
 int main() {
@@ -283,10 +277,8 @@ const char* close_callback(uint32_t window_id, const char* event_data) {
 }
 
 // 在 app-ready 回调中注册
-int app_ready_callback(uint32_t window_id, const char* event_type,
-                       const char* event_data) {
-    if (window_id == 1 && event_data
-        && strcmp(event_data, "success") == 0) {
+const char* app_ready_callback(uint32_t window_id, const char* event_data) {
+    if (window_id == 1) {  // window_id==1 即成功；event_data 为 JSON，失败时（window_id==0）为纯文本错误码
         // 注册窗口控制命令
         register_ipc_handler("minimize-window", minimize_callback);
         register_ipc_handler("toggle-maximize", toggle_maximize_callback);
@@ -294,7 +286,7 @@ int app_ready_callback(uint32_t window_id, const char* event_type,
 
         // ... 创建窗口 ...
     }
-    return 0;
+    return NULL;
 }
 ```
 

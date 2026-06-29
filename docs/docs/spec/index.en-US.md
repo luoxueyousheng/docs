@@ -39,15 +39,15 @@ The JadeView DLL adopts a strict memory management mechanism to ensure that repe
 3. **Run the message loop**: Call `run_message_loop` to run the message loop
 4. **Create a WebView window**: Call the `create_webview_window` function inside the `app-ready` event callback to create a window
 5. **Register other event callbacks**: Register other event callbacks via `jade_on`
-6. **Clean up resources**: Listen for the `window-all-closed` event and call `cleanup_all_windows` to clean up resources
+6. **Clean up resources**: Listen for the `window-all-closed` event and call `jadeview_exit` to clean up resources
 
 ## Notes
 
 1. **Multithread safety**: All API functions are thread-safe and can be called from multiple threads
 2. **Asynchronous window creation**: The `create_webview_window` function returns the requested window ID immediately, but the actual window creation is completed asynchronously in the event loop thread
 3. **Event handling order**: Event handling may execute on different threads, so thread safety must be taken into account
-4. **Callback return values**: The meaning of window event callback return values: 0 = allow the operation, 1 = block the operation
-5. **Resource management**: Call `cleanup_all_windows` promptly to clean up resources after use
+4. **Callback return values**: Window event callbacks return `const char*`: NULL = allow/default, a non-empty string = block/custom response
+5. **Resource management**: Call `jadeview_exit` promptly to clean up resources after use
 
 
 ## Supported Platforms

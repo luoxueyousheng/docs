@@ -10,24 +10,24 @@ group:
 
 JadeView 2.0 offers two ways to customize the title bar:
 
-1. **`title-overlay`**: Use the built-in title bar button overlay (supported on both Windows and Linux, Linux since v2.3.0-beta.6; each button is 45 pixels wide and 32 pixels tall by default)
+1. **`title-overlay`**: Use the built-in title bar button overlay (supported on both Windows and Linux, Linux since v2.3.0-beta.6; each button is 46 pixels wide and 32 pixels tall by default)
 2. **`no-titlebar`**: Fully custom-draw the title bar and buttons
 
 ---
 
 ## Option 1: Using title-overlay (Recommended)
 
-`title-overlay` is a frame style that provides system-level title bar buttons (minimize/maximize/close), each 45 pixels wide and 32 pixels tall by default, with no implementation needed on your part. **Supported on both Windows and Linux** (Linux since v2.3.0-beta.6).
+`title-overlay` is a frame style that provides system-level title bar buttons (minimize/maximize/close), each 46 pixels wide and 32 pixels tall by default, with no implementation needed on your part. **Supported on both Windows and Linux** (Linux since v2.3.0-beta.6).
 
 ### C Code Example
 
 ```c
 #include <stdio.h>
 #include <string.h>
-#include "jadeview.h"
+#include "JadeView.h"
 
-int app_ready_callback(uint32_t window_id, const char* event_type, const char* event_data) {
-  if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
+const char* app_ready_callback(uint32_t window_id, const char* event_data) {
+  if (window_id == 1) {  // window_id==1 means success; event_data is JSON, and on failure (window_id==0) it is a plain-text error code
     // Create the window
     WebViewWindowOptions options = {
       .title = "Custom Title Bar Example",
@@ -53,7 +53,7 @@ int app_ready_callback(uint32_t window_id, const char* event_type, const char* e
       "#f0f0f0"     // Hover background color
     );
   }
-  return 0;
+  return NULL;
 }
 
 int main() {
@@ -112,29 +112,24 @@ In `no-titlebar` mode, you need to implement the complete title bar and window c
 ```c
 #include <stdio.h>
 #include <string.h>
-#include "jadeview.h"
+#include "JadeView.h"
 
-int app_ready_callback(uint32_t window_id, const char* event_type, const char* event_data) {
-  if (window_id == 1 && event_data && strcmp(event_data, "success") == 0) {
+const char* app_ready_callback(uint32_t window_id, const char* event_data) {
+  if (window_id == 1) {  // window_id==1 means success; event_data is JSON, and on failure (window_id==0) it is a plain-text error code
     // Create a frameless window
-    WebViewWindowOptions options = {
-      .title = "Fully Custom Title Bar",
-      .width = 800,
-      .height = 600,
-      .resizable = 1,
-      .frame_style = "no-titlebar",  // Frameless, no title bar
-      .theme = "System",
-    };
+    // Note: create_borderless_webview_window has the signature (url, settings) and does not
+    // accept WebViewWindowOptions; frameless/no-titlebar is determined by the function itself
+    // and cannot (and need not) be specified via options.frame_style.
 
     uint32_t new_window_id = create_borderless_webview_window(
       "https://your-app.local",
-      NULL
+      NULL  // WebViewSettings*, may be NULL
     );
 
     // Get the HWND for additional Win32 operations
     size_t hwnd = get_window_hwnd(new_window_id);
   }
-  return 0;
+  return NULL;
 }
 
 int main() {
@@ -283,10 +278,8 @@ const char* close_callback(uint32_t window_id, const char* event_data) {
 }
 
 // Register in the app-ready callback
-int app_ready_callback(uint32_t window_id, const char* event_type,
-                       const char* event_data) {
-    if (window_id == 1 && event_data
-        && strcmp(event_data, "success") == 0) {
+const char* app_ready_callback(uint32_t window_id, const char* event_data) {
+    if (window_id == 1) {  // window_id==1 means success; event_data is JSON, and on failure (window_id==0) it is a plain-text error code
         // Register window control commands
         register_ipc_handler("minimize-window", minimize_callback);
         register_ipc_handler("toggle-maximize", toggle_maximize_callback);
@@ -294,7 +287,7 @@ int app_ready_callback(uint32_t window_id, const char* event_type,
 
         // ... create the window ...
     }
-    return 0;
+    return NULL;
 }
 ```
 

@@ -57,7 +57,7 @@ After installation, you can verify whether the WebView2 Runtime was installed su
 ### Q: What should I do if I encounter an error during installation?
 
 A: Make sure your system meets the following requirements:
-- Windows 10 version 1803 or later
+- Windows 10 version 1809 or later
 - Windows 11
 - Sufficient disk space
 - Administrator privileges
@@ -74,10 +74,12 @@ A: Yes. The Evergreen version of the WebView2 Runtime updates automatically to e
 
 ## System Requirements
 
-- **Operating system**: Windows 10 version 1803 or later, or Windows 11
+- **Operating system**: Windows 10 version 1809 or later, or Windows 11
 - **Architecture**: x86, x64, or ARM64
 - **Disk space**: At least 100 MB
 - **Network connection**: Used for download and updates (Evergreen version only)
+
+> Note: the minimum OS version is ultimately governed by the official [WebView2 Runtime requirements](https://learn.microsoft.com/en-us/microsoft-edge/webview2/).
 
 ## Related Links
 

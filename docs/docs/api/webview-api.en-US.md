@@ -50,8 +50,6 @@ Inject and execute a piece of JavaScript into the page.
 
 If you need the execution result, retrieve it via the `javascript-result` event and the like (see [Event Types](/en-US/docs/api/event-types#javascript-result)).
 
-The return value only indicates "whether the request was submitted successfully", not the return value of the JS.
-
 ```c
 int32_t execute_javascript(uint32_t window_id, const char* script);
 ```
@@ -60,6 +58,11 @@ int32_t execute_javascript(uint32_t window_id, const char* script);
 
 - `window_id` `uint32_t` - target window id
 - `script` `string` - the JavaScript code to execute
+
+**Return value:**
+
+- `> 0` - the returned value is a **request id**, not the JS execution result; the actual JS result must be retrieved by this id via the `javascript-result` event
+- `0` - `script` is `NULL` (nothing was submitted for execution)
 
 ---
 
@@ -91,7 +94,7 @@ int32_t clear_browsing_data(uint32_t window_id);
 ```
 
 - **Parameter**: `window_id` `uint32_t`
-- **Return value**: `1` = success, `0` = failure
+- **Return value**: only indicates that the request was submitted (asynchronous, fire-and-forget); always returns `1` and does not reflect whether the browsing data was actually cleared
 
 ---
 
@@ -131,14 +134,14 @@ int32_t open_devtools(uint32_t window_id);
 ```
 
 - **Parameter**: `window_id` `uint32_t`
-- **Return value**: `1` = success, `0` = failure
+- **Return value**: only indicates that the request was submitted (asynchronous, fire-and-forget); always returns `1` and does not reflect whether DevTools actually opened
 
 ---
 
 ### Close DevTools (`close_devtools`)
 
 :::warning
-Supported since v2.2. Not supported on Windows.
+Supported since v2.2.
 :::
 
 ```c
@@ -146,7 +149,8 @@ int32_t close_devtools(uint32_t window_id);
 ```
 
 - **Parameter**: `window_id` `uint32_t`
-- **Return value**: `1` = success, `0` = failure
+- **Return value**: only indicates that the request was submitted (asynchronous, fire-and-forget); always returns `1` and does not reflect whether DevTools actually closed
+- **Platform note**: invoked on all platforms; on Windows / WebView2 it is a no-op (no error, still returns `1`)
 
 ---
 
@@ -181,8 +185,7 @@ int32_t jade_print(uint32_t window_id);
 
 **Return value:**
 
-- `1` - the print dialog has been opened
-- `0` - failure (the window does not exist or printing is not supported)
+- only indicates that the request was submitted (asynchronous, fire-and-forget); always returns `1` and does not reflect whether the print dialog actually appeared or printing succeeded
 
 :::info{title=Platform Support}
 Available on both Windows (WebView2) and Linux (WebKitGTK) — under the hood it uses wry's cross-platform `webview.print()`.

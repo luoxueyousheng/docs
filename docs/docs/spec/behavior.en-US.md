@@ -170,7 +170,7 @@ JadeView's API design emphasizes simplicity and ease of use:
 
 ### Cross-Platform Compatibility
 
-Although it currently mainly supports the Windows platform, JadeView's design takes cross-platform compatibility into account:
+JadeView currently supports the **Windows and Linux** platforms (macOS is not yet supported), and its design also takes cross-platform compatibility into account:
 
 1. **Abstract window interface**: An abstract window interface is designed to make it easy to add support for other platforms
 2. **Standardized API**: The API design follows cross-platform standards
@@ -190,10 +190,10 @@ Security is a core principle of JadeView's design:
 JadeView uses a modern technology stack:
 
 - **Rust**: The core development language, providing memory safety and high performance
-- **wry**: The WebView library, based on WebKitGTK (Linux), WKWebView (macOS), and WebView2 (Windows)
-- **tao**: The window management library, providing cross-platform window management capabilities
+- **wry**: The WebView library; JadeView is based on WebView2 (Windows) and WebKitGTK (Linux); macOS is not currently supported
+- **tao**: The window management library, providing cross-platform window management and the event loop
 - **serde**: The serialization/deserialization library, used for data transfer
-- **tokio**: The asynchronous runtime, used for handling asynchronous operations
+- **crossbeam-channel**: Inter-thread message channels; JadeView does not depend on tokio — its asynchronous behavior is built on the tao event loop + crossbeam-channel
 
 ## Architecture Design
 

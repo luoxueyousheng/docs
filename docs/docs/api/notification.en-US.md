@@ -10,7 +10,7 @@ group:
 
 ## Show a system notification (`show_notification`)
 
-**Purpose**: Pop up a **system notification** on Windows (the kind that appears in the Action Center / bottom-right corner), with a title, body, an optional icon, and buttons. Ideal for letting the user know a task has finished, that confirmation is needed, and so on.
+**Purpose**: Pop up a **system notification** on **Windows / Linux** (on Windows it appears in the Action Center / bottom-right corner; on Linux it goes through freedesktop `org.freedesktop.Notifications` / zbus), with a title, body, an optional icon, and buttons. Ideal for letting the user know a task has finished, that confirmation is needed, and so on.
 
 ```c
 int32_t show_notification(const NotificationParams* params);
@@ -23,12 +23,12 @@ int32_t show_notification(const NotificationParams* params);
 | `summary` | **Title**, required, the first thing the user sees. |
 | `body` | The body text. |
 | `icon` | **Absolute disk path** to the small icon. |
-| `timeout` | How long it stays (in milliseconds); `<= 0` uses the system default. |
+| `timeout` | How long it stays (in milliseconds). **Currently has no effect on Windows** (the toast duration is decided by system settings); on Linux, `<= 0` is decided by the notification service. |
 | `button1` / `button2` | The button labels on the notification; clicking them triggers **`notification-action`** and similar events (see [Event Types](/en-US/docs/api/event-types#notification-events)). |
 | `text3` | An extra line of supplementary text. |
 | `action` | A parameter related to the notification action; it is passed into the system callback data. |
 
-Returns `1` if the notification was sent for display, `0` on failure or on non-Windows platforms.
+Returns `1` if the notification was sent for display, `0` on failure. **Supported on both Windows and Linux** (on Linux it goes through freedesktop `org.freedesktop.Notifications` / zbus and also returns `1` on success).
 
 ### Behavior
 

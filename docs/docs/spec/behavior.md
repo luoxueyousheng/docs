@@ -170,7 +170,7 @@ JadeView 的 API 设计注重简洁易用：
 
 ### 跨平台兼容
 
-虽然目前主要支持 Windows 平台，但 JadeView 的设计考虑了跨平台兼容性：
+JadeView 目前支持 **Windows 与 Linux** 平台（暂不支持 macOS），其设计也充分考虑了跨平台兼容性：
 
 1. **抽象的窗口接口**：设计了抽象的窗口接口，便于添加其他平台支持
 2. **标准化的 API**：API 设计遵循跨平台标准
@@ -190,10 +190,10 @@ JadeView 的 API 设计注重简洁易用：
 JadeView 采用了现代化的技术栈：
 
 - **Rust**：核心开发语言，提供内存安全和高性能
-- **wry**：WebView 库，基于 WebKitGTK (Linux)、WKWebView (macOS) 和 WebView2 (Windows)
-- **tao**：窗口管理库，提供跨平台窗口管理功能
+- **wry**：WebView 库，JadeView 基于 WebView2 (Windows) 与 WebKitGTK (Linux)；目前不支持 macOS
+- **tao**：窗口管理库，提供跨平台窗口管理功能与事件循环
 - **serde**：序列化/反序列化库，用于数据传输
-- **tokio**：异步运行时，用于处理异步操作
+- **crossbeam-channel**：线程间消息通道；JadeView 不依赖 tokio，异步基于 tao 事件循环 + crossbeam-channel 实现
 
 ## 架构设计
 

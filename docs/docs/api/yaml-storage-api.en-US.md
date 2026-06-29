@@ -69,7 +69,6 @@ matrix[0][1]       → multi-dimensional array
 | `0` | Path does not exist / file does not exist / no-op |
 | `-1` | IO error |
 | `-2` | Type mismatch (e.g. an intermediate node is not a mapping/array) |
-| `-3` | Target already exists |
 | `-4` | Format parsing failed |
 
 ---
@@ -191,6 +190,10 @@ int yaml_get_all(const char* file_name, char* buffer, size_t buffer_size);
 
 Reads the entire YAML file and writes it as a JSON string into `buffer`. Supports two-phase query (returns the number of bytes needed when the buffer is insufficient).
 
+:::info
+**When the file does not exist, it returns `{}` with rc = `1` (there is no `0` return path)**, so the "`0` = file does not exist" entry in the "Return Value Semantics" table does not apply to this function.
+:::
+
 ---
 
 ### Check Whether a Path Exists (`yaml_has`)
@@ -203,7 +206,7 @@ Supported since v2.3.
 int yaml_has(const char* file_name, const char* key_path);
 ```
 
-Checks whether a path exists. Returns `1` if it exists, `0` if it does not.
+Checks whether a path exists. Returns `1` if it exists, `0` if it does not; it may also return `-1` (IO/parameter error) or `-4` (format parsing failed).
 
 ---
 
@@ -284,7 +287,11 @@ int yaml_len(const char* file_name, const char* key_path);
 Returns the number of keys in a mapping or the length of an array. When `key_path` is an empty string, the root node is queried.
 
 - Returns `≥ 0`: the length
+- Returns `-1`: IO/parameter error
 - Returns `-2`: the target is not a mapping/array
+- Returns `-4`: format parsing failed
+
+> Note: **when the path does not exist it returns `0`**, so `0` is ambiguous (an empty mapping/array, or a non-existent path); use `yaml_has` to distinguish.
 
 ---
 

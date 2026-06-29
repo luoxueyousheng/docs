@@ -39,7 +39,7 @@ JAPK 是 JadeView 专属的前端资源打包格式，将 HTML、CSS、JavaScrip
 | 方式 | 内容保护 | 适用场景 |
 |------|---------|---------|
 | `@electron/asar`（免费） | 明文，无保护 | 开发调试、内部工具 |
-| JadePack 混淆包 | XOR 混淆，非明文 | 基础保护的分发 |
+| JadePack 混淆包 | 3 层可逆变换（XOR + 字节置换 + 位旋转），非明文 | 基础保护的分发 |
 | JadePack 签名包 | Ed25519 签名 + AES-256-GCM 加密 | 生产环境、商业分发 |
 
 详细说明见 [JAPK 资源包格式](/docs/api/japk)。
@@ -52,7 +52,7 @@ JAPK 是 JadeView 专属的前端资源打包格式，将 HTML、CSS、JavaScrip
 
 ### 混淆保护
 
-即使不签名，JadePack 也会对打包内容施加 XOR 混淆保护，生成非明文的混淆包。加载时无需公钥，适合基础保护场景。
+即使不签名，JadePack 也会对打包内容施加 3 层可逆变换（XOR + 字节置换 + 位旋转）保护，生成非明文的混淆包。加载时无需公钥，适合基础保护场景。
 
 ### 签名加密
 
@@ -90,7 +90,7 @@ int rc = JadeView_load_from_bytes(japk_data, data_size);
 
 // 4. 获取协议 URL 并创建窗口
 char url_buffer[256];
-set_protocol_service_path("", url_buffer, sizeof(url_buffer));
+set_protocol_service_path("", url_buffer, sizeof(url_buffer), 0);  // 第 4 参 hot_reload: 0=禁用, 1=启用
 create_webview_window(url_buffer, 0, &options, NULL);
 ```
 

@@ -70,7 +70,7 @@ uint32_t create_webview_window(
   **WebViewSettings 选项：**
   - `autoplay` `int32_t` - 媒体能不能自动播放
   - `background_throttling` `int32_t` - 窗口在后台时是否降低定时器/动画频率省资源
-  - `disable_right_click` `int32_t` - 是否禁用网页右键菜单
+  - `allow_right_click` `int32_t` - 是否允许网页右键菜单。`0` = 禁用，`1` = 允许；不设置（或整个 `webview_settings` 传 `NULL`）默认 = 允许
   - `ua` `string` - 自定义 User-Agent
   - `preload_js` `string` - 页面加载前要注入的一段 JS
   - `allow_fullscreen` `int32_t` - 网页里全屏 API 是否允许
@@ -555,7 +555,7 @@ int32_t set_titlebar_overlay_style(
 **参数：**
 
 - `window_id` `uint32_t` - 目标窗口 id
-- `height` `int32_t` - 按钮高度（像素），传 `0` 或负数使用默认值 32。按钮宽度固定 45 像素
+- `height` `int32_t` - 按钮高度（像素），传 `0` 或负数则保持当前高度不变；覆盖层初始默认高度为 32。按钮宽度固定 46 像素
 - `icon_color_hex` `string` (可选) - 图标颜色，格式为 `#RRGGBB`（如 `"#FFFFFF"`），传 `NULL` 使用默认颜色
 - `hover_bg_hex` `string` (可选) - 非关闭按钮悬浮背景色，格式为 `#RRGGBB` 或 `#RRGGBBAA`（支持透明度，如 `"#00000080"`），传 `NULL` 使用默认深灰色
 
@@ -597,6 +597,13 @@ int32_t get_window_theme(uint32_t window_id);
 **参数：**
 
 - `window_id` `uint32_t` - 目标窗口 id
+
+**返回值：**
+
+- `1` - 深色（Dark）
+- `0` - 浅色（Light）
+
+`System` 主题会按当前系统明暗解析为 `1` / `0`；窗口不存在或主题未知时返回 `0`。
 
 ---
 

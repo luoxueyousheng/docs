@@ -8,13 +8,17 @@ group:
 
 # Event Types
 
-This page lists the events the library may dispatch to the main process after subscribing via **`jade_on`**: **`event_data` is generally a UTF-8 JSON string** (a few are plain text, such as `success` when `app-ready` succeeds). The first parameter of the `jade_on` callback, **`window_id`**, indicates which window it refers to (global events that are unrelated to a specific window are usually `0`, but defer to each section). 
+This page lists the events the library may dispatch to the main process after subscribing via **`jade_on`**: **`event_data` is generally a UTF-8 JSON string** (a few are plain text, such as the error description when `app-ready` fails, or the `crash` error code). The first parameter of the `jade_on` callback, **`window_id`**, indicates which window it refers to (global events that are unrelated to a specific window are usually `0`, but defer to each section). 
 
 **The return value of `IpcCallback`** has different meanings in "interception" events versus **`register_ipc_handler`**, so be sure to read the **quick reference** below first. The [IPC Communication API](/en-US/docs/api/ipc-api) provides supplementary notes that complement `jade.invoke`.
 
+:::info
+**Callback dispatch thread**: **notification events** (such as the various `window-*`, `notification-*`, `theme-changed`, etc.) are dispatched **asynchronously** by an internal worker thread pool — the callback does not run on the GUI thread, so heavier processing is fine; **interception events** (`window-closing`, `webview-will-navigate`, `webview-new-window`, `webview-download-started`, and the `enter`/`drop` of `drag-drop`) are called **inline synchronously on the GUI thread**, where the library reads the return value immediately to decide allow/block, so **return as quickly as possible and do not block**.
+:::
+
 ---
 
-## Callback Return Value Quick Reference (`IpcCallback`)
+<h2 id="ipc-callback-returns">Callback Return Value Quick Reference (`IpcCallback`)</h2>
 
 The type is **`const char*`**, but in most scenarios it is used as a **sentinel** and need not point to a real string.
 
@@ -49,14 +53,14 @@ Changed in v2.2.
 
 Fired after JadeView finishes initialization. All window creation and API calls must happen after this event is received; calling them beforehand returns `0` (failure).
 
-Starting with 2.2, `event_data` is uniformly plain text:
+The `event_data` format **differs** between success and failure (success is JSON, failure is plain text), so **decide success solely by `window_id == 1`** — do not rely on parsing `event_data`:
 
 | Scenario | `window_id` | `event_data` |
 |------|-------------|-------------|
-| Initialization succeeded | `1` | `"success"` |
-| Initialization parameter validation failed | `0` | `"invalid_param: app_name is required"` |
+| Initialization succeeded | `1` | JSON: `{"ok":true,"message":"success"}` |
+| Initialization parameter validation failed | `0` | Plain text `"<code>: <message>"`, e.g. `"missing_app_name: app_name must be non-null and valid UTF-8"`; `code` is one of `missing_app_name` / `missing_app_signature` / `app_signature_too_short` |
 
-How the main process decides: `window_id === 1` means success, `window_id === 0` means failure.
+How the main process decides: **look only at `window_id`** — `window_id === 1` means success, `window_id === 0` means failure.
 
 ---
 
@@ -65,15 +69,6 @@ How the main process decides: `window_id === 1` means success, `window_id === 0`
 ### `window-created`
 
 Window creation completed.
-
-- **`event_data`**: `{}`
-- **`window_id`**: id of the newly created window
-
----
-
-### `app-window-created`
-
-Same kind as `window-created`, an alias.
 
 - **`event_data`**: `{}`
 - **`window_id`**: id of the newly created window
@@ -161,6 +156,15 @@ The window was destroyed.
 
 ---
 
+### `window-bounds`
+
+After the main process queries a window's position and size (`get_window_bounds`), the result is reported back via this event.
+
+- **`event_data`**: `{"x": integer, "y": integer, "width": integer, "height": integer}`
+- **`window_id`**: id of the target window
+
+---
+
 ## WebView and Page Events
 
 ### `webview-will-navigate`
@@ -208,18 +212,18 @@ The page title changed.
 
 ---
 
-### `webview-page-icon-updated`
+### `webview-page-favicon-updated`
 
 The page icon (favicon) changed.
 
-- **`event_data`**: JSON containing icon-related information
+- **`event_data`**: `{"favicon": "<url>"}`
 - **`window_id`**: id of the target window
 
 ---
 
 ### `webview-download-started`
 
-A download started. **Blocked by default**; you must return `NULL` in the callback to allow the download, see [Callback Return Value Quick Reference](#callback-return-value-quick-reference-ipccallback).
+A download started. **Blocked by default**; you must return `NULL` in the callback to allow the download, see [Callback Return Value Quick Reference](#ipc-callback-returns).
 
 - **`event_data`**: `{"url": "...", "filename": "..."}`
 - **`window_id`**: id of the target window
@@ -333,19 +337,6 @@ The page sends a message via `postMessage`. **Only fired when the origin passes 
 
 ---
 
-### `devtools-open-state`
-
-:::warning
-Supported since v2.2.
-:::
-
-Fired when the DevTools open/close state changes, or when the user manually toggles DevTools.
-
-- **`event_data`**: JSON containing the `open` boolean (`true`=opened, `false`=closed)
-- **`window_id`**: id of the target window
-
----
-
 ## Theme and Others
 
 ### `theme-changed`
@@ -353,7 +344,7 @@ Fired when the DevTools open/close state changes, or when the user manually togg
 The system or window theme changed.
 
 - **`event_data`**: `{}`
-- **`window_id`**: `0`
+- **`window_id`**: id of the window whose theme changed
 
 ---
 
@@ -362,7 +353,7 @@ The system or window theme changed.
 The window icon needs to be refreshed.
 
 - **`event_data`**: `{"window_id": integer}`
-- **`window_id`**: `0`
+- **`window_id`**: id of the target window
 
 ---
 
@@ -444,6 +435,15 @@ The user left-clicks, right-clicks, double-clicks, or moves the mouse in/out **o
 
 - **`window_id`**: `0`
 - **`event_data`**: JSON containing `tray_id`, `event` (such as `left-click`, `enter`), coordinates, `timestamp`, etc.
+
+---
+
+### `japk-load-failed`
+
+Fired when a JAPK resource pack fails to load (public key not set, signature verification failed, unpack/read error, etc.). See [JAPK Resource Pack](/en-US/docs/api/japk).
+
+- **`window_id`**: `0`
+- **`event_data`**: a **plain-text** error message (not JSON)
 
 ---
 

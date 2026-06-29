@@ -154,6 +154,7 @@ int32_t jade_get_printer_list(char* buffer, int buffer_size);
 
 - **参数**：`buffer` `char*` - 输出缓冲区；`buffer_size` `int` - 缓冲区大小（字节）
 - **返回值**：`>0` = 打印机数量，buffer 中为 JSON 数组；`0` = 失败或无打印机
+- **缓冲区不足时**：会**截断写入并照常返回打印机数量**（不报错）；JSON 可能被截断，请预留足够空间或据返回数量重试
 
 输出示例：
 
@@ -163,6 +164,23 @@ int32_t jade_get_printer_list(char* buffer, int buffer_size);
 
 :::info{title=平台支持}
 Windows（`EnumPrintersW`）与 Linux（CUPS `lpstat -e`）均可用。Linux 需安装 CUPS 客户端（`cups-client`，提供 `lp`/`lpstat`）；未安装时返回 `0`。
+:::
+
+---
+
+### 打印文件（`jade_print_dialog`）
+
+用**系统关联程序**直接打印磁盘上的文件（不经 WebView），适合打印 PDF、图片等已有文件。
+
+```c
+int32_t jade_print_dialog(const char* file_path);
+```
+
+- **参数**：`file_path` `string` - 要打印的文件绝对路径；`NULL` 或空字符串直接返回 `0`
+- **返回值**：`1` = 已成功提交给系统打印；`0` = 失败（路径为空 / 系统调用失败）
+
+:::info{title=平台支持}
+Windows 走 `ShellExecute` 的 `"print"` 动词，由文件关联的默认程序打印；Linux 走 CUPS 的 `lp` 命令。
 :::
 
 ---

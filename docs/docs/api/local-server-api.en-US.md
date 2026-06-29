@@ -37,11 +37,11 @@ int32_t set_protocol_service_path(
 
 Must be called **after `app-ready` succeeds**.
 
-**Difference from the legacy `create_local_server`**: Previously you had to pass **`appname`** as a separate parameter, used to build the internal host name (e.g. `http://jade.{appname}/...`). **2.0** instead derives the protocol identity from the **`app_name` / `app_signature` already registered by `JadeView_init`**, so the C API has **one fewer parameter**, avoiding inconsistency with the initialization information.
+**Difference from the legacy `create_local_server`**: Previously you had to pass **`appname`** as a separate parameter, used to build the internal host name (e.g. `http://jade.{appname}/...`). **2.0** instead uses **only the `app_signature` (lowercased) already registered by `JadeView_init`** as the protocol domain, independent of `app_name`; so the C API has **one fewer parameter**, avoiding inconsistency with the initialization information.
 
 | Legacy API | 2.0 |
 |--------|-----|
-| `create_local_server(root_path, appname, url_buffer, buffer_size)` | `set_protocol_service_path(root_path, url_buffer, buffer_size)` |
+| `create_local_server(root_path, appname, url_buffer, buffer_size)` | `set_protocol_service_path(root_path, url_buffer, buffer_size, hot_reload)` |
 
 ---
 
@@ -67,7 +67,7 @@ int register_resource(
   unsigned int window_id,
   unsigned int ttl_seconds,
   char* url_buffer,
-  int buffer_size
+  size_t buffer_size
 );
 ```
 
@@ -77,7 +77,7 @@ int register_resource(
 - `window_id` `unsigned int` - The owning window ID (`0` = global, accessible by all windows)
 - `ttl_seconds` `unsigned int` - Expiration time in seconds (`0` = default 6 seconds, `-1` = never expires)
 - `url_buffer` `char*` - Output parameter that stores the generated `/---jade---resource--?token=xxx` path (NUL-terminated)
-- `buffer_size` `int` - The byte capacity of `url_buffer` (including the trailing NUL)
+- `buffer_size` `size_t` - The byte capacity of `url_buffer` (including the trailing NUL)
 
 **Return value:**
 
@@ -96,12 +96,12 @@ int register_resource(
 Unregister an already-registered secure resource.
 
 ```c
-int unregister_resource(const char* token_or_path);
+int unregister_resource(const char* token_or_url);
 ```
 
 **Parameters:**
 
-- `token_or_path` `string` - The token string or the full path `/---jade---resource--?token=xxx`
+- `token_or_url` `string` - The token string or the full path `/---jade---resource--?token=xxx`
 
 **Return value:**
 

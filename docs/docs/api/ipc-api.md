@@ -31,7 +31,7 @@ typedef const char *(*IpcCallback)(uint32_t window_id, const char *event_data);
 | 参数 | 说明 |
 |------|------|
 | `window_id` | **事件或请求关联的窗口**。多数窗口事件里是当前窗口 id；与所有窗口无关的全局事件（如 `app-ready`、`second-instance`、`global-hotkey`、托盘相关）多为 **`0`**，以 [事件类型](/docs/api/event-types) 各节为准。 |
-| `event_data` | **只读**的 **UTF-8** 字符串，**以 `\0` 结尾**。内容多为 **JSON 文本**；少数为纯文本（如 `app-ready` 成功时的 `success`）。**仅在本次回调执行期间保证有效**，回调返回后不要保存裸指针；需要留存请自行拷贝。 |
+| `event_data` | **只读**的 **UTF-8** 字符串，**以 `\0` 结尾**。内容多为 **JSON 文本**；少数为纯文本（如 `app-ready` 失败时的错误描述、`crash` 的错误代码）。**仅在本次回调执行期间保证有效**，回调返回后不要保存裸指针；需要留存请自行拷贝。 |
 
 #### 返回值（`const char *`）
 
@@ -52,7 +52,7 @@ typedef const char *(*IpcCallback)(uint32_t window_id, const char *event_data);
 
 <h3 id="jade-on">订阅事件（`jade_on`）</h3>
 
-**用途**：按**事件名字符串**注册一个回调；库在对应事件发生时**同步**调用你的 `IpcCallback`。
+**用途**：按**事件名字符串**注册一个回调；事件发生时库调用你的 `IpcCallback`。**派发线程分两类**：**拦截类**事件（`window-closing`、`webview-will-navigate`、`webview-new-window`、`webview-download-started`、`drag-drop` 的 `enter`/`drop`）在 **GUI 线程内联同步**调用，库即时读取返回值决定放行/阻止，务必尽快返回；**其余通知类**事件经 worker 线程池**异步**派发。
 
 ```c
 uint32_t jade_on(const char *event_name, IpcCallback callback);
@@ -87,7 +87,7 @@ uint32_t jade_on(const char *event_name, IpcCallback callback);
 
 完整列表与说明见 [事件类型 · IpcCallback 返回值](/docs/api/event-types#ipc-callback-returns)。
 
-**关于 `app-ready`**：除文本 **`success`** 外，还可能 **`window_id == 0`** 且 `event_data` 为 **JSON 错误**或**纯文本崩溃信息**；解析方式见 [事件类型](/docs/api/event-types)。2.0 新增事件名如 `second-instance`、`global-hotkey`、`tray-menu-command`、`tray-event` 等同页。
+**关于 `app-ready`**：**判定成功只看 `window_id == 1`**——成功时 `event_data` 为 JSON `{"ok":true,"message":"success"}`；`window_id == 0` 表示失败，`event_data` 为**纯文本**错误描述（运行期崩溃另走 `crash` 事件，不在此事件）。解析方式见 [事件类型](/docs/api/event-types)。2.0 新增事件名如 `second-instance`、`global-hotkey`、`tray-menu-command`、`tray-event` 等同页。
 
 ---
 

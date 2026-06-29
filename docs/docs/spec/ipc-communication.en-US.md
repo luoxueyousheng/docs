@@ -53,7 +53,7 @@ const data = await jade.invoke('heavy-task', payload, { timeout: 10000 });
 ### Main Process C Code
 
 ```c
-#include "jadeview.h"
+#include "JadeView.h"
 
 // IPC callback: handles the renderer process's jade.invoke('get-config', ...)
 const char* get_config_callback(uint32_t window_id, const char* event_data) {
@@ -66,8 +66,7 @@ const char* get_config_callback(uint32_t window_id, const char* event_data) {
 
 // Register in app-ready
 const char* app_ready_callback(uint32_t window_id, const char* event_data) {
-    if (window_id == 1 && event_data
-        && strcmp(event_data, "success") == 0) {
+    if (window_id == 1) {  // window_id==1 means success; event_data is JSON, and on failure (window_id==0) it is a plain-text error code
         // Register the IPC handler
         register_ipc_handler("get-config", get_config_callback);
 
@@ -143,7 +142,7 @@ document.getElementById('btn').onclick = async () => {
 ```c
 #include <stdio.h>
 #include <string.h>
-#include "jadeview.h"
+#include "JadeView.h"
 
 // Handle get-config
 const char* get_config_callback(uint32_t window_id, const char* event_data) {
@@ -162,8 +161,7 @@ const char* do_action_callback(uint32_t window_id, const char* event_data) {
 }
 
 const char* app_ready_callback(uint32_t window_id, const char* event_data) {
-    if (window_id == 1 && event_data
-        && strcmp(event_data, "success") == 0) {
+    if (window_id == 1) {  // window_id==1 means success; event_data is JSON, and on failure (window_id==0) it is a plain-text error code
         // Register the IPC handlers
         register_ipc_handler("get-config", get_config_callback);
         register_ipc_handler("do-action", do_action_callback);
@@ -214,7 +212,7 @@ int main() {
 
 1. The return value of the main process `register_ipc_handler` callback must be allocated with `jade_text_create`
 2. The renderer process `jade.on` returns an unsubscribe function; call `off()` when no longer needed to prevent leaks
-3. It is recommended to keep the data for a single transfer within roughly 252MB
+3. Keep a single Control-channel message within 64KB (`IPC_INLINE_MAX_BYTES`); larger payloads should be sent in chunks over the Bulk channel (256KB per chunk by default)
 4. The renderer process API is only available on pages loaded via the JadeView protocol (`set_protocol_service_path` or JAPK)
 
 > Detailed API reference: [Frontend Communication API](/en-US/docs/api/javascript-api) | [IPC Communication API](/en-US/docs/api/ipc-api) | [Event Types](/en-US/docs/api/event-types)
