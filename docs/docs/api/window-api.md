@@ -125,7 +125,7 @@ uint32_t create_borderless_webview_window(
 
 在 C/C++ 里要把窗口交给别的 Win32 API（例如 SetWindowPos、子控件挂靠）时，需要 HWND。
 
-**注意**：只有用 `create_borderless_webview_window` 创建的窗口才会返回有效句柄数值；普通 `create_webview_window` 一律返回 `0`（库故意不暴露）。
+**注意**：2.3版本之前，只有用 `create_borderless_webview_window` 创建的窗口才会返回有效句柄数值；普通 `create_webview_window` 一律返回 `0`。
 
 ```c
 size_t get_window_hwnd(uint32_t window_id);
@@ -136,6 +136,17 @@ size_t get_window_hwnd(uint32_t window_id);
 - `window_id` `uint32_t` - 目标窗口 id
 
 ---
+### 获取窗口ID （v2.3）
+
+通过窗口句柄获取Jadeview创建的窗口ID
+
+```c
+size_t get_window_id(int32_t window_id);
+```
+**参数：**
+
+- `hwnd` `uint32_t` - 目标窗口 id
+
 
 ## 位置、尺寸与标题
 

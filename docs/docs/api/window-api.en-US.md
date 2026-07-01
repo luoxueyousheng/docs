@@ -14,7 +14,7 @@ For WebView-related operations such as page navigation, script execution, DevToo
 
 All of the following functions target a specific **`window_id`** (the integer returned when the window was created). Unless otherwise noted, success is usually `1` and failure is `0`.
 
----
+***
 
 ## Creating Windows
 
@@ -64,7 +64,6 @@ uint32_t create_webview_window(
   - `auto_save_state` `int32_t` - Non-`0`: records the window's **last valid physical top-left coordinates** by **`window_id`** in `window_state.yaml` under the **data directory**; the next time a window is created with the same `window_id`, if that position still falls within the work area of some monitor, the **position is restored** (**width, height, and maximized state still follow the parameters of this creation call**). The state is debounced and written to disk roughly **450ms** after the window stops moving, and is saved once more on close
   - `skip_taskbar` `int32_t` - Whether to keep the window out of the taskbar / Alt-Tab (`0` = no, `1` = yes). **Added in v2.3.0-beta.6**; appended at the end of the struct to keep field order compatible (use `set_window_skip_taskbar` at runtime, see "Window Flags & Level" below)
   - `no_activate` `int32_t` - Whether to avoid stealing focus: neither clicking nor showing the window activates it (`0` = no, `1` = yes). **Added in v2.3.0-beta.6**; appended at the end of the struct to keep field order compatible (use `set_window_no_activate` at runtime, see "Window Flags & Level" below)
-
 - `webview_settings` `WebViewSettings*` (optional) - Web page behavior configuration; pass `NULL` to use defaults
 
   **WebViewSettings options:**
@@ -74,13 +73,12 @@ uint32_t create_webview_window(
   - `ua` `string` - Custom User-Agent
   - `preload_js` `string` - A snippet of JS to inject before the page loads
   - `allow_fullscreen` `int32_t` - Whether the fullscreen API is allowed within the web page
-  - `postmessage_whitelist` `string` - A whitelist that determines **whether the page's `postMessage` calls are forwarded to the main process**, given as **a single UTF-8 string** (usually close to the page's `origin`, e.g. `https://example.com`). When matching, the library passes if `event.origin` **equals** the string, or if the **`origin` has the string as a suffix**. If the pointer is **`NULL`/unset**: under the current implementation, **no origin is allowed through** (i.e. you won't receive `postmessage-received`). **Built-in static pages loaded via `set_protocol_service_path`** **skip the whitelist** in the implementation and are always able to receive
+  - `postmessage_whitelist` `string` - A whitelist that determines **whether the page's** **`postMessage`** **calls are forwarded to the main process**, given as **a single UTF-8 string** (usually close to the page's `origin`, e.g. `https://example.com`). When matching, the library passes if `event.origin` **equals** the string, or if the **`origin`** **has the string as a suffix**. If the pointer is **`NULL`/unset**: under the current implementation, **no origin is allowed through** (i.e. you won't receive `postmessage-received`). **Built-in static pages loaded via** **`set_protocol_service_path`** **skip the whitelist** in the implementation and are always able to receive
   - `cors_whitelist` `string` - Supported in **v2.1+**. CORS origin whitelist, a comma- or semicolon-separated list of domains (e.g. `"http://198.18.0.1:8001, http://localhost:3000"`).
     - Strict exact matching; wildcards are not supported. Once set, only origins in the whitelist may make cross-origin requests to JadeView's internal APIs (invoke, on); if unset (`NULL`) or an empty string, no cross-origin requests are allowed and communication with the program is impossible.
-  :::warning
-          The following structures are supported starting from v2.2
-  :::
-
+      :::warning
+      The following structures are supported starting from v2.2
+      :::
   - `autofill` `int32_t` - Whether to enable account/password autofill. `0` = disabled, `1` = enabled.
   - `general_autofill_enabled` `int32_t` - Whether to enable general form autofill (name/address/phone, etc.). `0` = disabled, `1` = enabled.
   - `incognito` `int32_t` - Whether to run in incognito/private browsing mode. `0` = normal mode, `1` = incognito mode. Page rendering becomes slower when enabled.
@@ -97,7 +95,7 @@ uint32_t create_webview_window(
 2.0 removed the old `remove_titlebar`, `borderless`, `no_center` and other fields. You must use `frame_style` and `x/y=-1` for centering, otherwise the struct will mismatch and **silently misposition**.
 :::
 
----
+***
 
 ### Create a Frameless Window
 
@@ -119,23 +117,37 @@ uint32_t create_borderless_webview_window(
 
 A non-`0` return is the `window_id`. Use this id for navigation, IPC, and executing JS, just like with a normal window.
 
----
+***
 
-### Get the Window Handle
+### Get Window Handle
 
-When you need to hand the window over to other Win32 APIs in C/C++ (e.g. SetWindowPos, attaching child controls), you need the HWND.
+When working in C/C++, an HWND is required to pass a window to other Win32 APIs (such as SetWindowPos or child control attachment).
 
-**Note**: Only windows created with `create_borderless_webview_window` return a valid handle value; a normal `create_webview_window` always returns `0` (the library deliberately does not expose it).
+**Note**: Prior to version 2.3, only windows created via `create_borderless_webview_window` return a valid handle value. Regular windows created with `create_webview_window` always return `0`.
 
 ```c
 size_t get_window_hwnd(uint32_t window_id);
 ```
 
-**Parameters:**
+**Parameters**:
 
-- `window_id` `uint32_t` - Target window id
+- `window_id` `uint32_t` – Target window ID
 
----
+***
+
+### Get Window ID (v2.3)
+
+Retrieve the Jadeview window ID from its window handle
+
+```c
+uint32_t get_window_id(int32_t hwnd);
+```
+
+**Parameters**:
+
+- `hwnd` `int32_t` – Target window handle
+
+***
 
 ## Position, Size, and Title
 
@@ -152,7 +164,7 @@ int32_t set_window_title(uint32_t window_id, const char* title);
 - `window_id` `uint32_t` - Target window id
 - `title` `string` - The new window title
 
----
+***
 
 ### Set the Window Size
 
@@ -168,7 +180,7 @@ int32_t set_window_size(uint32_t window_id, int32_t width, int32_t height);
 - `width` `int32_t` - The new width (pixels)
 - `height` `int32_t` - The new height (pixels)
 
----
+***
 
 ### Set the Window Position
 
@@ -184,7 +196,7 @@ int32_t set_window_position(uint32_t window_id, int32_t x, int32_t y);
 - `x` `int32_t` - The new X coordinate
 - `y` `int32_t` - The new Y coordinate
 
----
+***
 
 ### Get Window Position and Size (`get_window_bounds`)
 
@@ -204,7 +216,7 @@ int32_t get_window_bounds(uint32_t window_id, char* buffer, int buffer_size);
 
 **Return value:** `1` = success, with the buffer written as JSON `{"x":0,"y":0,"width":800,"height":600}`; `0` = failure
 
----
+***
 
 ## Visibility and Focus
 
@@ -221,7 +233,7 @@ int32_t set_window_visible(uint32_t window_id, int32_t visible);
 - `window_id` `uint32_t` - Target window id
 - `visible` `int32_t` - Non-`0` shows, `0` hides
 
----
+***
 
 ### Give the Window Focus
 
@@ -235,7 +247,7 @@ int32_t set_window_focus(uint32_t window_id);
 
 - `window_id` `uint32_t` - Target window id
 
----
+***
 
 ### Set the Window Always on Top
 
@@ -250,7 +262,7 @@ int32_t set_window_always_on_top(uint32_t window_id, int32_t always_on_top);
 - `window_id` `uint32_t` - Target window id
 - `always_on_top` `int32_t` - Non-`0` pins it on top, `0` unpins it
 
----
+***
 
 ### Set Ignore Cursor Events (`set_window_ignore_cursor_events`)
 
@@ -267,7 +279,7 @@ int32_t set_window_ignore_cursor_events(uint32_t window_id, int ignore);
 - **Parameters**: `window_id`, `ignore` (`1` = ignore mouse events / pass-through, `0` = normal)
 - **Return value**: `1` = success, `0` = failure
 
----
+***
 
 ## Window Flags & Level
 
@@ -292,7 +304,7 @@ int32_t set_window_skip_taskbar(uint32_t window_id, int32_t skip);
 Windows: adds `WS_EX_TOOLWINDOW` and removes `WS_EX_APPWINDOW`; Linux: GTK `skip-taskbar-hint`.
 :::
 
----
+***
 
 ### Do Not Steal Focus (`set_window_no_activate`)
 
@@ -309,7 +321,7 @@ int32_t set_window_no_activate(uint32_t window_id, int32_t no_activate);
 Windows: `WS_EX_NOACTIVATE` (`SetWindowLongPtr`); Linux: GTK `accept-focus=false`.
 :::
 
----
+***
 
 ### Set the Window Level (`set_window_level`)
 
@@ -323,18 +335,18 @@ int32_t set_window_level(uint32_t window_id, const char* level);
 - **Parameters**: `window_id`; `level` `string` - the level string; see the table below
 - **Return value**: `1` = success, `0` = failure
 
-| level | Behavior | Implementation |
-|-------|------|------|
-| `topmost` | On top, above normal windows | `set_always_on_top(true)` (cross-platform) |
-| `normal` | Normal layer; cancels topmost / bottom | Clears always-on-top / always-on-bottom |
-| `bottom` | Below other windows | `set_always_on_bottom(true)` (cross-platform) |
+| level     | Behavior                                                                                       | Implementation                                                                                           |
+| --------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `topmost` | On top, above normal windows                                                                   | `set_always_on_top(true)` (cross-platform)                                                               |
+| `normal`  | Normal layer; cancels topmost / bottom                                                         | Clears always-on-top / always-on-bottom                                                                  |
+| `bottom`  | Below other windows                                                                            | `set_always_on_bottom(true)` (cross-platform)                                                            |
 | `desktop` | Pinned to the desktop wallpaper layer (only visible after minimizing all windows; widget-like) | First `bottom`; on Windows parents to `Progman` / `WorkerW`, on Linux sets GTK `WindowTypeHint::Desktop` |
 
 :::warning{title=Platform Differences}
 `topmost` / `normal` / `bottom` are stable cross-platform; `desktop` (wallpaper layer) is best-effort, depends on window manager behavior, and is recommended to be verified on a real machine. If parenting fails, it at least degrades to `bottom` (still below all windows).
 :::
 
----
+***
 
 ## Window State
 
@@ -350,7 +362,7 @@ int32_t minimize_window(uint32_t window_id);
 
 - `window_id` `uint32_t` - Target window id
 
----
+***
 
 ### Toggle the Maximized State
 
@@ -364,7 +376,7 @@ int32_t toggle_maximize_window(uint32_t window_id);
 
 - `window_id` `uint32_t` - Target window id
 
----
+***
 
 ### Query Whether Maximized
 
@@ -383,7 +395,7 @@ int32_t is_window_maximized(uint32_t window_id);
 - `1` - Currently maximized
 - `0` - Currently not maximized
 
----
+***
 
 ### Set Fullscreen
 
@@ -398,7 +410,7 @@ int32_t set_window_fullscreen(uint32_t window_id, int32_t fullscreen);
 - `window_id` `uint32_t` - Target window id
 - `fullscreen` `int32_t` - Non-`0` enters fullscreen, `0` exits fullscreen
 
----
+***
 
 ### Query Whether the Window Is Minimized (`is_window_minimized`)
 
@@ -413,7 +425,7 @@ int32_t is_window_minimized(uint32_t window_id);
 - **Parameters**: `window_id` `uint32_t`
 - **Return value**: `1` = minimized, `0` = not
 
----
+***
 
 ### Query Whether the Window Is Visible (`is_window_visible`)
 
@@ -428,7 +440,7 @@ int32_t is_window_visible(uint32_t window_id);
 - **Parameters**: `window_id` `uint32_t`
 - **Return value**: `1` = visible, `0` = not visible
 
----
+***
 
 ### Query Whether the Window Is Focused (`is_window_focused`)
 
@@ -443,7 +455,7 @@ int32_t is_window_focused(uint32_t window_id);
 - **Parameters**: `window_id` `uint32_t`
 - **Return value**: `1` = focused, `0` = not
 
----
+***
 
 ### Query Whether the Window Is Fullscreen (`is_window_fullscreen`)
 
@@ -458,7 +470,7 @@ int32_t is_window_fullscreen(uint32_t window_id);
 - **Parameters**: `window_id` `uint32_t`
 - **Return value**: `1` = fullscreen, `0` = not
 
----
+***
 
 ## Window Constraints
 
@@ -475,7 +487,7 @@ int32_t set_window_min_size(uint32_t window_id, int32_t width, int32_t height);
 - **Parameters**: `window_id`, `width` (minimum width), `height` (minimum height)
 - **Return value**: `1` = success, `0` = failure
 
----
+***
 
 ### Set the Window Maximum Size (`set_window_max_size`)
 
@@ -490,7 +502,7 @@ int32_t set_window_max_size(uint32_t window_id, int32_t width, int32_t height);
 - **Parameters**: `window_id`, `width` (maximum width), `height` (maximum height)
 - **Return value**: `1` = success, `0` = failure
 
----
+***
 
 ### Set Whether the Window Is Resizable (`set_window_resizable`)
 
@@ -505,7 +517,7 @@ int32_t set_window_resizable(uint32_t window_id, int32_t resizable);
 - **Parameters**: `window_id`, `resizable` (`1` = resizable, `0` = not)
 - **Return value**: `1` = success, `0` = failure
 
----
+***
 
 ### Enable or Disable the Window
 
@@ -520,7 +532,7 @@ int32_t set_window_enabled(uint32_t window_id, int32_t enabled);
 - `window_id` `uint32_t` - Target window id
 - `enabled` `int32_t` - Non-`0` enables, `0` disables
 
----
+***
 
 ## Appearance and Style
 
@@ -537,7 +549,7 @@ int32_t set_window_frame_style(uint32_t window_id, const char* frame_style);
 - `window_id` `uint32_t` - Target window id
 - `frame_style` `string` - Frame style string; available values: `normal` (border + title bar), `no-titlebar` (border + no title bar), `borderless` (no border + no title bar), `title-overlay` (border + no title bar + built-in title bar buttons)
 
----
+***
 
 ### Customize the Title Bar Overlay Style (`set_titlebar_overlay_style`)
 
@@ -567,7 +579,7 @@ The close button's hover background color is fixed to red (`#E81123`) and its ic
 Runtime style customization via this function **currently takes effect on Windows only**. On Linux the `title-overlay` overlay still renders, but uses the built-in default style (icon `#1E1E1E`, hover background `#DCDCDCBF`, height `32`) and is not yet customizable via this function.
 :::
 
----
+***
 
 ### Set the Window Light/Dark Theme
 
@@ -584,7 +596,7 @@ int32_t set_window_theme(uint32_t window_id, const char* theme);
 - `window_id` `uint32_t` - Target window id
 - `theme` `string` - Theme string; available values: `Light`, `Dark`, `System`
 
----
+***
 
 ### Get the Current Window Theme
 
@@ -605,7 +617,7 @@ int32_t get_window_theme(uint32_t window_id);
 
 The `System` theme is resolved to `1` / `0` based on the current system light/dark setting; returns `0` if the window does not exist or the theme is unknown.
 
----
+***
 
 ### Set the Window Backdrop Material
 
@@ -626,7 +638,7 @@ int32_t set_window_backdrop(uint32_t window_id, const char* backdrop_type);
 **Windows 11 only**. Linux (WebKitGTK) has no system material equivalent — the call is a no-op, returns `0`, and has no visual effect. If you need a translucent / solid background, use `set_window_background_color` or the window's `transparent` + `background_color` options.
 :::
 
----
+***
 
 ### Set the Window Background Color
 
@@ -641,7 +653,7 @@ int32_t set_window_background_color(uint32_t window_id, const char* background_c
 - `window_id` `uint32_t` - Target window id
 - `background_color_hex` `string` - Background color hexadecimal string, e.g. `#FF0000`
 
----
+***
 
 ### Request a Redraw
 
@@ -655,7 +667,7 @@ int32_t request_redraw(uint32_t window_id);
 
 - `window_id` `uint32_t` - Target window id
 
----
+***
 
 ## Taskbar Effects
 
@@ -681,7 +693,7 @@ int32_t set_window_progress(uint32_t window_id, int progress, int state);
 Windows platform only.
 :::
 
----
+***
 
 ### Flash the Taskbar Icon (`flash_window`)
 
@@ -702,7 +714,7 @@ int32_t flash_window(uint32_t window_id, uint32_t count);
 Windows platform only.
 :::
 
----
+***
 
 ## Closing and Counting
 
@@ -718,7 +730,7 @@ int32_t close_window(uint32_t window_id);
 
 - `window_id` `uint32_t` - Target window id
 
----
+***
 
 ### Get the Window Count
 
@@ -727,3 +739,4 @@ Queries how many windows are still open in the current JadeView.
 ```c
 uint32_t get_window_count(void);
 ```
+
