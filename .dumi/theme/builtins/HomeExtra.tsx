@@ -71,11 +71,27 @@ export default function HomeExtra() {
           gap={16}
           borderRadius={token.borderRadiusLG}
           renderItem={(f) => (
-            <div style={{ padding: 24, height: '100%' }}>
+            <a
+              href={f.link}
+              style={{
+                display: 'block',
+                padding: 24,
+                height: '100%',
+                textDecoration: 'none',
+                color: 'inherit',
+                transition: 'transform 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
               <div style={{ fontSize: 30, lineHeight: 1, marginBottom: 14 }}>{f.image}</div>
               <h3 style={{ fontSize: 18, fontWeight: 600, color: token.colorText, margin: '0 0 8' }}>{f.title}</h3>
               <p style={{ fontSize: 14, color: token.colorTextSecondary, lineHeight: 1.7, margin: 0 }}>{f.desc}</p>
-            </div>
+            </a>
           )}
         />
       </motion.div>

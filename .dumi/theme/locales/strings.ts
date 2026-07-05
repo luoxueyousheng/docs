@@ -31,12 +31,12 @@ const zh = {
   // 首页 HomeExtra
   home: {
     features: [
-      { image: '🦀', title: 'Rust 核心', desc: '核心库采用 Rust 编写，内存安全、线程安全，杜绝空指针与数据竞争；约 3MB 运行时，完整启动仅需约 16ms。' },
-      { image: '🌐', title: '跨平台 · 系统 WebView', desc: '一套代码同时支持 Windows 与 Linux，复用系统自带 WebView（Windows 上的 WebView2、Linux 上的 WebKitGTK），享受与系统浏览器同级别的安全更新与兼容性。' },
-      { image: '🔗', title: 'C 语言 API', desc: '稳定的二进制接口（ABI），跨语言调用无性能损耗，接口向后兼容。' },
-      { image: '⚡', title: 'IPC 双向通信', desc: '前后端双向通信延迟低于 1ms、每秒 800+ 请求；jade.invoke / jade.on 高效互通。' },
-      { image: '🧩', title: '多语言 SDK', desc: '提供 Web、Python、易语言、火山视窗等多端 SDK，覆盖主流开发语言。' },
-      { image: '🔒', title: '资源安全 · JAPK', desc: 'JAPK 资源包支持代码混淆、AES-256-GCM 加密与 Ed25519 签名，可内存载入、无需落地磁盘。' },
+      { image: '🦀', title: 'Rust 核心', desc: '核心库采用 Rust 编写，内存安全、线程安全，杜绝空指针与数据竞争；约 3MB 运行时，完整启动仅需约 16ms。', link: '/docs/spec/behavior' },
+      { image: '🌐', title: '跨平台 · 系统 WebView', desc: '一套代码同时支持 Windows 与 Linux，复用系统自带 WebView（Windows 上的 WebView2、Linux 上的 WebKitGTK），享受与系统浏览器同级别的安全更新与兼容性。', link: '/docs/spec/compatibility' },
+      { image: '🔗', title: 'C 语言 API', desc: '稳定的二进制接口（ABI），跨语言调用无性能损耗，接口向后兼容。', link: '/docs/api' },
+      { image: '⚡', title: 'IPC 双向通信', desc: '前后端双向通信延迟低于 1ms、每秒 800+ 请求；jade.invoke / jade.on 高效互通。', link: '/docs/spec/ipc-communication' },
+      { image: '🧩', title: 'MCP 协议支持', desc: '基于 Model Context Protocol 标准，支持 AI 模型直接调用 JadeView API，实现智能体驱动的桌面应用开发。', link: '/docs/spec/mcp' },
+      { image: '🔒', title: '资源安全 · JAPK', desc: 'JAPK 资源包支持代码混淆、AES-256-GCM 加密与 Ed25519 签名，可内存载入、无需落地磁盘。', link: '/docs/api/japk' },
     ],
     stepsTitle: '三步上手',
     stepsSub: '用熟悉的 C 接口，三步即可跑起一个 WebView 窗口。',
@@ -298,12 +298,12 @@ const en: typeof zh = {
   },
   home: {
     features: [
-      { image: '🦀', title: 'Rust Core', desc: 'The core library is written in Rust — memory-safe and thread-safe, eliminating null pointers and data races. ~3MB runtime, full startup in ~16ms.' },
-      { image: '🌐', title: 'Cross-platform · System WebView', desc: 'One codebase for both Windows and Linux, reusing the system WebView (WebView2 on Windows, WebKitGTK on Linux) for browser-grade security updates and compatibility.' },
-      { image: '🔗', title: 'C API', desc: 'A stable binary interface (ABI) with zero-overhead cross-language calls and backward-compatible APIs.' },
-      { image: '⚡', title: 'Two-way IPC', desc: 'Two-way front-end/back-end communication with sub-1ms latency and 800+ requests per second via jade.invoke / jade.on.' },
-      { image: '🧩', title: 'Multi-language SDKs', desc: 'SDKs for Web, Python, E-Language (易语言), VolDP and more — covering mainstream development languages.' },
-      { image: '🔒', title: 'Asset Security · JAPK', desc: 'JAPK asset packages support code obfuscation, AES-256-GCM encryption and Ed25519 signing, and can be loaded in memory without touching disk.' },
+      { image: '🦀', title: 'Rust Core', desc: 'The core library is written in Rust — memory-safe and thread-safe, eliminating null pointers and data races. ~3MB runtime, full startup in ~16ms.', link: '/docs/spec/behavior' },
+      { image: '🌐', title: 'Cross-platform · System WebView', desc: 'One codebase for both Windows and Linux, reusing the system WebView (WebView2 on Windows, WebKitGTK on Linux) for browser-grade security updates and compatibility.', link: '/docs/spec/compatibility' },
+      { image: '🔗', title: 'C API', desc: 'A stable binary interface (ABI) with zero-overhead cross-language calls and backward-compatible APIs.', link: '/docs/api' },
+      { image: '⚡', title: 'Two-way IPC', desc: 'Two-way front-end/back-end communication with sub-1ms latency and 800+ requests per second via jade.invoke / jade.on.', link: '/docs/spec/ipc-communication' },
+      { image: '🧩', title: 'MCP Protocol Support', desc: 'Based on the Model Context Protocol standard, enabling AI models to directly invoke JadeView APIs for intelligent agent-driven desktop application development.', link: '/docs/spec/mcp' },
+      { image: '🔒', title: 'Asset Security · JAPK', desc: 'JAPK asset packages support code obfuscation, AES-256-GCM encryption and Ed25519 signing, and can be loaded in memory without touching disk.', link: '/docs/api/japk' },
     ],
     stepsTitle: 'Get Started in 3 Steps',
     stepsSub: 'Spin up a WebView window in three steps using the familiar C API.',
