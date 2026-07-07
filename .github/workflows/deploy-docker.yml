@@ -11,6 +11,10 @@ on:
   push:
     branches: ["main"]
   workflow_dispatch: {}
+  # 发行库（tuyangJs/JadeView）发版后自动触发：release.yml 收尾向本仓库发
+  # repository_dispatch，构建时重新生成发行快照，站点即刻带上新版本数据。
+  repository_dispatch:
+    types: [refresh-releases]
 
 env:
   IMAGE_NAME: yiminger/jadeview_docs
