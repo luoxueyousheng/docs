@@ -15,7 +15,7 @@ order: 90
 
 ## 获取资源
 
-- **JadeView官网**：[前往下载易语言模块](https://jade.run/download)
+- **JadeView官网**：[前往下载易语言模块](https://jade.run/download)      [前往下载jadeview_x86.dll](https://jade.run/releases)
 
 ## 完整双向通讯示例（易语言后端 + 前端 HTML）
 
