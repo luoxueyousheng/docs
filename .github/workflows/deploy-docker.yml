@@ -18,6 +18,7 @@ on:
 
 env:
   IMAGE_NAME: yiminger/jadeview_docs
+  MCP_IMAGE_NAME: yiminger/jadeview_docs_mcp
 
 concurrency:
   group: docker-deploy
@@ -57,6 +58,17 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      # MCP 服务镜像：与站点同源，打包 docs/ markdown，启动时建索引。
+      - name: 构建并推送 MCP 镜像
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: mcp/Dockerfile
+          push: true
+          tags: |
+            ${{ env.MCP_IMAGE_NAME }}:latest
+            ${{ env.MCP_IMAGE_NAME }}:${{ github.sha }}
 
       - name: 触发服务器 webhook 拉取部署
         run: |
