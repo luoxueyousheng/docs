@@ -7,6 +7,15 @@
 - 搜索：MiniSearch + 中文 bigram 分词（中文没有空格，标准分词搜不到）
 - 中英文都索引（`.md`=zh，`.en-US.md`=en）
 
+## 线上服务
+
+已部署，公网入口（前置反代终结 HTTPS）：
+
+- **MCP 端点**：`https://mcp.jade.run/mcp`
+- **健康检查**：`https://mcp.jade.run/health` → `{"ok":true,"pages":...,"sections":...}`
+
+反代把 `mcp.jade.run` 反向代理到服务器容器 `docs-mcp` 的 `http://127.0.0.1:8848`。
+
 ## 工具
 
 | 工具 | 作用 |
