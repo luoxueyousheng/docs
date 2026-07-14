@@ -30,7 +30,7 @@ export default defineConfig({
     { name: 'twitter:description', content: 'JadeView - 现代化跨平台开发框架，提供高性能、易用的 API 和工具链，支持 Web、桌面端和移动端开发' },
     { name: 'twitter:image', content: 'https://jade.run/logo/light.svg' },
     // 其他
-    { name: 'theme-color', content: '#007ee5' },
+    { name: 'theme-color', content: '#F97316' },
     { name: 'color-scheme', content: 'light dark' },
   ],
   // 站点主机名：lobehub 主题用它生成 canonical / og:url / JSON-LD；不设会回退成
@@ -139,7 +139,7 @@ main:has(.layoutkit-flexbox[style*="64vh"]) {
     `
 /* 产品 / 文档页 CTA 按钮：.jv-cta-row 容器 + .jv-cta-button 主按钮（/.secondary 次按钮）。
    供产品页(/jadepack、/jade-ec)使用，并补齐 api/jadepack 文档里早已使用却从未定义的样式。
-   品牌色与 Showcase / footer 一致(#007ee5)，取色用 antd v6 cssVar 适配深浅。 */
+   品牌色与 Showcase / footer 一致(#F97316)，取色用 antd v6 cssVar 适配深浅。 */
 .jv-cta-row {
   display: flex;
   flex-wrap: wrap;
@@ -157,15 +157,15 @@ main:has(.layoutkit-flexbox[style*="64vh"]) {
   font-weight: 600;
   color: #fff !important;
   text-decoration: none !important;
-  background: #007ee5;
+  background: #F97316;
   border: 1px solid transparent;
   transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 .jv-cta-button:hover {
   color: #fff !important;
-  background: #0a6fc2;
+  background: #EA680C;
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(0, 126, 229, 0.28);
+  box-shadow: 0 6px 18px rgba(249, 115, 22, 0.28);
 }
 .jv-cta-button.secondary {
   color: var(--ant-color-text) !important;
@@ -198,8 +198,8 @@ footer::after {
   z-index: 2;
   pointer-events: none;
   background:
-    radial-gradient(260px 2px at var(--footer-spot-x, 50%) 0, rgba(0, 126, 229, 1), rgba(124, 77, 255, 0.6) 40%, transparent 78%),
-    radial-gradient(360px 96px at var(--footer-spot-x, 50%) 0, rgba(0, 126, 229, 0.28), transparent 72%);
+    radial-gradient(260px 2px at var(--footer-spot-x, 50%) 0, rgba(249, 115, 22, 1), rgba(251, 191, 36, 0.6) 40%, transparent 78%),
+    radial-gradient(360px 96px at var(--footer-spot-x, 50%) 0, rgba(249, 115, 22, 0.28), transparent 72%);
   opacity: var(--footer-spot-o, 0);
   transition: opacity 0.3s ease;
 }
@@ -209,7 +209,7 @@ footer::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-image: linear-gradient(120deg, rgba(0,126,229,0.20), rgba(124,77,255,0.16), rgba(0,200,170,0.16), rgba(0,126,229,0.20));
+  background-image: linear-gradient(120deg, rgba(249,115,22,0.20), rgba(251,191,36,0.16), rgba(234,88,12,0.16), rgba(249,115,22,0.20));
   background-size: 300% 300%;
   animation: jvFooterFlow 16s ease infinite;
   -webkit-mask-image: linear-gradient(to bottom, transparent, #000 55%);
@@ -311,8 +311,8 @@ html[data-prefers-color='light'] .ant-draggable-panel-fixed {
 .jade-burger .ant-menu-item-selected:hover,
 .jade-burger .ant-menu-item-selected:active {
   font-weight: 600 !important;
-  color: #007ee5 !important;
-  background: color-mix(in srgb, #007ee5 12%, transparent) !important;
+  color: #F97316 !important;
+  background: color-mix(in srgb, #F97316 12%, transparent) !important;
 }
 `,
     `
@@ -383,6 +383,19 @@ html[data-prefers-color='light'] .jade-capsule-header a.ant-btn {
 }
 html[data-prefers-color='light'] .jade-capsule-header a.ant-btn:hover {
   background: rgba(0, 0, 0, 0.1) !important;
+}
+`,
+    `
+/* 正文 Markdown 链接用品牌橙（lobehub 默认把正文链接设为文字色、仅 hover 才主色，且暗色主色偏白，
+   正文里的链接几乎看不出。这里统一成品牌橙 #F97316，hover 加深并显下划线）。
+   仅作用于正文容器 .markdown 内、排除标题锚点（aria-hidden / .anchor）等非正文链接。 */
+.markdown a:not([aria-hidden]):not(.anchor):not(.ant-btn) {
+  color: #F97316 !important;
+  text-decoration: none;
+}
+.markdown a:not([aria-hidden]):not(.anchor):not(.ant-btn):hover {
+  color: #EA680C !important;
+  text-decoration: underline;
 }
 `,
   ],

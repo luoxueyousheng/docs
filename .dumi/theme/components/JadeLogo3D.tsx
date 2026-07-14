@@ -364,9 +364,12 @@ export default memo(function JadeLogo3D({
       }
       // 几何体/材质属模块级共享模板，不随实例释放
     };
-    // size/overscan 变化极少（形态切换时组件整个重挂），不做增量响应
+    // size/overscan 变化时必须整套重建：canvas 尺寸/溢出定位在挂载时按 size 定死，
+    // 而 size 依赖 useResponsive()——SSR/水合先给桌面值(180)、随后翻成移动值(128)时若不重建，
+    // 画布会卡在 180 的大尺寸、向下大幅溢出盖住标题（踩过坑：首页移动端 logo 压住 JadeView）。
+    // 断点翻转很少见，重建开销（资源已模块级缓存，仅重克隆 + 新 renderer）可接受。
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [size, overscan]);
 
   return (
     <span

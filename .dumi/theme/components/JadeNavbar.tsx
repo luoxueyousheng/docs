@@ -18,12 +18,12 @@ type SdkKey = 'web' | 'py' | 'py2' | 'go' | 'ey' | 'vol';
 
 // 图标：能用真实品牌 logo 的用真实 logo（彩色 SVG，存于 public/sdk/，devicon 来源）；
 // 易语言 / 火山无公开 logo，用品牌色「字徽」（比抽象线条统一、清晰）。
-const SDK_ICON: Record<string, { type: 'img'; src: string } | { type: 'char'; char: string; color: string }> = {
+const SDK_ICON: Record<string, { type: 'img'; src: string; bg?: string } | { type: 'char'; char: string; color: string }> = {
   web: { type: 'img', src: '/sdklogo/javascript.svg' },
   py: { type: 'img', src: '/sdklogo/python.svg' },
   py2: { type: 'img', src: '/sdklogo/python.svg' },
-  go: { type: 'img', src: '/sdklogo/go.svg' },
-  ey: { type: 'char', char: '易', color: '#2b7de9' },
+  go: { type: 'img', src: '/sdklogo/go.svg', bg: '#007D9C' }, // 白色 GO logo → Go 品牌深蓝底
+  ey: { type: 'char', char: '易', color: '#F97316' },
   vol: { type: 'char', char: '火', color: '#e8533f' },
 };
 
@@ -57,15 +57,15 @@ const DOCS_SECTIONS = [
     key: 'spec' as const,
     link: '/docs/spec',
     icon: <BookOpen size={18} />,
-    grad: 'linear-gradient(135deg, rgba(0,126,229,0.22), rgba(0,126,229,0.04))',
-    iconBg: '#007ee5',
+    grad: 'linear-gradient(135deg, rgba(249,115,22,0.22), rgba(249,115,22,0.04))',
+    iconBg: '#F97316',
   },
   {
     key: 'api' as const,
     link: '/docs/api',
     icon: <Code2 size={18} />,
-    grad: 'linear-gradient(135deg, rgba(124,77,255,0.22), rgba(0,200,170,0.10))',
-    iconBg: 'linear-gradient(135deg, #7c4dff, #00c8aa)',
+    grad: 'linear-gradient(135deg, rgba(251,191,36,0.22), rgba(234,88,12,0.10))',
+    iconBg: 'linear-gradient(135deg, #FBBF24, #EA580C)',
   },
 ];
 
@@ -209,7 +209,8 @@ const useStyles = createStyles(({ css, token, cx, isDarkMode }) => {
       background: ${token.colorFillTertiary};
     }
   `,
-  // 真实 logo 容器：中性浅底，img 居中（logo 自带配色）
+  // 真实 logo 容器：中性底牌（JS/Python 等全彩 logo 深浅两色都清晰）。
+  // 白色单色 logo（如 go.svg 是纯白 GO）单独给品牌深底，见 SDK_ICON.bg —— 否则白 logo 在浅底上看不见。
   icon: css`
     overflow: hidden;
     flex-shrink: 0;
@@ -302,7 +303,7 @@ const useStyles = createStyles(({ css, token, cx, isDarkMode }) => {
     border-radius: 9px;
 
     color: #fff;
-    background: linear-gradient(135deg, #2b9bff, #007ee5);
+    background: linear-gradient(135deg, #FDBA74, #F97316);
   `,
   downloadBody: css`
     overflow: hidden;
@@ -569,7 +570,7 @@ export default memo(function JadeNavbar() {
               return (
                 <Link key={it.link} className={styles.menuItem} to={L(it.link)}>
                   {ic.type === 'img' ? (
-                    <span className={styles.icon}>
+                    <span className={styles.icon} style={ic.bg ? { background: ic.bg, boxShadow: 'none' } : undefined}>
                       <img alt="" src={ic.src} />
                     </span>
                   ) : (

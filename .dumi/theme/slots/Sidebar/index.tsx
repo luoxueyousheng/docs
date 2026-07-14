@@ -13,6 +13,7 @@ import isEqual from 'fast-deep-equal';
 import { BookOpen, Code2, Library, Package } from 'lucide-react';
 import { motion } from 'motion/react';
 import { memo, useState } from 'react';
+import { useT, useLocaleBase, localeHref } from '../../locales/strings';
 // @ts-ignore 主题内部组件，深层路径无类型声明
 import SearchResult from 'dumi-theme-lobehub/dist/slots/SearchResult';
 // @ts-ignore
@@ -75,14 +76,14 @@ const useStyles = createStyles(({ css, token }) => ({
       background: ${token.colorFill};
     }
   `,
-  // 选中态：品牌蓝色调底，深/浅色都清晰可见（原 colorFillSecondary 深色下太淡看不出）。
+  // 选中态：品牌橙色调底，深/浅色都清晰可见（原 colorFillSecondary 深色下太淡看不出）。
   // 自带 &:hover（与 .secItem:hover 同特异性，靠定义顺序在此后生效）以免 hover 时被中性灰盖掉。
   secItemActive: css`
     color: ${token.colorText};
-    background: color-mix(in srgb, #007ee5 18%, transparent);
+    background: color-mix(in srgb, #F97316 18%, transparent);
 
     &:hover {
-      background: color-mix(in srgb, #007ee5 24%, transparent);
+      background: color-mix(in srgb, #F97316 24%, transparent);
     }
   `,
   secIcon: css`
@@ -102,7 +103,7 @@ const useStyles = createStyles(({ css, token }) => ({
   `,
   secIconActive: css`
     color: #fff;
-    background: #007ee5;
+    background: #F97316;
   `,
   // 搜索结果浮层：宽度跟随侧栏（区别于顶栏 540px 固定宽，避免溢出屏幕）
   popover: css`
@@ -202,22 +203,22 @@ const useStyles = createStyles(({ css, token }) => ({
   `,
 }));
 
-// 「文档」主路由下的子分区（与 .dumirc.ts 的 /docs 子路由对应）。仅在 /docs/* 页面顶部展示切换。
-const SECTIONS = [
-  { title: '文档指南', root: '/docs/spec', icon: () => <BookOpen size={16} /> },
-  { title: 'API', root: '/docs/api', icon: () => <Code2 size={16} /> },
+// 「文档」主路由下的子分区（title 走 useT 本地化；仅在 /docs/* 页面顶部展示切换）。
+const SECTIONS: { key: 'spec' | 'api'; root: string; icon: () => React.ReactNode }[] = [
+  { key: 'spec', root: '/docs/spec', icon: () => <BookOpen size={16} /> },
+  { key: 'api', root: '/docs/api', icon: () => <Code2 size={16} /> },
 ];
 
-// 「SDKs」主路由下的 SDK 列表（/sdks/* 页面顶部展示切换）。
+// 「SDKs」主路由下的 SDK 列表（title 走 useT 本地化）。
 // 图标与 JadeNavbar 下拉同源：有品牌 logo 的用彩色 SVG（public/sdklogo/），易语言/火山用品牌色字徽；
 // 字徽选中态跟随 secIconActive 反白（图标为 active 的函数）。
-const SDK_SECTIONS: { title: string; root: string; icon: (active: boolean) => React.ReactNode }[] = [
-  { title: 'Web SDK', root: '/sdks/web-sdk', icon: () => <img alt="" height={15} src="/sdklogo/javascript.svg" width={15} /> },
-  { title: 'Python SDK', root: '/sdks/python-sdk', icon: () => <img alt="" height={15} src="/sdklogo/python.svg" width={15} /> },
-  { title: 'Python SDK 2', root: '/sdks/python-sdk2', icon: () => <img alt="" height={15} src="/sdklogo/python.svg" width={15} /> },
-  { title: 'Golang SDK', root: '/sdks/golang-sdk', icon: () => <img alt="" height={15} src="/sdklogo/go.svg" width={15} /> },
-  { title: '易语言 SDK', root: '/sdks/easy-language-sdk', icon: (a) => <b style={{ color: a ? '#fff' : '#2b7de9', fontSize: 13 }}>易</b> },
-  { title: '火山 SDK', root: '/sdks/voldp-sdk', icon: (a) => <b style={{ color: a ? '#fff' : '#e8533f', fontSize: 13 }}>火</b> },
+const SDK_SECTIONS: { key: 'web' | 'py' | 'py2' | 'go' | 'ey' | 'vol'; root: string; bg?: string; icon: (active: boolean) => React.ReactNode }[] = [
+  { key: 'web', root: '/sdks/web-sdk', icon: () => <img alt="" height={15} src="/sdklogo/javascript.svg" width={15} /> },
+  { key: 'py', root: '/sdks/python-sdk', icon: () => <img alt="" height={15} src="/sdklogo/python.svg" width={15} /> },
+  { key: 'py2', root: '/sdks/python-sdk2', icon: () => <img alt="" height={15} src="/sdklogo/python.svg" width={15} /> },
+  { key: 'go', root: '/sdks/golang-sdk', bg: '#007D9C', icon: () => <img alt="" height={15} src="/sdklogo/go.svg" width={15} /> },
+  { key: 'ey', root: '/sdks/easy-language-sdk', icon: (a) => <b style={{ color: a ? '#fff' : '#F97316', fontSize: 13 }}>易</b> },
+  { key: 'vol', root: '/sdks/voldp-sdk', icon: (a) => <b style={{ color: a ? '#fff' : '#e8533f', fontSize: 13 }}>火</b> },
 ];
 
 const Chevron = () => (
@@ -237,6 +238,8 @@ const Chevron = () => (
 
 export default memo(function Sidebar() {
   const { styles, cx } = useStyles();
+  const t = useT();
+  const base = useLocaleBase();
   const sidebar = useSiteStore((s: any) => s.sidebar, isEqual);
   const { pathname } = useLocation();
   // 收起状态（默认全部展开）；key 用分组标题
@@ -247,9 +250,12 @@ export default memo(function Sidebar() {
   if (!sidebar || sidebar.length === 0) return null;
 
   // 文档主路由（/docs/*）顶部展示「文档」分区切换，SDK 主路由（/sdks/*）展示 SDK 列表切换；
-  // 发行版本等其它文档区不显示
-  const inDocs = pathname === '/docs' || pathname.startsWith('/docs/');
-  const inSdks = pathname === '/sdks' || pathname.startsWith('/sdks/');
+  // 发行版本等其它文档区不显示。
+  // ⚠️ 必须先剥掉当前语言前缀：英文路径是 /en-US/docs|sdks/…，不剥则 inDocs/inSdks 全 false →
+  // 顶部分区切换整块不渲染（即「英文版文档/SDK 页侧边栏导航没了」）。
+  const rel = base !== '/' && pathname.startsWith(base) ? pathname.slice(base.length) || '/' : pathname;
+  const inDocs = rel === '/docs' || rel.startsWith('/docs/');
+  const inSdks = rel === '/sdks' || rel.startsWith('/sdks/');
 
   return (
     <section className={styles.inner}>
@@ -259,7 +265,7 @@ export default memo(function Sidebar() {
           shortKey="k"
           spotlight
           type="block"
-          placeholder="搜索文档…"
+          placeholder={base === '/' ? '搜索文档…' : 'Search docs…'}
           style={{ width: '100%' }}
           onBlur={() => setTimeout(() => setFocusing(false), 150)}
           onChange={(e: any) => setKeywords(e.target.value)}
@@ -277,26 +283,30 @@ export default memo(function Sidebar() {
           <p className={styles.secLabel}>
             {inDocs ? (
               <>
-                <Library size={14} /> 文档
+                <Library size={14} /> {t.nav.docs}
               </>
             ) : (
               <>
-                <Package size={14} /> SDKs
+                <Package size={14} /> {t.nav.sdks}
               </>
             )}
           </p>
-          {(inDocs ? SECTIONS : SDK_SECTIONS).map((s) => {
-            const active = pathname === s.root || pathname.startsWith(s.root + '/');
+          {(inDocs ? SECTIONS : SDK_SECTIONS).map((s: any) => {
+            const active = rel === s.root || rel.startsWith(s.root + '/');
+            const title = inDocs ? t.navbar.docsSections[s.key].title : t.navbar.sdk[s.key].title;
             return (
               <Link
                 key={s.root}
                 className={cx(styles.secItem, active && styles.secItemActive)}
-                to={s.root}
+                to={localeHref(base, s.root)}
               >
-                <span className={cx(styles.secIcon, active && styles.secIconActive)}>
+                <span
+                  className={cx(styles.secIcon, active && styles.secIconActive)}
+                  style={s.bg && !active ? { background: s.bg, boxShadow: 'none' } : undefined}
+                >
                   {s.icon(active)}
                 </span>
-                {s.title}
+                {title}
               </Link>
             );
           })}

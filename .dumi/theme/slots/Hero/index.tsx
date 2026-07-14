@@ -55,7 +55,7 @@ const useStyles = createStyles(({ css, token }) => ({
 
     /* 标题若含 <b> 则做渐变描边（与 lobehub 一致；当前配置为纯文本，留作兜底） */
     b {
-      background: linear-gradient(90deg, #007ee5, #7c4dff 60%, #00c8aa);
+      background: linear-gradient(90deg, #F97316, #FBBF24 60%, #EA580C);
       background-clip: text;
       -webkit-text-fill-color: transparent;
     }
@@ -131,7 +131,9 @@ export default memo(function Hero() {
       <AuroraBackground className={styles.aurora} />
       <motion.div animate="show" className={styles.wrap} initial="hidden" variants={container}>
         {/* 首屏大尺寸 3D 吉祥物：悬浮 + 眨眼等待机动画自带；随错峰序列第一个飘入（纯 2D 变体，见 logoFloat） */}
-        <motion.div style={{ marginBottom: 8 }} variants={logoFloat}>
+        {/* marginBottom 必须容下 Logo3D 的 overscan 向下溢出（≈(overscan-1)/2*size，128 时约 19px）+ 浮动幅度，
+            否则火焰下缘/尾焰会压到下面的标题。移动端标题小、更紧凑，需要更大间距；桌面标题大、行内留白足，维持原值。 */}
+        <motion.div style={{ marginBottom: mobile ? 32 : 8 }} variants={logoFloat}>
           <Logo3D alt="JadeView" fallbackRadius={40} overscan={1.3} size={mobile ? 128 : 180} />
         </motion.div>
         {title && (

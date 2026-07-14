@@ -23,6 +23,7 @@ import { useResponsive, useTheme } from 'antd-style';
 import isEqual from 'fast-deep-equal';
 import { AnimatePresence, motion } from 'motion/react';
 import { memo, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { Link } from 'dumi';
 import { floatItemNoBlur, floatStyleTop } from '../../components/floatIn';
 import { useLiquidGlass, GLASS_PARAMS, GLASS_BG_OPACITY, GLASS_SATURATION } from '../../components/JadeGlass';
 // @ts-ignore 主题 store / selectors，深层路径无类型声明
@@ -65,6 +66,9 @@ const GlassPill = memo(function GlassPill({
 export default memo(function Header() {
   const hasHeader = useSiteStore((s: any) => Boolean(s.routeMeta.frontmatter));
   const config = useSiteStore(siteSelectors.themeConfig, isEqual);
+  // 当前语言的首页根：中文 '/'，英文 '/en-US'。logo 必须指向它，否则在英文页点 logo 会
+  // 跳到 '/'（中文首页）—— 既强制切回默认语言、也不是当前语言的首页。
+  const localeBase = useSiteStore((s: any) => s?.locale?.base) || '/';
   const { mobile, tablet } = useResponsive();
   const theme = useTheme() as any;
   const [scrolled, setScrolled] = useState(false);
@@ -212,10 +216,10 @@ export default memo(function Header() {
           >
             <GlassPill baseStyle={pillBase} decorate={decorate}>
               <Burger />
-              <a href="/" style={{ display: 'inline-flex', alignItems: 'center', paddingInline: 2 }}>
+              <Link to={localeBase} style={{ display: 'inline-flex', alignItems: 'center', paddingInline: 2 }}>
                 {/* 药丸高仅 50：34×1.35≈46 留出上下边距（36×1.5 会比药丸还高） */}
                 <Logo3D alt={brand} fallback={logoSrc} fallbackRadius={10} size={34} />
-              </a>
+              </Link>
             </GlassPill>
             <div style={{ flex: 1 }} />
             <GlassPill baseStyle={pillBase} decorate={decorate}>
@@ -244,8 +248,8 @@ export default memo(function Header() {
             {...desktopMotion}
           >
             {capsuleGlass.svg}
-            <a
-              href="/"
+            <Link
+              to={localeBase}
               style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', flex: '0 0 auto', zIndex: 10 }}
             >
               {/* 3D logo 画布向四周溢出渲染（overscan），左侧补一点内距让它别贴住胶囊圆头 */}
@@ -272,7 +276,7 @@ export default memo(function Header() {
               >
                 {brand}
               </motion.span>
-            </a>
+            </Link>
             {/* 导航容器：marginLeft 即 Logo↔导航间距，随文字收起同步 spring 收紧（48↔16）→ 导航平滑滑动。 */}
             <motion.div
               animate={{ marginLeft: showBrand ? 18 : 12 }}
