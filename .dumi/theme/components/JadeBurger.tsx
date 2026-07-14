@@ -12,6 +12,7 @@ import { memo, useMemo, useState } from 'react';
 import { siteSelectors, useSiteStore } from 'dumi-theme-lobehub/dist/store';
 // 主题切换（循环按钮，不用 lobehub 的下拉式，避免在全屏抽屉里弹层被盖住）
 import ThemeToggle from './JadeThemeToggle';
+import Logo3D from './JadeLogo3D';
 
 export default memo(function JadeBurger() {
   const [opened, setOpened] = useState(false);
@@ -103,7 +104,7 @@ export default memo(function JadeBurger() {
           <span className="jade-mpill" style={{ display: 'inline-flex' }}>
             <ActionIcon icon={X} onClick={close} size={{ blockSize: 36, fontSize: 22 }} />
           </span>
-          <img alt="JadeView" src="/favicon.png" style={{ display: 'block', width: 32, height: 32, borderRadius: 8 }} />
+          <Logo3D fallbackRadius={8} size={32} />
           {/* 主题切换（移动端标题栏右侧已换成搜索，这里补上；循环切换，不依赖弹层）*/}
           <div className="jade-mpill" style={{ display: 'inline-flex', marginInlineStart: 'auto' }}>
             <ThemeToggle />

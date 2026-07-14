@@ -15,6 +15,8 @@ import { useSiteStore } from 'dumi-theme-lobehub/dist/store/useSiteStore';
 import { floatContainer as container, floatItem as item, floatStyle } from '../../components/floatIn';
 // 「快速开始」主按钮：motion 驱动的渐变描边/glow/悬停按压（替代 lobehub GradientButton 的纯 CSS 动画）
 import JadeStartButton from '../../components/JadeStartButton';
+// 3D 品牌吉祥物（与标题栏同源，GLB 只加载一次）：首屏大尺寸展示位
+import Logo3D from '../../components/JadeLogo3D';
 
 const useStyles = createStyles(({ css, token }) => ({
   // @lobehub/ui 的 AuroraBackground 在 ≤575.98px 把极光强制 `transform: scale(2); max-height: 25vh`，
@@ -100,6 +102,24 @@ const useStyles = createStyles(({ css, token }) => ({
   `,
 }));
 
+// 3D 吉祥物专用入场：仅 2D 位移 + 淡入（弹性与共享 floatItem 一致）。
+// 不能复用 floatItem——它的 transformPerspective/rotateX/filter 会把 canvas 压进 3D 变换 + filter
+// 合成层，Chrome 对该层里的 WebGL 画布走低质量重采样，2 倍超采样抗锯齿直接报废（踩过坑：锯齿严重）。
+const logoFloat = {
+  hidden: { opacity: 0, y: 44 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 46,
+      damping: 11,
+      mass: 1.1,
+      opacity: { duration: 0.8, ease: 'easeOut' },
+    },
+  },
+} as const;
+
 export default memo(function Hero() {
   const { styles } = useStyles();
   const { mobile } = useResponsive();
@@ -110,6 +130,10 @@ export default memo(function Hero() {
     <>
       <AuroraBackground className={styles.aurora} />
       <motion.div animate="show" className={styles.wrap} initial="hidden" variants={container}>
+        {/* 首屏大尺寸 3D 吉祥物：悬浮 + 眨眼等待机动画自带；随错峰序列第一个飘入（纯 2D 变体，见 logoFloat） */}
+        <motion.div style={{ marginBottom: 8 }} variants={logoFloat}>
+          <Logo3D alt="JadeView" fallbackRadius={40} overscan={1.3} size={mobile ? 128 : 180} />
+        </motion.div>
         {title && (
           <motion.h1
             className={styles.title}

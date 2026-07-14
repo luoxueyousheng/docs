@@ -30,6 +30,7 @@ import { siteSelectors, useSiteStore } from 'dumi-theme-lobehub/dist/store';
 import Navbar from '../../components/JadeNavbar';
 import Burger from '../../components/JadeBurger';
 import MobileSearch from '../../components/JadeMobileSearch';
+import Logo3D from '../../components/JadeLogo3D';
 // @ts-ignore
 import DiscordButton from 'dumi-theme-lobehub/dist/slots/Header/DiscordButton';
 // @ts-ignore
@@ -212,11 +213,8 @@ export default memo(function Header() {
             <GlassPill baseStyle={pillBase} decorate={decorate}>
               <Burger />
               <a href="/" style={{ display: 'inline-flex', alignItems: 'center', paddingInline: 2 }}>
-                <img
-                  alt={brand}
-                  src={logoSrc}
-                  style={{ display: 'block', width: 36, height: 36, borderRadius: 10 }}
-                />
+                {/* 药丸高仅 50：34×1.35≈46 留出上下边距（36×1.5 会比药丸还高） */}
+                <Logo3D alt={brand} fallback={logoSrc} fallbackRadius={10} size={34} />
               </a>
             </GlassPill>
             <div style={{ flex: 1 }} />
@@ -250,14 +248,17 @@ export default memo(function Header() {
               href="/"
               style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', flex: '0 0 auto', zIndex: 10 }}
             >
-              <img
+              {/* 3D logo 画布向四周溢出渲染（overscan），左侧补一点内距让它别贴住胶囊圆头 */}
+              <Logo3D
                 alt={brand}
-                src={logoSrc}
-                style={{ display: 'block', width: 32, height: 32, borderRadius: 9, flexShrink: 0 }}
+                fallback={logoSrc}
+                fallbackRadius={9}
+                size={32}
+                style={{ marginInlineStart: 6 }}
               />
               {/* 文字常驻挂载，靠 width/opacity spring 平滑收起/展开（窄桌面 width→0）。overflow:hidden + nowrap 防换行。 */}
               <motion.span
-                animate={{ width: showBrand ? 'auto' : 0, opacity: showBrand ? 1 : 0, marginLeft: showBrand ? 8 : 0 }}
+                animate={{ width: showBrand ? 'auto' : 0, opacity: showBrand ? 1 : 0, marginLeft: showBrand ? 11 : 0 }}
                 initial={false}
                 style={{
                   display: 'inline-block',

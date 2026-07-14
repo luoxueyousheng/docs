@@ -10,7 +10,7 @@ import { SearchBar as Input } from '@lobehub/ui';
 import { createStyles } from 'antd-style';
 import { Link, NavLink, useLocation, useSiteSearch } from 'dumi';
 import isEqual from 'fast-deep-equal';
-import { BookOpen, Code2, Library } from 'lucide-react';
+import { BookOpen, Code2, Library, Package } from 'lucide-react';
 import { motion } from 'motion/react';
 import { memo, useState } from 'react';
 // @ts-ignore 主题内部组件，深层路径无类型声明
@@ -31,7 +31,7 @@ const useStyles = createStyles(({ css, token }) => ({
     flex-shrink: 0;
     margin-bottom: 12px;
   `,
-  // 顶部「文档」分区切换（仅 /docs/* 显示）：参考 lobehub.com 文档站左栏顶部的分区列表（User Guide / …）。
+  // 顶部分区切换（/docs/* 显示文档分区、/sdks/* 显示 SDK 列表）：参考 lobehub.com 文档站左栏顶部的分区列表。
   secNav: css`
     flex-shrink: 0;
     margin-bottom: 12px;
@@ -204,8 +204,20 @@ const useStyles = createStyles(({ css, token }) => ({
 
 // 「文档」主路由下的子分区（与 .dumirc.ts 的 /docs 子路由对应）。仅在 /docs/* 页面顶部展示切换。
 const SECTIONS = [
-  { title: '文档指南', root: '/docs/spec', icon: <BookOpen size={16} /> },
-  { title: 'API', root: '/docs/api', icon: <Code2 size={16} /> },
+  { title: '文档指南', root: '/docs/spec', icon: () => <BookOpen size={16} /> },
+  { title: 'API', root: '/docs/api', icon: () => <Code2 size={16} /> },
+];
+
+// 「SDKs」主路由下的 SDK 列表（/sdks/* 页面顶部展示切换）。
+// 图标与 JadeNavbar 下拉同源：有品牌 logo 的用彩色 SVG（public/sdklogo/），易语言/火山用品牌色字徽；
+// 字徽选中态跟随 secIconActive 反白（图标为 active 的函数）。
+const SDK_SECTIONS: { title: string; root: string; icon: (active: boolean) => React.ReactNode }[] = [
+  { title: 'Web SDK', root: '/sdks/web-sdk', icon: () => <img alt="" height={15} src="/sdklogo/javascript.svg" width={15} /> },
+  { title: 'Python SDK', root: '/sdks/python-sdk', icon: () => <img alt="" height={15} src="/sdklogo/python.svg" width={15} /> },
+  { title: 'Python SDK 2', root: '/sdks/python-sdk2', icon: () => <img alt="" height={15} src="/sdklogo/python.svg" width={15} /> },
+  { title: 'Golang SDK', root: '/sdks/golang-sdk', icon: () => <img alt="" height={15} src="/sdklogo/go.svg" width={15} /> },
+  { title: '易语言 SDK', root: '/sdks/easy-language-sdk', icon: (a) => <b style={{ color: a ? '#fff' : '#2b7de9', fontSize: 13 }}>易</b> },
+  { title: '火山 SDK', root: '/sdks/voldp-sdk', icon: (a) => <b style={{ color: a ? '#fff' : '#e8533f', fontSize: 13 }}>火</b> },
 ];
 
 const Chevron = () => (
@@ -234,8 +246,10 @@ export default memo(function Sidebar() {
 
   if (!sidebar || sidebar.length === 0) return null;
 
-  // 仅文档主路由（/docs/*）顶部展示「文档」分区切换；SDK/发行版本等其它文档区不显示
+  // 文档主路由（/docs/*）顶部展示「文档」分区切换，SDK 主路由（/sdks/*）展示 SDK 列表切换；
+  // 发行版本等其它文档区不显示
   const inDocs = pathname === '/docs' || pathname.startsWith('/docs/');
+  const inSdks = pathname === '/sdks' || pathname.startsWith('/sdks/');
 
   return (
     <section className={styles.inner}>
@@ -258,12 +272,20 @@ export default memo(function Sidebar() {
         )}
       </div>
 
-      {inDocs && (
+      {(inDocs || inSdks) && (
         <div className={styles.secNav}>
           <p className={styles.secLabel}>
-            <Library size={14} /> 文档
+            {inDocs ? (
+              <>
+                <Library size={14} /> 文档
+              </>
+            ) : (
+              <>
+                <Package size={14} /> SDKs
+              </>
+            )}
           </p>
-          {SECTIONS.map((s) => {
+          {(inDocs ? SECTIONS : SDK_SECTIONS).map((s) => {
             const active = pathname === s.root || pathname.startsWith(s.root + '/');
             return (
               <Link
@@ -271,7 +293,9 @@ export default memo(function Sidebar() {
                 className={cx(styles.secItem, active && styles.secItemActive)}
                 to={s.root}
               >
-                <span className={cx(styles.secIcon, active && styles.secIconActive)}>{s.icon}</span>
+                <span className={cx(styles.secIcon, active && styles.secIconActive)}>
+                  {s.icon(active)}
+                </span>
                 {s.title}
               </Link>
             );

@@ -32,22 +32,23 @@ const SDK_GROUPS: { key: 'frontend' | 'more'; items: { key: SdkKey; link: string
   {
     key: 'frontend',
     items: [
-      { key: 'web', link: '/web-sdk' },
-      { key: 'py', link: '/python-sdk' },
-      { key: 'py2', link: '/python-sdk2' },
+      { key: 'web', link: '/sdks/web-sdk' },
+      { key: 'py', link: '/sdks/python-sdk' },
+      { key: 'py2', link: '/sdks/python-sdk2' },
     ],
   },
   {
     key: 'more',
     items: [
-      { key: 'go', link: '/golang-sdk' },
-      { key: 'ey', link: '/easy-language-sdk' },
-      { key: 'vol', link: '/voldp-sdk' },
+      { key: 'go', link: '/sdks/golang-sdk' },
+      { key: 'ey', link: '/sdks/easy-language-sdk' },
+      { key: 'vol', link: '/sdks/voldp-sdk' },
     ],
   },
 ];
 
-const SDK_LINKS = ['/sdk', ...SDK_GROUPS.flatMap((g) => g.items.map((i) => i.link))];
+// SDK 分区已统一收纳在 /sdks 子路由下，激活态只需匹配该前缀
+const SDK_ROOT = '/sdks';
 
 // 「文档」下拉的两张大卡片（仿 lobehub.com 顶部导航左侧大卡片）：顶部色块 + 图标 + 页数角标，下方标题/描述。
 // 标题/描述走 useT()；这里只放结构（key/链接/图标/配色）。
@@ -432,7 +433,7 @@ export default memo(function JadeNavbar() {
   const navTitle = (item: any): string => {
     const l = String(item.link || '');
     if (l.startsWith('/docs')) return t.nav.docs;
-    if (l === '/sdk' || item.title === 'SDKs') return t.nav.sdks;
+    if (l === SDK_ROOT || item.title === 'SDKs') return t.nav.sdks;
     if (l === '/jadepack' || item.title === '产品') return t.nav.products;
     if (l === '/showcase') return t.nav.showcase;
     if (l === '/releases') return t.nav.releases;
@@ -469,7 +470,7 @@ export default memo(function JadeNavbar() {
     if (link === '/') return pathname === '/';
     return pathname === link || pathname.startsWith(link + '/');
   };
-  const sdkActive = SDK_LINKS.some((l) => matches(l));
+  const sdkActive = matches(SDK_ROOT);
   const productsActive = ['/jadepack', '/jade-ec'].some((l) => matches(l));
 
   // 「文档」项链接到 /docs/spec，但需在整个文档主路由（含 /docs/api 子分区）下都高亮。
@@ -483,7 +484,7 @@ export default memo(function JadeNavbar() {
     return groups.reduce((n: number, g: any) => n + (g?.children?.length || 0), 0);
   };
 
-  const isSdk = (item: any) => item.title === 'SDKs' || item.link === '/sdk';
+  const isSdk = (item: any) => item.title === 'SDKs' || item.link === SDK_ROOT;
   const isDocs = (item: any) => String(item.link || '').startsWith('/docs');
   const isProducts = (item: any) => item.title === '产品' || item.link === '/jadepack';
   const menuOf = (item: any): 'docs' | 'sdk' | 'products' | null =>
@@ -633,7 +634,7 @@ export default memo(function JadeNavbar() {
               className={cx(styles.item, itemActiveNow && styles.active)}
               onMouseEnter={(e) => openMenu(menu, e.currentTarget as HTMLElement)}
               onMouseLeave={scheduleClose}
-              to={L(item.link || (menu === 'sdk' ? '/sdk' : '/docs/spec'))}
+              to={L(item.link || (menu === 'sdk' ? SDK_ROOT : '/docs/spec'))}
             >
               {navTitle(item)}
               {chevron(active === menu)}

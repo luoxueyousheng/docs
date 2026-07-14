@@ -42,10 +42,11 @@ export default defineConfig({
   // 用 head 脚本在客户端把它改成中文，避免覆盖 SearchBar slot 引发 dev 的 'dumi' 解析报错。
   headScripts: [
     {
-      // 旧 URL 重定向：文档迁入 /docs 子路由后，把旧路径 /spec/* → /docs/spec/*、/v2api/* → /docs/api/*
+      // 旧 URL 重定向：文档迁入 /docs 子路由后 /spec/* → /docs/spec/*、/v2api/* → /docs/api/*；
+      // SDK 分区迁入 /sdks 子路由后 /<sdk>/* → /sdks/<sdk>/*、/sdk → /sdks（支持 /en-US 前缀）。
       // 客户端早跳转（在 <head> 内、SPA 渲染前执行），保住旧书签 / 外链 / 搜索引擎收录不 404。
       content:
-        "(function(){if(typeof window==='undefined')return;var p=location.pathname,m=[['/v2api','/docs/api'],['/spec','/docs/spec']];for(var i=0;i<m.length;i++){var o=m[i][0],n=m[i][1];if(p===o||p.indexOf(o+'/')===0){location.replace(n+p.slice(o.length)+location.search+location.hash);return;}}})();",
+        "(function(){if(typeof window==='undefined')return;var p=location.pathname,b='';if(p==='/en-US'||p.indexOf('/en-US/')===0){b='/en-US';p=p.slice(6)||'/';}var m=[['/v2api','/docs/api'],['/spec','/docs/spec'],['/web-sdk','/sdks/web-sdk'],['/python-sdk2','/sdks/python-sdk2'],['/python-sdk','/sdks/python-sdk'],['/golang-sdk','/sdks/golang-sdk'],['/easy-language-sdk','/sdks/easy-language-sdk'],['/voldp-sdk','/sdks/voldp-sdk'],['/sdk','/sdks']];for(var i=0;i<m.length;i++){var o=m[i][0],n=m[i][1];if(p===o||p.indexOf(o+'/')===0){location.replace(b+n+p.slice(o.length)+location.search+location.hash);return;}}})();",
     },
     {
       content:
@@ -423,10 +424,10 @@ html[data-prefers-color='light'] .jade-capsule-header a.ant-btn:hover {
     hideHomeNav: true,
     // 顶部导航：文档指南(/docs/spec) 与 API(/docs/api) 收纳进单一「文档」主入口（子路由）；
     //   「文档」内部的分区切换（文档指南 / API）由 Sidebar slot 顶部的分区按钮负责（见参考图）。
-    // 注意：lobehub 主题导航为扁平 Tabs，不支持 children 下拉；SDKs 仍为单链接（指向 /sdk 总览）。
+    // 注意：lobehub 主题导航为扁平 Tabs，不支持 children 下拉；SDKs 仍为单链接（指向 /sdks 总览）。
     nav: [
       { title: '文档', link: '/docs/spec' },
-      { title: 'SDKs', link: '/sdk' },
+      { title: 'SDKs', link: '/sdks' },
       { title: '产品', link: '/jadepack' },
       { title: '案例', link: '/showcase' },
       { title: '发行版本', link: '/releases' },
@@ -441,16 +442,16 @@ html[data-prefers-color='light'] .jade-capsule-header a.ant-btn:hover {
           items: [
             { title: '快速开始', url: '/docs/spec/quickstart' },
             { title: 'API 参考', url: '/docs/api' },
-            { title: 'SDK 总览', url: '/sdk' },
+            { title: 'SDK 总览', url: '/sdks' },
           ],
         },
         {
           title: 'SDK',
           items: [
-            { title: 'Web SDK', url: '/web-sdk' },
-            { title: 'Python SDK', url: '/python-sdk' },
-            { title: '易语言 SDK', url: '/easy-language-sdk' },
-            { title: '火山 SDK', url: '/voldp-sdk' },
+            { title: 'Web SDK', url: '/sdks/web-sdk' },
+            { title: 'Python SDK', url: '/sdks/python-sdk' },
+            { title: '易语言 SDK', url: '/sdks/easy-language-sdk' },
+            { title: '火山 SDK', url: '/sdks/voldp-sdk' },
           ],
         },
         {

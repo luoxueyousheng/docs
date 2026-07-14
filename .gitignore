@@ -27,3 +27,6 @@ yarn-error.log*
 
 # 本地 dev server 日志
 .dev*.log
+
+# CI 构建时生成的贡献者快照（scripts/update-contributors.mjs）
+public/contributors/
